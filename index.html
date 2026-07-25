@@ -1,5 +1,4 @@
-def build_updated_html():
-    original_html = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -80,6 +79,9 @@ def build_updated_html():
 
             <!-- Botones de Acción Rápida (Herramientas) -->
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+                <button onclick="openStaysModal()" class="bg-indigo-700 hover:bg-indigo-800 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
+                    <i data-lucide="bed" class="w-3.5 h-3.5 text-indigo-200"></i> Estadías
+                </button>
                 <button onclick="openCalcModal()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
                     <i data-lucide="coins" class="w-3.5 h-3.5 text-yellow-300"></i> Divisas & Tax-Free
                 </button>
@@ -88,9 +90,6 @@ def build_updated_html():
                 </button>
                 <button onclick="openBudgetModal()" class="bg-asia-indigo text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
                     <i data-lucide="calculator" class="w-3.5 h-3.5 text-asia-gold"></i> Presupuesto
-                </button>
-                <button onclick="openStaysModal()" class="bg-blue-700 hover:bg-blue-800 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
-                    <i data-lucide="bed-double" class="w-3.5 h-3.5 text-blue-200"></i> Estadías
                 </button>
                 <button onclick="openPhrasesModal()" class="bg-asia-gold/20 text-yellow-900 border border-asia-gold/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
                     <i data-lucide="languages" class="w-3.5 h-3.5"></i> Frases
@@ -137,7 +136,7 @@ def build_updated_html():
     <!-- Contenedor Principal -->
     <main class="max-w-3xl mx-auto p-3 md:p-4 space-y-6" id="itinerary-container"></main>
 
-    <!-- MODAL DETALLES Y NOTAS -->
+    <!-- MODAL DETALLES Y NOTAS ACTIVIDAD -->
     <div id="detail-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-asia-paper rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto card-shadow border border-asia-gold/30 flex flex-col">
             <div class="bg-asia-indigo text-asia-paper p-4 flex justify-between items-start sticky top-0 z-10">
@@ -187,6 +186,45 @@ def build_updated_html():
         </div>
     </div>
 
+    <!-- MODAL ESTADÍAS Y HOTELES -->
+    <div id="stays-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-asia-paper rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto card-shadow border border-indigo-200 flex flex-col">
+            <div class="bg-indigo-900 text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="bed" class="w-5 h-5 text-indigo-300"></i>
+                    <div>
+                        <h2 class="font-serif font-bold text-base md:text-lg">Registro de Estadías y Hoteles</h2>
+                        <p class="text-[11px] text-indigo-200">China y Japón 2026</p>
+                    </div>
+                </div>
+                <button onclick="closeStaysModal()" class="text-indigo-200 hover:text-white p-1">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="p-4 space-y-4">
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-indigo-900 font-bold block">Total Estadías Estimado</span>
+                        <span id="stays-total-est" class="text-base font-extrabold text-indigo-950">$0</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-indigo-900 font-bold block">Total Real Registrado</span>
+                        <span id="stays-total-real" class="text-base font-extrabold text-emerald-700">$0</span>
+                    </div>
+                </div>
+
+                <div id="stays-list-container" class="space-y-4">
+                    <!-- Se renderiza con JS -->
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-100 border-t border-gray-200 flex justify-end rounded-b-2xl">
+                <button onclick="closeStaysModal()" class="px-5 py-2 text-xs font-bold bg-indigo-900 text-white rounded-lg shadow">Guardar y Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL HERRAMIENTAS: DIVISAS Y TAX-FREE -->
     <div id="calc-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-asia-paper rounded-2xl max-w-md w-full p-5 card-shadow border border-asia-gold/30 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -197,7 +235,6 @@ def build_updated_html():
                 <button onclick="closeCalcModal()"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
             </div>
 
-            <!-- Conversor Multidivisa -->
             <div class="bg-white p-3.5 rounded-xl border border-gray-200 space-y-3">
                 <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center gap-1">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-600"></i> Conversor Rápido
@@ -222,7 +259,6 @@ def build_updated_html():
                 </div>
             </div>
 
-            <!-- Calculadora Tax-Free (Japón) -->
             <div class="bg-white p-3.5 rounded-xl border border-gray-200 space-y-3">
                 <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center gap-1">
                     <i data-lucide="receipt" class="w-3.5 h-3.5 text-asia-red"></i> Calculadora Tax-Free 🇯🇵 (10%)
@@ -247,7 +283,6 @@ def build_updated_html():
                 </div>
             </div>
 
-            <!-- Configuración de Tasas -->
             <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
                 <span class="text-[11px] font-bold text-gray-600 block">⚙️ Configurar Tasas de Cambio (Ajuste Local)</span>
                 <div class="grid grid-cols-2 gap-2 text-xs">
@@ -278,7 +313,6 @@ def build_updated_html():
 
             <p class="text-xs text-gray-600">Guarda tus pases, QRs de inmigración y pasaportes para acceder <strong>100% offline</strong> durante el viaje.</p>
 
-            <!-- Agregar Documento -->
             <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-2">
                 <span class="text-xs font-bold text-amber-800 block">+ Subir Nuevo QR / Documento</span>
                 <input type="text" id="doc-title" placeholder="Ej: QR Japan Visit / Pasaporte" class="w-full p-2 border rounded text-xs outline-none">
@@ -286,7 +320,6 @@ def build_updated_html():
                 <button onclick="uploadDocument()" class="w-full py-2 bg-amber-700 text-white text-xs font-bold rounded-lg shadow mt-1">Guardar en Bóveda Local</button>
             </div>
 
-            <!-- Lista de Documentos -->
             <div class="space-y-3" id="vault-list-container">
                 <p class="text-xs text-gray-400 text-center py-4">Cargando documentos...</p>
             </div>
@@ -295,30 +328,50 @@ def build_updated_html():
         </div>
     </div>
 
-    <!-- MODAL PRESUPUESTO -->
+    <!-- MODAL PRESUPUESTO GLOBAL -->
     <div id="budget-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-asia-paper rounded-2xl max-w-md w-full p-5 card-shadow border border-asia-gold/30 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h2 class="font-serif font-bold text-lg text-asia-indigo flex items-center gap-2">
-                    <i data-lucide="calculator" class="text-asia-gold"></i> Resumen de Gastos
+                    <i data-lucide="calculator" class="text-asia-gold"></i> Resumen de Gastos Totales
                 </h2>
                 <button onclick="closeBudgetModal()"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
             </div>
             
             <div class="space-y-3 text-sm">
-                <div class="p-3 bg-red-50 rounded-xl border border-red-100 flex justify-between items-center">
-                    <div>
-                        <p class="text-xs font-bold text-asia-red">TOTAL ESTIMADO (Incluye Estadías x1)</p>
-                        <p class="text-xs text-gray-500">Suma proyectada</p>
+                <!-- Actividades -->
+                <div class="p-3 bg-slate-100 rounded-xl space-y-1">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">🎯 Actividades y Visitas</span>
+                    <div class="flex justify-between text-xs">
+                        <span>Estimado: <strong id="budget-act-est">$0</strong></span>
+                        <span>Real: <strong id="budget-act-real" class="text-asia-red">$0</strong></span>
                     </div>
-                    <span id="budget-total-est" class="text-base font-bold text-gray-800">$0</span>
                 </div>
-                <div class="p-3 bg-green-50 rounded-xl border border-green-100 flex justify-between items-center">
-                    <div>
-                        <p class="text-xs font-bold text-green-800">TOTAL REAL REGISTRADO</p>
-                        <p class="text-xs text-gray-500">Gasto ingresado (Actividades + Estadías)</p>
+
+                <!-- Estadías -->
+                <div class="p-3 bg-indigo-50 rounded-xl space-y-1">
+                    <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">🏨 Estadías y Hoteles</span>
+                    <div class="flex justify-between text-xs">
+                        <span>Estimado: <strong id="budget-stay-est">$0</strong></span>
+                        <span>Real: <strong id="budget-stay-real" class="text-emerald-700">$0</strong></span>
                     </div>
-                    <span id="budget-total-real" class="text-base font-bold text-green-900">$0</span>
+                </div>
+
+                <div class="pt-2 border-t space-y-2">
+                    <div class="p-3 bg-red-50 rounded-xl border border-red-100 flex justify-between items-center">
+                        <div>
+                            <p class="text-xs font-bold text-asia-red">TOTAL ESTIMADO GENERAL</p>
+                            <p class="text-xs text-gray-500">Actividades + Hoteles</p>
+                        </div>
+                        <span id="budget-total-est" class="text-base font-bold text-gray-800">$0</span>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded-xl border border-green-100 flex justify-between items-center">
+                        <div>
+                            <p class="text-xs font-bold text-green-800">TOTAL REAL REGISTRADO</p>
+                            <p class="text-xs text-gray-500">Ingresado hasta ahora</p>
+                        </div>
+                        <span id="budget-total-real" class="text-base font-bold text-green-900">$0</span>
+                    </div>
                 </div>
             </div>
 
@@ -382,27 +435,6 @@ def build_updated_html():
         </div>
     </div>
 
-    <!-- MODAL ESTADÍAS -->
-    <div id="stays-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-asia-paper rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto card-shadow border border-asia-gold/30 flex flex-col">
-            <div class="bg-blue-900 text-asia-paper p-4 flex justify-between items-start sticky top-0 z-10">
-                <div>
-                    <h2 class="font-serif font-bold text-lg leading-snug flex items-center gap-2">
-                        <i data-lucide="bed-double" class="text-blue-300"></i> Alojamientos y Estadías
-                    </h2>
-                    <p class="text-xs text-blue-200 mt-1">Costos y ubicaciones (Por Persona)</p>
-                </div>
-                <button onclick="closeStaysModal()" class="text-gray-300 hover:text-white p-1">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            
-            <div class="p-4 space-y-4" id="stays-container">
-                <!-- Stays will be rendered here -->
-            </div>
-        </div>
-    </div>
-
     <!-- VISOR DE DOCUMENTO FULLSCREEN -->
     <div id="image-viewer-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex flex-col justify-between p-4 backdrop-blur-md">
         <div class="flex justify-between items-center text-white">
@@ -421,7 +453,7 @@ def build_updated_html():
     </button>
 
     <script>
-        // --- BASE DE DATOS LOCAL AMPLIADA (IndexedDB) ---
+        // --- BASE DE DATOS LOCAL (IndexedDB) ---
         let db;
         const dbRequest = indexedDB.open("AsiaTripDB", 2);
         
@@ -439,10 +471,10 @@ def build_updated_html():
             renderVaultDocs();
         };
 
-        // --- REGISTRO PWA INLINE (SERVICE WORKER + MANIFEST DINO) ---
+        // --- REGISTRO PWA INLINE ---
         if ('serviceWorker' in navigator) {
             const swCode = `
-                const CACHE_NAME = 'asia-trip-v1';
+                const CACHE_NAME = 'asia-trip-v2';
                 self.addEventListener('install', e => {
                     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./'])));
                 });
@@ -483,6 +515,21 @@ def build_updated_html():
         }
         setInterval(updateClocks, 1000);
         updateClocks();
+
+        // --- DATOS PRECARGADOS DE ESTADÍAS Y HOTELES (DESDE TU PLANILLA) ---
+        const initialStaysData = [
+            // CHINA
+            { id: "stay-1", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "24/08/2026 17:40", checkOut: "28/08/2026 08:00", nights: 4, estTotal: 125000, estPerPerson: 125000, defaultLocation: "PEOPLE'S SQUARE" },
+            { id: "stay-2", country: "🇨🇳 China", city: "HANGZHOU", checkIn: "28/08/2026 11:00", checkOut: "30/08/2026 07:00", nights: 2, estTotal: 75000, estPerPerson: 75000, defaultLocation: "Longxiangqiao Metro Station" },
+            { id: "stay-3", country: "🇨🇳 China", city: "SUZHOU", checkIn: "30/08/2026 09:00", checkOut: "30/08/2026 19:00", nights: 0, estTotal: 0, estPerPerson: 0, defaultLocation: "Paso de Día (-)" },
+            { id: "stay-4", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "30/08/2026 21:00", checkOut: "31/08/2026 09:00", nights: 1, estTotal: 25000, estPerPerson: 25000, defaultLocation: "Airport PVG" },
+            // JAPÓN
+            { id: "stay-5", country: "🇯🇵 Japón", city: "KANAZAWA", checkIn: "31/08/2026 17:00", checkOut: "02/09/2026 08:00", nights: 2, estTotal: 50000, estPerPerson: 50000, defaultLocation: "Cerca de atracciones o festival" },
+            { id: "stay-6", country: "🇯🇵 Japón", city: "TAKAYAMA", checkIn: "02/09/2026 19:00", checkOut: "03/09/2026 16:00", nights: 1, estTotal: 50000, estPerPerson: 50000, defaultLocation: "Cerca de estación de Takayama" },
+            { id: "stay-7", country: "🇯🇵 Japón", city: "MATSUMOTO", checkIn: "03/09/2026 20:00", checkOut: "04/09/2026 17:00", nights: 1, estTotal: 37500, estPerPerson: 37500, defaultLocation: "Cerca de la estación de Matsumoto" },
+            { id: "stay-8", country: "🇯🇵 Japón", city: "KAWAGUCHIKO", checkIn: "04/09/2026 21:00", checkOut: "06/09/2026 12:00", nights: 2, estTotal: 125000, estPerPerson: 125000, defaultLocation: "Lago Kawaguchi" },
+            { id: "stay-9", country: "🇯🇵 Japón", city: "TOKYO", checkIn: "06/09/2026 15:00", checkOut: "10/09/2026 12:00", nights: 4, estTotal: 150000, estPerPerson: 150000, defaultLocation: "Tokio Centro" }
+        ];
 
         // --- DATOS COMPLETOS DE ITINERARIO ---
         const itineraryData = [
@@ -661,21 +708,9 @@ def build_updated_html():
         // ESTADO Y LOCAL STORAGE
         let checkedItems = JSON.parse(localStorage.getItem('asiaTripChecked2026')) || {};
         let userDetails = JSON.parse(localStorage.getItem('asiaTripDetails2026')) || {}; 
-        let userStaysData = JSON.parse(localStorage.getItem('asiaTripStaysData2026')) || {};
+        let staysUser = JSON.parse(localStorage.getItem('asiaStaysUser2026')) || {};
         let currentActivityId = null;
         let tempPhotos = [];
-
-        const staysData = [
-            { id: "stay-cn-1", country: "China", city: "SHANGHAI", checkIn: "24/08/2026", checkOut: "28/08/2026", nights: 4, refLocation: "PEOPLE'S SQUARE", estTotalPerson: 125000 },
-            { id: "stay-cn-2", country: "China", city: "HANGZHOU", checkIn: "28/08/2026", checkOut: "30/08/2026", nights: 2, refLocation: "Longxiangqiao Metro Station", estTotalPerson: 75000 },
-            { id: "stay-cn-3", country: "China", city: "SUZHOU", checkIn: "30/08/2026", checkOut: "30/08/2026", nights: 0, refLocation: "-", estTotalPerson: 0 },
-            { id: "stay-cn-4", country: "China", city: "SHANGHAI", checkIn: "30/08/2026", checkOut: "31/08/2026", nights: 1, refLocation: "Airport PVG", estTotalPerson: 25000 },
-            { id: "stay-jp-1", country: "Japón", city: "KANAZAWA", checkIn: "31/08/2026", checkOut: "02/09/2026", nights: 2, refLocation: "cerca de atracciones o festival?", estTotalPerson: 50000 },
-            { id: "stay-jp-2", country: "Japón", city: "TAKAYAMA", checkIn: "02/09/2026", checkOut: "03/09/2026", nights: 1, refLocation: "cerca de estacion de takayama", estTotalPerson: 50000 },
-            { id: "stay-jp-3", country: "Japón", city: "MATSUMOTO", checkIn: "03/09/2026", checkOut: "04/09/2026", nights: 1, refLocation: "cerca de la estacion de matsumoto", estTotalPerson: 37500 },
-            { id: "stay-jp-4", country: "Japón", city: "KAWAGUSHIKO", checkIn: "04/09/2026", checkOut: "06/09/2026", nights: 2, refLocation: "", estTotalPerson: 125000 },
-            { id: "stay-jp-5", country: "Japón", city: "TOKYO", checkIn: "06/09/2026", checkOut: "10/09/2026", nights: 4, refLocation: "", estTotalPerson: 150000 },
-        ];
 
         function getLucideIconName(type) {
             const map = { 'Plane': 'plane', 'Train': 'train', 'Utensils': 'utensils', 'ShoppingBag': 'shopping-bag', 'Hotel': 'hotel', 'Camera': 'camera' };
@@ -687,7 +722,6 @@ def build_updated_html():
             const gmap = `https://www.google.com/maps/search/?api=1&query=${query}`;
             const amap = `https://maps.apple.com/?q=${query}`;
             const baidu = `https://api.map.baidu.com/geocoder?address=${query}&output=html`;
-
             const isChina = ['SHANGHAI', 'HANGZHOU', 'SUZHOU'].includes(city);
 
             return `
@@ -821,7 +855,164 @@ def build_updated_html():
             return null;
         }
 
-        // --- MODALES Y ACCIONES ---
+        // --- MÓDULO DE ESTADÍAS ---
+        function openStaysModal() {
+            renderStays();
+            document.getElementById('stays-modal').classList.remove('hidden');
+        }
+
+        function closeStaysModal() {
+            document.getElementById('stays-modal').classList.add('hidden');
+        }
+
+        function renderStays() {
+            const container = document.getElementById('stays-list-container');
+            container.innerHTML = '';
+
+            let totalEstSum = 0;
+            let totalRealSum = 0;
+
+            initialStaysData.forEach(stay => {
+                totalEstSum += stay.estTotal;
+                const userObj = staysUser[stay.id] || {};
+                const realCost = parseInt(userObj.realCost, 10) || 0;
+                totalRealSum += realCost;
+
+                const hotelName = userObj.hotelName || '';
+                const exactAddress = userObj.exactAddress || stay.defaultLocation;
+                
+                const card = document.createElement('div');
+                card.className = "bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm space-y-3";
+
+                const isChina = stay.country.includes("China");
+                const mapQuery = encodeURIComponent(`${hotelName || exactAddress} ${stay.city}`);
+                const gmap = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+                const amap = `https://maps.apple.com/?q=${mapQuery}`;
+                const baidu = `https://api.map.baidu.com/geocoder?address=${mapQuery}&output=html`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start border-b pb-2">
+                        <div>
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">${stay.country}</span>
+                            <h3 class="font-bold text-sm text-indigo-900">${stay.city}</h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${stay.nights} noche(s)</span>
+                            <p class="text-[10px] text-gray-500 mt-0.5">${stay.checkIn.split(' ')[0]} ➔ ${stay.checkOut.split(' ')[0]}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border">
+                        <div>
+                            <span class="text-[10px] text-gray-500 font-bold">Valor Total Estimado:</span>
+                            <p class="font-bold text-gray-800">$${stay.estTotal.toLocaleString('es-CL')}</p>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-gray-500 font-bold">Valor por Persona (x1):</span>
+                            <p class="font-bold text-indigo-700">$${stay.estPerPerson.toLocaleString('es-CL')}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div>
+                            <label class="font-bold text-gray-700 text-[11px] block">Nombre del Hotel / Hospedaje:</label>
+                            <input type="text" placeholder="Ej: Grand Central Hotel" value="${hotelName}" oninput="updateStayField('${stay.id}', 'hotelName', this.value)" class="w-full p-1.5 border rounded bg-white font-medium outline-none focus:ring-1 focus:ring-indigo-600">
+                        </div>
+
+                        <div>
+                            <label class="font-bold text-gray-700 text-[11px] block">Dirección o Referencia:</label>
+                            <input type="text" placeholder="Ubicación o dirección" value="${exactAddress}" oninput="updateStayField('${stay.id}', 'exactAddress', this.value)" class="w-full p-1.5 border rounded bg-white font-medium outline-none focus:ring-1 focus:ring-indigo-600">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <div>
+                                <label class="font-bold text-emerald-800 text-[11px] block">Gasto Real Registrado ($):</label>
+                                <input type="number" placeholder="Ej: 240000" value="${userObj.realCost || ''}" oninput="updateStayField('${stay.id}', 'realCost', this.value)" class="w-full p-1.5 border border-emerald-300 rounded bg-emerald-50/50 font-bold text-emerald-900 outline-none">
+                            </div>
+                            <div class="flex flex-col justify-end">
+                                <span class="text-[10px] font-bold text-gray-500 mb-1">Abrir Mapa del Hotel:</span>
+                                <div class="flex gap-1.5">
+                                    <a href="${gmap}" target="_blank" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1.5 rounded flex items-center gap-0.5 shrink-0"><i data-lucide="map-pin" class="w-3 h-3"></i> Google</a>
+                                    ${isChina ? `<a href="${baidu}" target="_blank" class="bg-red-600 text-white text-[10px] font-bold px-2 py-1.5 rounded shrink-0">Baidu</a>` : ''}
+                                    <a href="${amap}" target="_blank" class="bg-gray-700 text-white text-[10px] font-bold px-2 py-1.5 rounded shrink-0">Apple</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('stays-total-est').innerText = `$${totalEstSum.toLocaleString('es-CL')}`;
+            document.getElementById('stays-total-real').innerText = `$${totalRealSum.toLocaleString('es-CL')}`;
+            lucide.createIcons();
+        }
+
+        function updateStayField(id, field, value) {
+            if (!staysUser[id]) staysUser[id] = {};
+            staysUser[id][field] = value;
+            localStorage.setItem('asiaStaysUser2026', JSON.stringify(staysUser));
+            
+            // Recalcular el total si cambia el gasto real
+            if (field === 'realCost') {
+                let totalRealSum = 0;
+                initialStaysData.forEach(s => {
+                    const r = parseInt(staysUser[s.id]?.realCost, 10) || 0;
+                    totalRealSum += r;
+                });
+                document.getElementById('stays-total-real').innerText = `$${totalRealSum.toLocaleString('es-CL')}`;
+            }
+        }
+
+        // --- PRESUPUESTO GLOBAL & FRASES ---
+        function openBudgetModal() {
+            let actEst = 0;
+            let actReal = 0;
+
+            itineraryData.forEach(day => {
+                day.activities.forEach(act => {
+                    actEst += parseCost(act.cost);
+                    const real = userDetails[act.id]?.realCost;
+                    if (real) actReal += parseInt(real, 10) || 0;
+                });
+            });
+
+            let stayEst = 0;
+            let stayReal = 0;
+
+            initialStaysData.forEach(s => {
+                stayEst += s.estTotal;
+                const r = parseInt(staysUser[s.id]?.realCost, 10) || 0;
+                stayReal += r;
+            });
+
+            document.getElementById('budget-act-est').innerText = `$${actEst.toLocaleString('es-CL')}`;
+            document.getElementById('budget-act-real').innerText = `$${actReal.toLocaleString('es-CL')}`;
+            document.getElementById('budget-stay-est').innerText = `$${stayEst.toLocaleString('es-CL')}`;
+            document.getElementById('budget-stay-real').innerText = `$${stayReal.toLocaleString('es-CL')}`;
+
+            const totalEst = actEst + stayEst;
+            const totalReal = actReal + stayReal;
+
+            document.getElementById('budget-total-est').innerText = `$${totalEst.toLocaleString('es-CL')}`;
+            document.getElementById('budget-total-real').innerText = `$${totalReal.toLocaleString('es-CL')}`;
+
+            document.getElementById('budget-modal').classList.remove('hidden');
+        }
+
+        function closeBudgetModal() {
+            document.getElementById('budget-modal').classList.add('hidden');
+        }
+
+        function openPhrasesModal() {
+            document.getElementById('phrases-modal').classList.remove('hidden');
+        }
+
+        function closePhrasesModal() {
+            document.getElementById('phrases-modal').classList.add('hidden');
+        }
+
+        // --- OTROS MODALES ---
         function openModal(id) {
             currentActivityId = id;
             const activity = getActivityById(id);
@@ -844,7 +1035,6 @@ def build_updated_html():
             tempPhotos = [];
         }
 
-        // --- MODAL CONVERSOR & TAX-FREE ---
         function openCalcModal() {
             const rates = JSON.parse(localStorage.getItem('asiaRates')) || { jpy: 6.3, cny: 130 };
             document.getElementById('rate-jpy').value = rates.jpy;
@@ -895,7 +1085,7 @@ def build_updated_html():
             }
         }
 
-        // --- MODAL BÓVEDA DIGITAL QR & DOCS ---
+        // --- BÓVEDA QR & DOCS ---
         function openVaultModal() {
             document.getElementById('vault-modal').classList.remove('hidden');
             renderVaultDocs();
@@ -984,115 +1174,6 @@ def build_updated_html():
             document.getElementById('image-viewer-modal').classList.add('hidden');
         }
 
-        // --- ESTADIAS ---
-        function openStaysModal() {
-            renderStays();
-            document.getElementById('stays-modal').classList.remove('hidden');
-        }
-
-        function closeStaysModal() {
-            document.getElementById('stays-modal').classList.add('hidden');
-        }
-
-        function renderStays() {
-            const container = document.getElementById('stays-container');
-            container.innerHTML = '';
-            
-            ['China', 'Japón'].forEach(country => {
-                const countryStays = staysData.filter(s => s.country === country);
-                
-                const countryTitle = document.createElement('h3');
-                countryTitle.className = `font-bold text-sm px-2 py-1 rounded mt-4 first:mt-0 ${country === 'China' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`;
-                countryTitle.innerText = `Estadías en ${country}`;
-                container.appendChild(countryTitle);
-                
-                countryStays.forEach(stay => {
-                    const data = userStaysData[stay.id] || {};
-                    const estFormatted = `$${stay.estTotalPerson.toLocaleString('es-CL')}`;
-                    
-                    const stayDiv = document.createElement('div');
-                    stayDiv.className = "bg-white p-3 rounded-xl border border-gray-200 shadow-sm space-y-2 text-sm";
-                    stayDiv.innerHTML = `
-                        <div class="flex justify-between items-start border-b pb-2">
-                            <div>
-                                <h4 class="font-bold text-gray-800 flex items-center gap-1">
-                                    <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i> ${stay.city} 
-                                    <span class="text-xs font-normal text-gray-500 bg-gray-100 px-1 rounded">${stay.nights} noche(s)</span>
-                                </h4>
-                                <p class="text-xs text-gray-500 mt-1">${stay.checkIn} ➔ ${stay.checkOut}</p>
-                                <p class="text-[10px] text-gray-400 mt-0.5">Ref: ${stay.refLocation || 'Por definir'}</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="block text-[10px] font-bold text-gray-400 uppercase">Costo Est. (x1)</span>
-                                <span class="font-bold text-gray-700">${estFormatted}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-2 pt-1">
-                            <div>
-                                <label class="block text-[11px] font-bold text-asia-indigo mb-1">Nombre / Dirección Exacta / Link Google Maps</label>
-                                <input type="text" id="loc-${stay.id}" placeholder="Ej: Hotel MyStays / Link Maps..." value="${data.exactLocation || ''}" onchange="saveStay('${stay.id}')" class="w-full p-2 text-xs bg-gray-50 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div class="flex items-center justify-between gap-3 bg-blue-50/50 p-2 rounded-lg border border-blue-100">
-                                <label class="text-[11px] font-bold text-blue-900 w-1/2">Gasto Real (Por persona) $</label>
-                                <input type="number" id="cost-${stay.id}" placeholder="Ej: ${stay.estTotalPerson}" value="${data.realCost || ''}" onchange="saveStay('${stay.id}')" class="w-1/2 p-1.5 text-sm font-bold text-right bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none">
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(stayDiv);
-                });
-            });
-            lucide.createIcons();
-        }
-
-        function saveStay(id) {
-            const exactLocation = document.getElementById(`loc-${id}`).value;
-            const realCost = document.getElementById(`cost-${id}`).value;
-            
-            if (!userStaysData[id]) userStaysData[id] = {};
-            userStaysData[id].exactLocation = exactLocation;
-            userStaysData[id].realCost = realCost;
-            
-            localStorage.setItem('asiaTripStaysData2026', JSON.stringify(userStaysData));
-        }
-
-        // --- PRESUPUESTO & FRASES ---
-        function openBudgetModal() {
-            let totalEst = 0;
-            let totalReal = 0;
-
-            itineraryData.forEach(day => {
-                day.activities.forEach(act => {
-                    totalEst += parseCost(act.cost);
-                    const real = userDetails[act.id]?.realCost;
-                    if (real) totalReal += parseInt(real, 10) || 0;
-                });
-            });
-
-            // Añadir gastos de estadías al presupuesto
-            staysData.forEach(stay => {
-                totalEst += stay.estTotalPerson;
-                const real = userStaysData[stay.id]?.realCost;
-                if (real) totalReal += parseInt(real, 10) || 0;
-            });
-
-            document.getElementById('budget-total-est').innerText = `$${totalEst.toLocaleString('es-CL')}`;
-            document.getElementById('budget-total-real').innerText = `$${totalReal.toLocaleString('es-CL')}`;
-            document.getElementById('budget-modal').classList.remove('hidden');
-        }
-
-        function closeBudgetModal() {
-            document.getElementById('budget-modal').classList.add('hidden');
-        }
-
-        function openPhrasesModal() {
-            document.getElementById('phrases-modal').classList.remove('hidden');
-        }
-
-        function closePhrasesModal() {
-            document.getElementById('phrases-modal').classList.add('hidden');
-        }
-
         // --- FOTOS E INDEXEDDB ACTIVIDADES ---
         function handlePhotoUpload(e) {
             const file = e.target.files[0];
@@ -1164,8 +1245,8 @@ def build_updated_html():
             const exportObject = {
                 checked: checkedItems,
                 details: userDetails,
-                rates: JSON.parse(localStorage.getItem('asiaRates')),
-                stays: userStaysData
+                stays: staysUser,
+                rates: JSON.parse(localStorage.getItem('asiaRates'))
             };
             const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1185,16 +1266,15 @@ def build_updated_html():
                     const data = JSON.parse(evt.target.result);
                     if (data.checked) localStorage.setItem('asiaTripChecked2026', JSON.stringify(data.checked));
                     if (data.details) localStorage.setItem('asiaTripDetails2026', JSON.stringify(data.details));
+                    if (data.stays) localStorage.setItem('asiaStaysUser2026', JSON.stringify(data.stays));
                     if (data.rates) localStorage.setItem('asiaRates', JSON.stringify(data.rates));
-                    if (data.stays) {
-                        localStorage.setItem('asiaTripStaysData2026', JSON.stringify(data.stays));
-                        userStaysData = data.stays;
-                    }
                     
                     checkedItems = data.checked || {};
                     userDetails = data.details || {};
+                    staysUser = data.stays || {};
+
                     renderApp();
-                    alert("¡Datos e itinerario importados exitosamente!");
+                    alert("¡Datos, estadías e itinerario importados exitosamente!");
                 } catch(err) {
                     alert("Error al leer el archivo de respaldo.");
                 }
@@ -1203,11 +1283,11 @@ def build_updated_html():
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            if(confirm('¿Seguro que deseas borrar todas las marcas, notas y ubicaciones?')) {
+            if(confirm('¿Seguro que deseas borrar todas las marcas, notas y registros de estadías?')) {
                 localStorage.clear();
                 checkedItems = {};
                 userDetails = {};
-                userStaysData = {};
+                staysUser = {};
                 renderApp();
             }
         });
@@ -1215,9 +1295,4 @@ def build_updated_html():
         window.addEventListener('DOMContentLoaded', renderApp);
     </script>
 </body>
-</html>"""
-
-    with open("/mnt/data/app_viaje_asia.html", "w", encoding="utf-8") as f:
-        f.write(original_html)
-
-build_updated_html()
+</html>
