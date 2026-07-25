@@ -44,7 +44,7 @@
 </head>
 <body class="text-asia-ink font-sans pb-24">
 
-    <!-- Header Fijo -->
+    <!-- Header Fijo Superior -->
     <header class="sticky top-0 z-40 bg-asia-paper/95 backdrop-blur shadow-sm border-b-2 border-asia-red px-4 py-4">
         <div class="max-w-3xl mx-auto flex flex-col gap-3">
             <div class="flex justify-between items-center">
@@ -137,7 +137,7 @@
         };
         dbRequest.onsuccess = (e) => db = e.target.result;
 
-        // --- DATOS DEL ITINERARIO ---
+        // --- DATOS DEL ITINERARIO COMPLETOS ---
         const itineraryData = [
             {
                 date: "24/08/2026",
@@ -161,6 +161,203 @@
                     { id: "25-7", time: "17:15", city: "SHANGHAI", title: "Calle comercial", location: "Nanjing Road", cost: "$0", type: "ShoppingBag" },
                     { id: "25-8", time: "19:00", city: "SHANGHAI", title: "Atardecer skyline", location: "The Bund", cost: "$0", type: "Camera" },
                     { id: "25-9", time: "20:00", city: "SHANGHAI", title: "Cena", location: "Jia Jia Tang Bao", cost: "$20.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "26/08/2026",
+                activities: [
+                    { id: "26-1", time: "09:00", city: "SHANGHAI", title: "Visita al distrito financiero", location: "Lujiazui", cost: "$0", type: "Camera" },
+                    { id: "26-2", time: "09:30", city: "SHANGHAI", title: "Mirador de Shanghai Tower", location: "Shanghai Tower", cost: "$23.400", type: "Camera" },
+                    { id: "26-3", time: "11:30", city: "SHANGHAI", title: "Paseo entre rascacielos", location: "Jin Mao Tower", cost: "$0", type: "Camera" },
+                    { id: "26-4", time: "12:00", city: "SHANGHAI", title: "Visita a la Apple Store", location: "Apple Store Pudong", cost: "$0", type: "ShoppingBag" },
+                    { id: "26-5", time: "13:00", city: "SHANGHAI", title: "Almuerzo", location: "IFC Mall", cost: "$18.000", type: "Utensils" },
+                    { id: "26-6", time: "14:30", city: "SHANGHAI", title: "Visita al Museo de Astronomía", location: "Astronomy Museum", cost: "$3.900", type: "Camera" },
+                    { id: "26-7", time: "17:00", city: "SHANGHAI", title: "Paseo junto al río", location: "Riverside Promenade", cost: "$0", type: "Camera" },
+                    { id: "26-8", time: "19:30", city: "SHANGHAI", title: "Cena (Hot Pot)", location: "Haidilao", cost: "$28.000", type: "Utensils" },
+                    { id: "26-9", time: "21:00", city: "SHANGHAI", title: "Rooftop con vista panorámica", location: "Flair / POP Bar", cost: "$20.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "27/08/2026",
+                activities: [
+                    { id: "27-1", time: "08:30", city: "SHANGHAI", title: "Visita al Jade Buddha Temple", location: "Jade Buddha Temple", cost: "$2.600", type: "Camera" },
+                    { id: "27-2", time: "10:30", city: "SHANGHAI", title: "Distrito de arte contemporáneo", location: "M50 Creative Park", cost: "$0", type: "Camera" },
+                    { id: "27-3", time: "12:00", city: "SHANGHAI", title: "Paseo por Suzhou Creek", location: "Suzhou Creek", cost: "$0", type: "Camera" },
+                    { id: "27-4", time: "13:00", city: "SHANGHAI", title: "Almuerzo", location: "Cafés de Suzhou Creek", cost: "$15.000", type: "Utensils" },
+                    { id: "27-5", time: "14:30", city: "SHANGHAI", title: "Recorrido por Rockbund", location: "Rockbund", cost: "$0", type: "Camera" },
+                    { id: "27-6", time: "16:30", city: "SHANGHAI", title: "Paseo por North Bund", location: "North Bund", cost: "$0", type: "Camera" },
+                    { id: "27-7", time: "19:30", city: "SHANGHAI", title: "Cena de alta gastronomía", location: "Hakkasan", cost: "$60.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "28/08/2026",
+                activities: [
+                    { id: "28-1", time: "08:30", city: "SHANGHAI", title: "Visita al Longhua Temple", location: "Longhua Temple", cost: "$2.600", type: "Camera" },
+                    { id: "28-2", time: "10:30", city: "SHANGHAI", title: "Traslado estación Hongqiao", location: "Hongqiao Station", cost: "$0", type: "MapPin" },
+                    { id: "28-3", time: "12:30", city: "HANGZHOU", title: "Llegada y hotel", location: "Hangzhou East Station", cost: "$0", type: "Train" },
+                    { id: "28-4", time: "14:30", city: "HANGZHOU", title: "Paseo por el lago", location: "West Lake", cost: "$0", type: "Camera" },
+                    { id: "28-5", time: "15:30", city: "HANGZHOU", title: "Paseo en barco tradicional", location: "West Lake Cruise", cost: "$8.000", type: "Camera" },
+                    { id: "28-6", time: "17:00", city: "HANGZHOU", title: "Visita pagoda histórica", location: "Leifeng Pagoda", cost: "$7.000", type: "Camera" },
+                    { id: "28-7", time: "18:30", city: "HANGZHOU", title: "Atardecer en senderos", location: "Su Causeway", cost: "$0", type: "Camera" },
+                    { id: "28-8", time: "20:00", city: "HANGZHOU", title: "Cena gastronomía local", location: "Hubin / Lakeside", cost: "$20.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "29/08/2026",
+                activities: [
+                    { id: "29-1", time: "08:30", city: "HANGZHOU", title: "Templo budista Lingyin", location: "Lingyin Temple", cost: "$9.000", type: "Camera" },
+                    { id: "29-2", time: "10:30", city: "HANGZHOU", title: "Formaciones rocosas", location: "Feilai Peak", cost: "$9.000", type: "Camera" },
+                    { id: "29-3", time: "12:30", city: "HANGZHOU", title: "Almuerzo tradicional", location: "Restaurante local", cost: "$15.000", type: "Utensils" },
+                    { id: "29-4", time: "14:00", city: "HANGZHOU", title: "Plantaciones té verde", location: "Longjing Village", cost: "$0", type: "Camera" },
+                    { id: "29-5", time: "15:00", city: "HANGZHOU", title: "Degustación té Longjing", location: "Casa de té", cost: "$6.000", type: "Coffee" },
+                    { id: "29-6", time: "16:30", city: "HANGZHOU", title: "Jardín tradicional", location: "Mengxiyuan", cost: "$0", type: "Camera" },
+                    { id: "29-7", time: "18:00", city: "HANGZHOU", title: "Calle histórica", location: "Hefang Street", cost: "$0", type: "ShoppingBag" },
+                    { id: "29-8", time: "19:30", city: "HANGZHOU", title: "Cena y paseo nocturno", location: "Hefang Street", cost: "$20.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "30/08/2026",
+                activities: [
+                    { id: "30-1", time: "06:30", city: "HANGZHOU", title: "Check-out hotel", location: "Hotel", cost: "$0", type: "Hotel" },
+                    { id: "30-2", time: "07:00", city: "HANGZHOU", title: "Traslado a estación", location: "Hangzhou East", cost: "$0", type: "MapPin" },
+                    { id: "30-3", time: "09:00", city: "SUZHOU", title: "Llegada desde Hangzhou", location: "Suzhou Station", cost: "$0", type: "Train" },
+                    { id: "30-4", time: "09:30", city: "SUZHOU", title: "Jardín clásico", location: "Humble Administrator's", cost: "$7.000", type: "Camera" },
+                    { id: "30-5", time: "11:15", city: "SUZHOU", title: "Paseo calle histórica", location: "Pingjiang Road", cost: "$0", type: "Camera" },
+                    { id: "30-6", time: "12:30", city: "SUZHOU", title: "Almuerzo local", location: "Pingjiang Road", cost: "$15.000", type: "Utensils" },
+                    { id: "30-7", time: "13:45", city: "SUZHOU", title: "Templo histórico", location: "Hanshan Temple", cost: "$3.000", type: "Camera" },
+                    { id: "30-8", time: "15:15", city: "SUZHOU", title: "Zona de canales", location: "Shantang Street", cost: "$0", type: "Camera" },
+                    { id: "30-9", time: "16:30", city: "SUZHOU", title: "Paseo en barco", location: "Canal Boat", cost: "$7.000", type: "Camera" },
+                    { id: "30-10", time: "17:30", city: "SUZHOU", title: "Traslado estación", location: "Suzhou Station", cost: "$5.000", type: "MapPin" },
+                    { id: "30-11", time: "18:40", city: "SHANGHAI", title: "Llegada a Shanghái", location: "Hongqiao Station", cost: "$0", type: "Train" },
+                    { id: "30-12", time: "19:00", city: "SHANGHAI", title: "Traslado y Check-in", location: "Hotel PVG", cost: "$18.000", type: "Hotel" },
+                    { id: "30-13", time: "20:30", city: "SHANGHAI", title: "Cena", location: "Cerca Hotel", cost: "$15.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "31/08/2026",
+                activities: [
+                    { id: "31-1", time: "06:30", city: "SHANGHAI", title: "Check-out y aeropuerto", location: "Pudong PVG", cost: "$0", type: "Hotel" },
+                    { id: "31-2", time: "09:00", city: "SHANGHAI", title: "Vuelo a Tokio", location: "Aeropuerto PVG", cost: "$0", type: "Plane" },
+                    { id: "31-3", time: "14:30", city: "TOKYO", title: "Vuelo a Komatsu", location: "Haneda HND", cost: "$0", type: "Plane" },
+                    { id: "31-4", time: "16:00", city: "KOMATSU", title: "Llegada Komatsu", location: "Komatsu KMQ", cost: "$0", type: "Plane" },
+                    { id: "31-5", time: "16:30", city: "KOMATSU", title: "Traslado a Kanazawa", location: "Bus Limousine", cost: "$2.500", type: "MapPin" },
+                    { id: "31-6", time: "17:30", city: "KANAZAWA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
+                    { id: "31-7", time: "19:00", city: "KANAZAWA", title: "Cena", location: "Estación Kanazawa", cost: "$20.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "01/09/2026",
+                activities: [
+                    { id: "01-1", time: "08:30", city: "KANAZAWA", title: "Jardín Kenroku-en", location: "Kenroku-en", cost: "$2.000", type: "Camera" },
+                    { id: "01-2", time: "10:30", city: "KANAZAWA", title: "Castillo Kanazawa", location: "Castle Park", cost: "$0", type: "Camera" },
+                    { id: "01-3", time: "12:30", city: "KANAZAWA", title: "Almuerzo mercado", location: "Mercado Omicho", cost: "$18.000", type: "Utensils" },
+                    { id: "01-4", time: "14:00", city: "KANAZAWA", title: "Museo Arte S.XXI", location: "21st Century Museum", cost: "$3.500", type: "Camera" },
+                    { id: "01-5", time: "15:45", city: "KANAZAWA", title: "Higashi Chaya", location: "Higashi Chaya", cost: "$0", type: "Camera" },
+                    { id: "01-6", time: "16:45", city: "KANAZAWA", title: "Traslado a Toyama", location: "Shinkansen", cost: "$0", type: "Train" },
+                    { id: "01-7", time: "17:30", city: "TOYAMA", title: "Festival Kaze no Bon", location: "Yatsuo", cost: "$0", type: "Camera" },
+                    { id: "01-8", time: "22:00", city: "TOYAMA", title: "Regreso a Kanazawa", location: "Shinkansen", cost: "$0", type: "Train" }
+                ]
+            },
+            {
+                date: "02/09/2026",
+                activities: [
+                    { id: "02-1", time: "08:00", city: "KANAZAWA", title: "Check-out y Salida", location: "Nohi Bus", cost: "$0", type: "MapPin" },
+                    { id: "02-2", time: "10:00", city: "SHIRAKAWA-GO", title: "Pueblo histórico", location: "Shirakawa-go", cost: "$0", type: "Camera" },
+                    { id: "02-3", time: "12:30", city: "SHIRAKAWA-GO", title: "Almuerzo", location: "Local", cost: "$15.000", type: "Utensils" },
+                    { id: "02-4", time: "14:00", city: "SHIRAKAWA-GO", title: "Bus a Takayama", location: "Nohi Bus", cost: "$0", type: "MapPin" },
+                    { id: "02-5", time: "15:00", city: "TAKAYAMA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
+                    { id: "02-6", time: "16:00", city: "TAKAYAMA", title: "Sanmachi Suji", location: "Casco Histórico", cost: "$0", type: "Camera" },
+                    { id: "02-7", time: "19:00", city: "TAKAYAMA", title: "Cena carne Hida", location: "Local", cost: "$25.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "03/09/2026",
+                activities: [
+                    { id: "03-1", time: "08:00", city: "TAKAYAMA", title: "Mercado Miyagawa", location: "Morning Market", cost: "$0", type: "ShoppingBag" },
+                    { id: "03-2", time: "09:30", city: "TAKAYAMA", title: "Takayama Jinya", location: "Takayama Jinya", cost: "$3.000", type: "Camera" },
+                    { id: "03-3", time: "11:00", city: "TAKAYAMA", title: "Paseo Sanmachi", location: "Old Town", cost: "$0", type: "Camera" },
+                    { id: "03-4", time: "12:30", city: "TAKAYAMA", title: "Almuerzo", location: "Local", cost: "$18.000", type: "Utensils" },
+                    { id: "03-5", time: "14:00", city: "TAKAYAMA", title: "Baño termal (Onsen)", location: "Green Hotel", cost: "$8.000", type: "Camera" },
+                    { id: "03-6", time: "16:30", city: "TAKAYAMA", title: "Traslado Matsumoto", location: "JR Hida", cost: "$0", type: "Train" },
+                    { id: "03-7", time: "19:30", city: "MATSUMOTO", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" }
+                ]
+            },
+            {
+                date: "04/09/2026",
+                activities: [
+                    { id: "04-1", time: "08:30", city: "MATSUMOTO", title: "Castillo Matsumoto", location: "Matsumoto Castle", cost: "$4.000", type: "Camera" },
+                    { id: "04-2", time: "10:30", city: "MATSUMOTO", title: "Nawate-dori", location: "Nawate Street", cost: "$0", type: "Camera" },
+                    { id: "04-3", time: "11:30", city: "MATSUMOTO", title: "Nakamachi", location: "Nakamachi Street", cost: "$0", type: "Camera" },
+                    { id: "04-4", time: "12:30", city: "MATSUMOTO", title: "Almuerzo", location: "Local", cost: "$18.000", type: "Utensils" },
+                    { id: "04-5", time: "14:00", city: "MATSUMOTO", title: "Traslado Kawaguchiko", location: "JR + Fujikyuko", cost: "$0", type: "Train" },
+                    { id: "04-6", time: "17:30", city: "KAWAGUCHIKO", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
+                    { id: "04-7", time: "18:30", city: "KAWAGUCHIKO", title: "Atardecer", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
+                    { id: "04-8", time: "19:30", city: "KAWAGUCHIKO", title: "Cena", location: "Local", cost: "$20.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "05/09/2026",
+                activities: [
+                    { id: "05-1", time: "07:30", city: "KAWAGUCHIKO", title: "Chureito Pagoda", location: "Arakurayama", cost: "$0", type: "Camera" },
+                    { id: "05-2", time: "10:00", city: "KAWAGUCHIKO", title: "Oishi Park", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
+                    { id: "05-3", time: "11:30", city: "KAWAGUCHIKO", title: "Museo de Música", location: "Music Forest", cost: "$12.000", type: "Camera" },
+                    { id: "05-4", time: "13:30", city: "KAWAGUCHIKO", title: "Almuerzo", location: "Local", cost: "$18.000", type: "Utensils" },
+                    { id: "05-5", time: "15:00", city: "KAWAGUCHIKO", title: "Teleférico Mt. Fuji", location: "Ropeway", cost: "$6.000", type: "Camera" },
+                    { id: "05-6", time: "17:00", city: "KAWAGUCHIKO", title: "Ribera del lago", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
+                    { id: "05-7", time: "19:00", city: "KAWAGUCHIKO", title: "Cena", location: "Local", cost: "$20.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "06/09/2026",
+                activities: [
+                    { id: "06-1", time: "09:00", city: "KAWAGUCHIKO", title: "Traslado a Tokio", location: "Fujikyuko + JR", cost: "$0", type: "Train" },
+                    { id: "06-2", time: "12:30", city: "TOKYO", title: "Check-in", location: "Hotel Shimbashi", cost: "$0", type: "Hotel" },
+                    { id: "06-3", time: "14:00", city: "TOKYO", title: "Jardines Palacio", location: "East Gardens", cost: "$0", type: "Camera" },
+                    { id: "06-4", time: "16:00", city: "TOKYO", title: "Marunouchi", location: "Marunouchi", cost: "$0", type: "Camera" },
+                    { id: "06-5", time: "18:00", city: "TOKYO", title: "Cóctel vista panorámica", location: "Sky Gallery", cost: "$20.000", type: "Coffee" },
+                    { id: "06-6", time: "20:00", city: "TOKYO", title: "Cena", location: "Akasaka", cost: "$22.000", type: "Utensils" }
+                ]
+            },
+            {
+                date: "07/09/2026",
+                activities: [
+                    { id: "07-1", time: "09:30", city: "TOKYO", title: "Ropa", location: "UNIQLO Ginza", cost: "$0", type: "ShoppingBag" },
+                    { id: "07-2", time: "10:45", city: "TOKYO", title: "Ropa", location: "GU Ginza", cost: "$0", type: "ShoppingBag" },
+                    { id: "07-3", time: "11:30", city: "TOKYO", title: "Hogar y papelería", location: "MUJI Ginza", cost: "$0", type: "ShoppingBag" },
+                    { id: "07-4", time: "12:30", city: "TOKYO", title: "Almuerzo", location: "Ginza", cost: "$18.000", type: "Utensils" },
+                    { id: "07-5", time: "13:30", city: "TOKYO", title: "Cosmética", location: "Matsumoto Kiyoshi", cost: "$0", type: "ShoppingBag" },
+                    { id: "07-6", time: "14:30", city: "TOKYO", title: "Recuerdos", location: "Loft Ginza", cost: "$0", type: "ShoppingBag" },
+                    { id: "07-7", time: "15:30", city: "TOKYO", title: "Snacks Don Quijote", location: "Donki", cost: "$0", type: "ShoppingBag" },
+                    { id: "07-8", time: "17:00", city: "TOKYO", title: "Moda japonesa", location: "Ginza Six", cost: "$0", type: "ShoppingBag" },
+                    { id: "07-9", time: "19:00", city: "TOKYO", title: "Organizar equipaje", location: "Hotel", cost: "$0", type: "Hotel" }
+                ]
+            },
+            {
+                date: "08/09/2026",
+                activities: [
+                    { id: "08-1", time: "09:30", city: "TOKYO", title: "Kagurazaka", location: "Kagurazaka", cost: "$0", type: "Camera" },
+                    { id: "08-2", time: "10:30", city: "TOKYO", title: "Cafetería tradicional", location: "Kagurazaka", cost: "$8.000", type: "Coffee" },
+                    { id: "08-3", time: "11:30", city: "TOKYO", title: "Callejones históricos", location: "Kagurazaka", cost: "$0", type: "Camera" },
+                    { id: "08-4", time: "13:00", city: "TOKYO", title: "Almuerzo", location: "Kagurazaka", cost: "$18.000", type: "Utensils" },
+                    { id: "08-5", time: "14:30", city: "YOKOHAMA", title: "Traslado Yokohama", location: "JR Line", cost: "$0", type: "Train" },
+                    { id: "08-6", time: "15:30", city: "YOKOHAMA", title: "Red Brick Warehouse", location: "Minato Mirai", cost: "$0", type: "Camera" },
+                    { id: "08-7", time: "17:00", city: "YOKOHAMA", title: "Osanbashi Pier", location: "Minato Mirai", cost: "$0", type: "Camera" },
+                    { id: "08-8", time: "18:15", city: "YOKOHAMA", title: "Atardecer bahía", location: "Minato Mirai", cost: "$0", type: "Camera" },
+                    { id: "08-9", time: "19:00", city: "YOKOHAMA", title: "Noria Cosmo Clock", location: "Cosmo World", cost: "$6.000", type: "Camera" },
+                    { id: "08-10", time: "20:00", city: "YOKOHAMA", title: "Cena", location: "Chinatown", cost: "$22.000", type: "Utensils" },
+                    { id: "08-11", time: "22:00", city: "TOKYO", title: "Regreso hotel", location: "Shimbashi", cost: "$3.000", type: "Train" }
+                ]
+            },
+            {
+                date: "09/09/2026",
+                activities: [
+                    { id: "09-1", time: "09:30", city: "TOKYO", title: "Azabudai Hills", location: "Azabudai Hills", cost: "$0", type: "Camera" },
+                    { id: "09-2", time: "11:00", city: "TOKYO", title: "Templo Zojo-ji", location: "Zojo-ji", cost: "$0", type: "Camera" },
+                    { id: "09-3", time: "13:00", city: "TOKYO", title: "Almuerzo", location: "Roppongi", cost: "$20.000", type: "Utensils" },
+                    { id: "09-4", time: "14:30", city: "TOKYO", title: "Mirador", location: "Tokyo City View", cost: "$15.000", type: "Camera" },
+                    { id: "09-5", time: "16:45", city: "TOKYO", title: "Shibuya", location: "Shibuya", cost: "$0", type: "Camera" },
+                    { id: "09-6", time: "17:45", city: "TOKYO", title: "Atardecer", location: "Shibuya Sky", cost: "$18.000", type: "Camera" },
+                    { id: "09-7", time: "20:00", city: "TOKYO", title: "Cena de despedida", location: "Shibuya", cost: "$25.000", type: "Utensils" }
                 ]
             }
         ];
@@ -232,7 +429,7 @@
                                         <i data-lucide="${getLucideIconName(activity.type)}" class="${getIconColorClass(activity.type)} w-3.5 h-3.5"></i>
                                         <span>${activity.location}</span>
                                     </div>
-                                    ${activity.cost !== "$0" ? `<span class="text-gray-400">| Est: ${activity.cost}</span>` : ''}
+                                    ${activity.cost !== "$0" && activity.cost !== "$O" ? `<span class="text-gray-400">| Est: ${activity.cost}</span>` : ''}
                                     ${details.realCost ? `<span class="font-bold text-asia-red bg-red-50 px-1 rounded">Gasto: $${details.realCost}</span>` : ''}
                                 </div>
 
