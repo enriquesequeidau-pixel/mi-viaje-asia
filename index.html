@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viaje a Asia 2026 - Master App PWA</title>
     
     <!-- Meta tags PWA -->
@@ -10,6 +10,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#c62828">
+    <meta name="description" content="Itinerario, gastos, estadías y transportes para Asia 2026.">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./icon.svg">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -82,6 +85,9 @@
                 <button onclick="openStaysModal()" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="bed" class="w-3.5 h-3.5 text-indigo-200"></i> Estadías
                 </button>
+                <button onclick="openTransportModal()" class="bg-sky-700 hover:bg-sky-800 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
+                    <i data-lucide="bus-front" class="w-3.5 h-3.5 text-sky-200"></i> Buses y trenes
+                </button>
                 <button onclick="openCalcModal()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="coins" class="w-3.5 h-3.5 text-yellow-300"></i> Divisas & Tax-Free
                 </button>
@@ -93,6 +99,9 @@
                 </button>
                 <button onclick="openPhrasesModal()" class="bg-asia-gold/20 text-yellow-900 border border-asia-gold/40 px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="languages" class="w-3.5 h-3.5"></i> Frases
+                </button>
+                <button id="install-app-btn" onclick="installApp()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
+                    <i data-lucide="download" class="w-3.5 h-3.5 text-sky-200"></i> Instalar app
                 </button>
                 <button onclick="exportData()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium min-h-10">
                     <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar
@@ -249,6 +258,28 @@
         </div>
     </div>
 
+    <!-- MODAL BUSES Y TRENES -->
+    <div id="transport-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
+        <div class="bg-asia-paper rounded-t-2xl md:rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto card-shadow border border-sky-200 flex flex-col">
+            <div class="bg-sky-900 text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="bus-front" class="w-5 h-5 text-sky-200"></i>
+                    <div>
+                        <h2 class="font-serif font-bold text-base md:text-lg">Buses y trenes</h2>
+                        <p class="text-[11px] text-sky-200">Puntos para tomar y llegar</p>
+                    </div>
+                </div>
+                <button onclick="closeTransportModal()" class="text-sky-200 hover:text-white p-1" aria-label="Cerrar transporte">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="transport-list-container" class="p-4 space-y-3"></div>
+            <div class="p-4 bg-gray-100 border-t border-gray-200 flex justify-end rounded-b-2xl">
+                <button onclick="closeTransportModal()" class="px-5 py-2.5 text-xs font-bold bg-sky-800 text-white rounded-lg shadow min-h-10">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL HERRAMIENTAS: DIVISAS Y TAX-FREE -->
     <div id="calc-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-asia-paper rounded-2xl max-w-md w-full p-5 card-shadow border border-asia-gold/30 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -381,11 +412,19 @@
                     </div>
                 </div>
 
+                <div class="p-3 bg-sky-50 rounded-xl space-y-1">
+                    <span class="text-xs font-bold text-sky-800 uppercase tracking-wider">🚌 Buses y trenes</span>
+                    <div class="flex justify-between text-xs">
+                        <span>Estimado: <strong id="budget-transport-est">$0</strong></span>
+                        <span>Real: <strong id="budget-transport-real" class="text-sky-700">$0</strong></span>
+                    </div>
+                </div>
+
                 <div class="pt-2 border-t space-y-2">
                     <div class="p-3 bg-red-50 rounded-xl border border-red-100 flex justify-between items-center">
                         <div>
                             <p class="text-xs font-bold text-asia-red">TOTAL ESTIMADO GENERAL</p>
-                            <p class="text-xs text-gray-500">Actividades + Hoteles (por Persona)</p>
+                            <p class="text-xs text-gray-500">Actividades + hoteles + transporte</p>
                         </div>
                         <span id="budget-total-est" class="text-base font-bold text-gray-800">$0</span>
                     </div>
@@ -597,8 +636,8 @@
             ]},
             { date: "28/08/2026", activities: [
                 { id: "28-1", time: "08:30", city: "SHANGHAI", title: "Visita al Longhua Temple", location: "Longhua Temple", cost: "$2.600", type: "Camera" },
-                { id: "28-2", time: "10:30", city: "SHANGHAI", title: "Traslado estación Hongqiao", location: "Hongqiao Station", cost: "$0", type: "Train" },
-                { id: "28-3", time: "12:30", city: "HANGZHOU", title: "Llegada y hotel", location: "Hangzhou East Station", cost: "$0", type: "Train" },
+                { id: "28-2", time: "10:30", city: "SHANGHAI", title: "Tren a Hangzhou", location: "Shanghai Hongqiao Station", cost: "$20.000", type: "Train", transportFrom: "Shanghai Hongqiao Station", transportTo: "Hangzhou East Station", transportMode: "Tren", transportBudget: true },
+                { id: "28-3", time: "12:30", city: "HANGZHOU", title: "Llegada y hotel", location: "Hangzhou East Station", cost: "$0", type: "Train", transportFrom: "Hangzhou East Station", transportTo: "Hotel en Hangzhou", transportMode: "Taxi / metro" },
                 { id: "28-4", time: "14:30", city: "HANGZHOU", title: "Paseo por el lago", location: "West Lake", cost: "$0", type: "Camera" },
                 { id: "28-5", time: "15:30", city: "HANGZHOU", title: "Paseo en barco tradicional", location: "West Lake Cruise", cost: "$8.000", type: "Camera" },
                 { id: "28-6", time: "17:00", city: "HANGZHOU", title: "Visita pagoda histórica", location: "Leifeng Pagoda", cost: "$7.000", type: "Camera" },
@@ -618,15 +657,15 @@
             { date: "30/08/2026", activities: [
                 { id: "30-1", time: "06:30", city: "HANGZHOU", title: "Check-out hotel", location: "Hotel", cost: "$0", type: "Hotel" },
                 { id: "30-2", time: "07:00", city: "HANGZHOU", title: "Traslado a estación", location: "Hangzhou East", cost: "$0", type: "Train" },
-                { id: "30-3", time: "09:00", city: "SUZHOU", title: "Llegada desde Hangzhou", location: "Suzhou Station", cost: "$0", type: "Train" },
+                { id: "30-3", time: "09:00", city: "SUZHOU", title: "Llegada desde Hangzhou", location: "Suzhou Station", cost: "$30.000", type: "Train", transportFrom: "Hangzhou East Station", transportTo: "Suzhou Station", transportMode: "Tren", transportBudget: true },
                 { id: "30-4", time: "09:30", city: "SUZHOU", title: "Jardín clásico", location: "Humble Administrator's", cost: "$7.000", type: "Camera" },
                 { id: "30-5", time: "11:15", city: "SUZHOU", title: "Paseo calle histórica", location: "Pingjiang Road", cost: "$0", type: "Camera" },
                 { id: "30-6", time: "12:30", city: "SUZHOU", title: "Almuerzo local", location: "Pingjiang Road", cost: "$15.000", type: "Utensils" },
                 { id: "30-7", time: "13:45", city: "SUZHOU", title: "Templo histórico", location: "Hanshan Temple", cost: "$3.000", type: "Camera" },
                 { id: "30-8", time: "15:15", city: "SUZHOU", title: "Zona de canales", location: "Shantang Street", cost: "$0", type: "Camera" },
                 { id: "30-9", time: "16:30", city: "SUZHOU", title: "Paseo en barco", location: "Canal Boat", cost: "$7.000", type: "Camera" },
-                { id: "30-10", time: "17:30", city: "SUZHOU", title: "Traslado estación", location: "Suzhou Station", cost: "$5.000", type: "Train" },
-                { id: "30-11", time: "18:40", city: "SHANGHAI", title: "Llegada a Shanghái", location: "Hongqiao Station", cost: "$0", type: "Train" },
+                { id: "30-10", time: "17:30", city: "SUZHOU", title: "Salida hacia Shanghái", location: "Suzhou Station", cost: "$20.000", type: "Train", transportFrom: "Suzhou Station", transportTo: "Shanghai Hongqiao Station", transportMode: "Tren", transportBudget: true },
+                { id: "30-11", time: "18:40", city: "SHANGHAI", title: "Llegada a Shanghái", location: "Shanghai Hongqiao Station", cost: "$0", type: "Train", transportFrom: "Suzhou Station", transportTo: "Shanghai Hongqiao Station", transportMode: "Tren" },
                 { id: "30-12", time: "19:00", city: "SHANGHAI", title: "Traslado y Check-in", location: "Hotel PVG", cost: "$18.000", type: "Hotel" },
                 { id: "30-13", time: "20:30", city: "SHANGHAI", title: "Cena", location: "Cerca Hotel", cost: "$15.000", type: "Utensils" }
             ]},
@@ -635,7 +674,7 @@
                 { id: "31-2", time: "09:00", city: "SHANGHAI", title: "Vuelo a Tokio", location: "Aeropuerto PVG", cost: "$0", type: "Plane" },
                 { id: "31-3", time: "14:30", city: "TOKYO", title: "Vuelo a Komatsu", location: "Haneda HND", cost: "$0", type: "Plane" },
                 { id: "31-4", time: "16:00", city: "KANAZAWA", title: "Llegada Komatsu", location: "Komatsu KMQ", cost: "$0", type: "Plane" },
-                { id: "31-5", time: "16:30", city: "KANAZAWA", title: "Traslado a Kanazawa", location: "Bus Limousine", cost: "$2.500", type: "Train" },
+                { id: "31-5", time: "16:30", city: "KANAZAWA", title: "Traslado a Kanazawa", location: "Bus Limousine", cost: "$0", type: "Train", transportFrom: "Komatsu KMQ", transportTo: "Kanazawa Station", transportMode: "Bus Limousine" },
                 { id: "31-6", time: "17:30", city: "KANAZAWA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
                 { id: "31-7", time: "19:00", city: "KANAZAWA", title: "Cena", location: "Estación Kanazawa", cost: "$20.000", type: "Utensils" }
             ]},
@@ -650,11 +689,11 @@
                 { id: "01-8", time: "22:00", city: "KANAZAWA", title: "Regreso a Kanazawa", location: "Shinkansen", cost: "$0", type: "Train" }
             ]},
             { date: "02/09/2026", activities: [
-                { id: "02-1", time: "08:00", city: "KANAZAWA", title: "Check-out y Salida", location: "Nohi Bus", cost: "$0", type: "Hotel" },
-                { id: "02-2", time: "10:00", city: "TAKAYAMA", title: "Pueblo histórico", location: "Shirakawa-go", cost: "$0", type: "Camera" },
+                { id: "02-1", time: "08:00", city: "KANAZAWA", title: "Check-out y salida", location: "Nohi Bus Center", cost: "$0", type: "Hotel" },
+                { id: "02-2", time: "10:00", city: "TAKAYAMA", title: "Bus a Shirakawa-go", location: "Shirakawa-go", cost: "$20.295", type: "Train", transportFrom: "Kanazawa", transportTo: "Shirakawa-go", transportMode: "Bus", transportBudget: true },
                 { id: "02-3", time: "12:30", city: "TAKAYAMA", title: "Almuerzo", location: "Shirakawa-go Local", cost: "$15.000", type: "Utensils" },
-                { id: "02-4", time: "14:00", city: "TAKAYAMA", title: "Bus a Takayama", location: "Nohi Bus", cost: "$0", type: "Train" },
-                { id: "02-5", time: "15:00", city: "TAKAYAMA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
+                { id: "02-4", time: "14:00", city: "TAKAYAMA", title: "Bus a Takayama", location: "Shirakawa-go", cost: "$15.785", type: "Train", transportFrom: "Shirakawa-go", transportTo: "Takayama Nohi Bus Center", transportMode: "Bus", transportBudget: true },
+                { id: "02-5", time: "15:00", city: "TAKAYAMA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel", transportFrom: "Takayama Nohi Bus Center", transportTo: "Hotel en Takayama", transportMode: "Taxi / caminata" },
                 { id: "02-6", time: "16:00", city: "TAKAYAMA", title: "Sanmachi Suji", location: "Casco Histórico", cost: "$0", type: "Camera" },
                 { id: "02-7", time: "19:00", city: "TAKAYAMA", title: "Cena carne Hida", location: "Takayama Local", cost: "$25.000", type: "Utensils" }
             ]},
@@ -664,16 +703,16 @@
                 { id: "03-3", time: "11:00", city: "TAKAYAMA", title: "Paseo Sanmachi", location: "Old Town", cost: "$0", type: "Camera" },
                 { id: "03-4", time: "12:30", city: "TAKAYAMA", title: "Almuerzo", location: "Takayama Local", cost: "$18.000", type: "Utensils" },
                 { id: "03-5", time: "14:00", city: "TAKAYAMA", title: "Baño termal (Onsen)", location: "Green Hotel", cost: "$8.000", type: "Hotel" },
-                { id: "03-6", time: "16:30", city: "MATSUMOTO", title: "Traslado Matsumoto", location: "JR Hida", cost: "$0", type: "Train" },
-                { id: "03-7", time: "19:30", city: "MATSUMOTO", title: "Check-in", location: "Hotel Matsumoto", cost: "$0", type: "Hotel" }
+                { id: "03-6", time: "16:30", city: "MATSUMOTO", title: "Traslado Matsumoto", location: "JR Hida / Nohi Bus", cost: "$30.000", type: "Train", transportFrom: "Takayama Nohi Bus Center", transportTo: "Matsumoto Bus Terminal", transportMode: "Bus", transportBudget: true },
+                { id: "03-7", time: "19:30", city: "MATSUMOTO", title: "Check-in", location: "Hotel Matsumoto", cost: "$0", type: "Hotel", transportFrom: "Matsumoto Bus Terminal", transportTo: "Hotel en Matsumoto", transportMode: "Taxi / caminata" }
             ]},
             { date: "04/09/2026", activities: [
                 { id: "04-1", time: "08:30", city: "MATSUMOTO", title: "Castillo Matsumoto", location: "Matsumoto Castle", cost: "$4.000", type: "Camera" },
                 { id: "04-2", time: "10:30", city: "MATSUMOTO", title: "Nawate-dori", location: "Nawate Street", cost: "$0", type: "Camera" },
                 { id: "04-3", time: "11:30", city: "MATSUMOTO", title: "Nakamachi", location: "Nakamachi Street", cost: "$0", type: "Camera" },
                 { id: "04-4", time: "12:30", city: "MATSUMOTO", title: "Almuerzo", location: "Matsumoto Local", cost: "$18.000", type: "Utensils" },
-                { id: "04-5", time: "14:00", city: "KAWAGUCHIKO", title: "Traslado Kawaguchiko", location: "JR Fujikyuko", cost: "$0", type: "Train" },
-                { id: "04-6", time: "17:30", city: "KAWAGUCHIKO", title: "Check-in", location: "Hotel Kawaguchiko", cost: "$0", type: "Hotel" },
+                { id: "04-5", time: "14:00", city: "KAWAGUCHIKO", title: "Traslado Kawaguchiko", location: "Bus / JR Fujikyuko", cost: "$30.000", type: "Train", transportFrom: "Matsumoto", transportTo: "Kawaguchiko", transportMode: "Bus / tren", transportBudget: true },
+                { id: "04-6", time: "17:30", city: "KAWAGUCHIKO", title: "Check-in", location: "Hotel Kawaguchiko", cost: "$0", type: "Hotel", transportFrom: "Kawaguchiko Station", transportTo: "Hotel en Kawaguchiko", transportMode: "Taxi / caminata" },
                 { id: "04-7", time: "18:30", city: "KAWAGUCHIKO", title: "Atardecer", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
                 { id: "04-8", time: "19:30", city: "KAWAGUCHIKO", title: "Cena", location: "Kawaguchiko Local", cost: "$20.000", type: "Utensils" }
             ]},
@@ -687,7 +726,7 @@
                 { id: "05-7", time: "19:00", city: "KAWAGUCHIKO", title: "Cena", location: "Kawaguchiko Local", cost: "$20.000", type: "Utensils" }
             ]},
             { date: "06/09/2026", activities: [
-                { id: "06-1", time: "09:00", city: "TOKYO", title: "Traslado a Tokio", location: "Fujikyuko JR", cost: "$0", type: "Train" },
+                { id: "06-1", time: "09:00", city: "TOKYO", title: "Traslado a Tokio", location: "Fujikyuko / Bus", cost: "$15.000", type: "Train", transportFrom: "Kawaguchiko", transportTo: "Tokyo", transportMode: "Bus / tren", transportBudget: true },
                 { id: "06-2", time: "12:30", city: "TOKYO", title: "Check-in", location: "Hotel Shimbashi", cost: "$0", type: "Hotel" },
                 { id: "06-3", time: "14:00", city: "TOKYO", title: "Jardines Palacio", location: "East Gardens", cost: "$0", type: "Camera" },
                 { id: "06-4", time: "16:00", city: "TOKYO", title: "Marunouchi", location: "Marunouchi", cost: "$0", type: "Camera" },
@@ -733,6 +772,7 @@
         let checkedItems = JSON.parse(localStorage.getItem('asiaTripChecked2026')) || {};
         let userDetails = JSON.parse(localStorage.getItem('asiaTripDetails2026')) || {}; 
         let staysUser = JSON.parse(localStorage.getItem('asiaStaysUser2026')) || {};
+        let transportCosts = JSON.parse(localStorage.getItem('asiaTransportCosts2026')) || {};
         let currentActivityId = null;
         // Las fotos existentes y las nuevas se mantienen separadas hasta pulsar
         // "Guardar". Así cerrar el modal no modifica la galería por accidente.
@@ -781,6 +821,7 @@
         function scrollToSection(sectionId) {
             const section = document.getElementById(sectionId);
             if (!section) return;
+            setMobileNavActive(sectionId === 'today-panel' ? 'nav-today' : 'nav-itinerary');
             section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -852,6 +893,7 @@
             const overview = getTripOverview();
             const todayPanel = document.getElementById('today-panel');
             if (!todayPanel) return;
+            setMobileNavActive('nav-today');
 
             const formatTripDate = (dateObj) => dateObj.toLocaleDateString('es-CL', {
                 weekday: 'short',
@@ -1005,6 +1047,14 @@
                                     ${details.realCost ? `<span class="font-bold text-asia-red bg-red-50 px-1 rounded">Gasto: $${details.realCost}</span>` : ''}
                                 </div>
 
+                                ${(activity.transportFrom || activity.transportTo || activity.transportMode) ? `
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[10px] text-gray-600 pt-1">
+                                        ${activity.transportMode ? `<div class="bg-slate-100 px-2 py-1 rounded-md"><span class="font-bold text-slate-700">Modo:</span> ${activity.transportMode}</div>` : ''}
+                                        ${activity.transportFrom ? `<div class="bg-slate-100 px-2 py-1 rounded-md"><span class="font-bold text-slate-700">Tomar en:</span> ${activity.transportFrom}</div>` : ''}
+                                        ${activity.transportTo ? `<div class="bg-slate-100 px-2 py-1 rounded-md"><span class="font-bold text-slate-700">Llegar a:</span> ${activity.transportTo}</div>` : ''}
+                                    </div>
+                                ` : ''}
+
                                 ${hasDetails ? `
                                     <div class="flex items-center gap-2 pt-0.5 text-[10px] text-gray-500">
                                         ${details.notes ? '<span class="flex items-center gap-0.5"><i data-lucide="file-text" class="w-3 h-3"></i> Nota</span>' : ''}
@@ -1056,6 +1106,69 @@
 
         function closeStaysModal() {
             document.getElementById('stays-modal').classList.add('hidden');
+        }
+
+        function openTransportModal() {
+            const container = document.getElementById('transport-list-container');
+            const seenLegs = new Set();
+            const legs = itineraryData.flatMap(day => day.activities
+                .filter(activity => activity.transportBudget)
+                .map(activity => ({ ...activity, date: day.date }))
+            ).filter(leg => {
+                const key = `${leg.transportMode}|${leg.transportFrom}|${leg.transportTo}`;
+                if (seenLegs.has(key)) return false;
+                seenLegs.add(key);
+                return true;
+            });
+
+            container.innerHTML = legs.map(leg => {
+                const costs = transportCosts[leg.id] || {};
+                const estimated = parseCost(leg.cost);
+                return `
+                <article class="rounded-xl border border-sky-100 bg-white overflow-hidden">
+                    <div class="flex items-center justify-between gap-2 bg-sky-50 px-3 py-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <i data-lucide="${leg.transportMode.toLowerCase().includes('bus') ? 'bus-front' : 'train'}" class="w-4 h-4 text-sky-700 shrink-0"></i>
+                            <h3 class="font-bold text-sm text-slate-800 truncate">${leg.title}</h3>
+                        </div>
+                        <span class="text-[10px] font-bold text-sky-800 shrink-0">${leg.date} · ${leg.time}</span>
+                    </div>
+                    <div class="p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-xs">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold tracking-wide text-slate-400">Tomar en</p>
+                            <p class="font-semibold text-slate-700 mt-0.5">${leg.transportFrom}</p>
+                        </div>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-sky-500"></i>
+                        <div>
+                            <p class="text-[10px] uppercase font-bold tracking-wide text-slate-400">Llegar a</p>
+                            <p class="font-semibold text-slate-700 mt-0.5">${leg.transportTo}</p>
+                        </div>
+                    </div>
+                    <div class="px-3 pb-3 text-[11px] text-slate-500"><span class="font-bold text-sky-800">Medio:</span> ${leg.transportMode}</div>
+                    <div class="grid grid-cols-2 gap-2 border-t border-sky-100 bg-sky-50/60 p-3">
+                        <div class="text-[10px] font-bold text-slate-500">ESTIMADO
+                            <p class="mt-1 w-full rounded-lg border border-sky-200 bg-slate-100 p-2 text-sm font-bold text-slate-800">$${estimated.toLocaleString('es-CL')}</p>
+                        </div>
+                        <label class="text-[10px] font-bold text-slate-500">REAL ($)
+                            <input type="number" min="0" inputmode="numeric" value="${costs.real || ''}" placeholder="Al pagar" oninput="updateTransportCost('${leg.id}', 'real', this.value)" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white p-2 text-sm font-bold text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400">
+                        </label>
+                    </div>
+                </article>
+            `;
+            }).join('') || '<p class="text-sm text-gray-500">Aún no hay traslados registrados.</p>';
+
+            document.getElementById('transport-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeTransportModal() {
+            document.getElementById('transport-modal').classList.add('hidden');
+        }
+
+        function updateTransportCost(id, field, value) {
+            if (!transportCosts[id]) transportCosts[id] = {};
+            transportCosts[id][field] = value;
+            localStorage.setItem('asiaTransportCosts2026', JSON.stringify(transportCosts));
         }
 
         function renderStays() {
@@ -1166,11 +1279,25 @@
 
             itineraryData.forEach(day => {
                 day.activities.forEach(act => {
-                    actEst += parseCost(act.cost);
+                    // Los traslados se contabilizan en su propia categoría para no duplicarlos.
+                    if (!act.transportBudget) actEst += parseCost(act.cost);
                     const real = userDetails[act.id]?.realCost;
-                    if (real) actReal += parseInt(real, 10) || 0;
+                    if (real && !act.transportBudget) actReal += parseInt(real, 10) || 0;
                 });
             });
+
+            let transportEst = 0;
+            let transportReal = 0;
+            const transportLegIds = new Set();
+            itineraryData.forEach(day => day.activities.forEach(act => {
+                if (!act.transportBudget) return;
+                const key = `${act.transportMode}|${act.transportFrom}|${act.transportTo}`;
+                if (transportLegIds.has(key)) return;
+                transportLegIds.add(key);
+                const saved = transportCosts[act.id] || {};
+                transportEst += parseCost(act.cost);
+                transportReal += parseInt(saved.real, 10) || 0;
+            }));
 
             let stayEst = 0;
             let stayReal = 0;
@@ -1186,9 +1313,11 @@
             document.getElementById('budget-act-real').innerText = `$${actReal.toLocaleString('es-CL')}`;
             document.getElementById('budget-stay-est').innerText = `$${stayEst.toLocaleString('es-CL')}`;
             document.getElementById('budget-stay-real').innerText = `$${stayReal.toLocaleString('es-CL')}`;
+            document.getElementById('budget-transport-est').innerText = `$${transportEst.toLocaleString('es-CL')}`;
+            document.getElementById('budget-transport-real').innerText = `$${transportReal.toLocaleString('es-CL')}`;
 
-            const totalEst = actEst + stayEst;
-            const totalReal = actReal + stayReal;
+            const totalEst = actEst + stayEst + transportEst;
+            const totalReal = actReal + stayReal + transportReal;
 
             document.getElementById('budget-total-est').innerText = `$${totalEst.toLocaleString('es-CL')}`;
             document.getElementById('budget-total-real').innerText = `$${totalReal.toLocaleString('es-CL')}`;
@@ -1516,6 +1645,7 @@
                 checked: checkedItems,
                 details: userDetails,
                 stays: staysUser,
+                transportCosts,
                 rates: JSON.parse(localStorage.getItem('asiaRates')),
                 photos,
                 docs
@@ -1545,11 +1675,13 @@
                     if (data.checked) localStorage.setItem('asiaTripChecked2026', JSON.stringify(data.checked));
                     if (data.details) localStorage.setItem('asiaTripDetails2026', JSON.stringify(data.details));
                     if (data.stays) localStorage.setItem('asiaStaysUser2026', JSON.stringify(data.stays));
+                    if (data.transportCosts) localStorage.setItem('asiaTransportCosts2026', JSON.stringify(data.transportCosts));
                     if (data.rates) localStorage.setItem('asiaRates', JSON.stringify(data.rates));
                     
                     checkedItems = data.checked || {};
                     userDetails = data.details || {};
                     staysUser = data.stays || {};
+                    transportCosts = data.transportCosts || {};
 
                     renderApp();
                     alert("¡Respaldo importado exitosamente!");
@@ -1568,6 +1700,7 @@
                     checkedItems = {};
                     userDetails = {};
                     staysUser = {};
+                    transportCosts = {};
                     renderApp();
                 } catch (error) {
                     alert('No se pudieron borrar todos los archivos locales. Inténtalo nuevamente.');
@@ -1575,7 +1708,61 @@
             }
         });
 
-        window.addEventListener('DOMContentLoaded', renderApp);
+        // --- APP INSTALABLE Y DISPONIBLE SIN CONEXIÓN ---
+        let deferredInstallPrompt = null;
+
+        function isRunningAsInstalledApp() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+
+        function updateInstallButton() {
+            const button = document.getElementById('install-app-btn');
+            if (!button) return;
+            button.classList.toggle('hidden', isRunningAsInstalledApp());
+        }
+
+        async function installApp() {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                await deferredInstallPrompt.userChoice;
+                deferredInstallPrompt = null;
+                updateInstallButton();
+                return;
+            }
+
+            const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+            if (isIOS) {
+                alert('En iPhone: abre esta página en Safari, toca Compartir (□↑) y elige “Añadir a pantalla de inicio”.');
+            } else {
+                alert('Para instalarla, abre el menú del navegador y elige “Instalar aplicación” o “Añadir a pantalla de inicio”.');
+            }
+        }
+
+        function registerOfflineSupport() {
+            updateInstallButton();
+
+            window.addEventListener('beforeinstallprompt', (event) => {
+                event.preventDefault();
+                deferredInstallPrompt = event;
+                updateInstallButton();
+            });
+
+            window.addEventListener('appinstalled', () => {
+                deferredInstallPrompt = null;
+                updateInstallButton();
+            });
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js').catch(() => {
+                    // La app sigue siendo usable online si el navegador bloquea el service worker.
+                });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderApp();
+            registerOfflineSupport();
+        });
     </script>
 </body>
 </html>
