@@ -194,7 +194,7 @@
                     <i data-lucide="bed" class="w-5 h-5 text-indigo-300"></i>
                     <div>
                         <h2 class="font-serif font-bold text-base md:text-lg">Registro de Estadías y Hoteles</h2>
-                        <p class="text-[11px] text-indigo-200">China y Japón 2026</p>
+                        <p class="text-[11px] text-indigo-200">Grupo: 2 Personas</p>
                     </div>
                 </div>
                 <button onclick="closeStaysModal()" class="text-indigo-200 hover:text-white p-1">
@@ -209,7 +209,7 @@
                         <span id="stays-total-est" class="text-base font-extrabold text-indigo-950">$0</span>
                     </div>
                     <div class="text-right">
-                        <span class="text-indigo-900 font-bold block">Total Real Registrado</span>
+                        <span class="text-indigo-900 font-bold block">Total Real Grupo (CLP)</span>
                         <span id="stays-total-real" class="text-base font-extrabold text-emerald-700">$0</span>
                     </div>
                 </div>
@@ -247,7 +247,8 @@
                     <div>
                         <label class="text-[10px] text-gray-500 block font-bold">Moneda</label>
                         <select id="conv-currency" onchange="calculateConversion()" class="w-full p-2 border rounded text-sm font-bold bg-gray-50 outline-none">
-                            <option value="JPY">¥ Yen Japonés (JPY)</option>
+                            <option value="USD">$ Dólar (USD)</option>
+                            <option value="JPY" selected>¥ Yen Japonés (JPY)</option>
                             <option value="CNY">¥ Yuan Chino (CNY)</option>
                         </select>
                     </div>
@@ -284,8 +285,12 @@
             </div>
 
             <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
-                <span class="text-[11px] font-bold text-gray-600 block">⚙️ Configurar Tasas de Cambio (Ajuste Local)</span>
-                <div class="grid grid-cols-2 gap-2 text-xs">
+                <span class="text-[11px] font-bold text-gray-600 block">⚙️ Configurar Tasas de Cambio</span>
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                        <label class="text-[10px] text-gray-500">1 USD a CLP:</label>
+                        <input type="number" step="1" id="rate-usd" value="950" onchange="saveRates()" class="w-full p-1 border rounded text-xs">
+                    </div>
                     <div>
                         <label class="text-[10px] text-gray-500">1 JPY a CLP:</label>
                         <input type="number" step="0.1" id="rate-jpy" value="6.3" onchange="saveRates()" class="w-full p-1 border rounded text-xs">
@@ -341,7 +346,7 @@
             <div class="space-y-3 text-sm">
                 <!-- Actividades -->
                 <div class="p-3 bg-slate-100 rounded-xl space-y-1">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">🎯 Actividades y Visitas</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">🎯 Actividades (Total Grupo)</span>
                     <div class="flex justify-between text-xs">
                         <span>Estimado: <strong id="budget-act-est">$0</strong></span>
                         <span>Real: <strong id="budget-act-real" class="text-asia-red">$0</strong></span>
@@ -350,25 +355,25 @@
 
                 <!-- Estadías -->
                 <div class="p-3 bg-indigo-50 rounded-xl space-y-1">
-                    <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">🏨 Estadías y Hoteles</span>
+                    <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">🏨 Estadías (Total Grupo 2 Pers)</span>
                     <div class="flex justify-between text-xs">
                         <span>Estimado: <strong id="budget-stay-est">$0</strong></span>
-                        <span>Real: <strong id="budget-stay-real" class="text-emerald-700">$0</strong></span>
+                        <span>Real (CLP Eq): <strong id="budget-stay-real" class="text-emerald-700">$0</strong></span>
                     </div>
                 </div>
 
                 <div class="pt-2 border-t space-y-2">
                     <div class="p-3 bg-red-50 rounded-xl border border-red-100 flex justify-between items-center">
                         <div>
-                            <p class="text-xs font-bold text-asia-red">TOTAL ESTIMADO GENERAL</p>
-                            <p class="text-xs text-gray-500">Actividades + Hoteles</p>
+                            <p class="text-xs font-bold text-asia-red">TOTAL ESTIMADO (CLP)</p>
+                            <p class="text-[10px] text-gray-500">Suma del grupo</p>
                         </div>
                         <span id="budget-total-est" class="text-base font-bold text-gray-800">$0</span>
                     </div>
                     <div class="p-3 bg-green-50 rounded-xl border border-green-100 flex justify-between items-center">
                         <div>
-                            <p class="text-xs font-bold text-green-800">TOTAL REAL REGISTRADO</p>
-                            <p class="text-xs text-gray-500">Ingresado hasta ahora</p>
+                            <p class="text-xs font-bold text-green-800">TOTAL REAL REGISTRADO (CLP)</p>
+                            <p class="text-[10px] text-gray-500">Convertido según tasas configuradas</p>
                         </div>
                         <span id="budget-total-real" class="text-base font-bold text-green-900">$0</span>
                     </div>
@@ -516,7 +521,7 @@
         setInterval(updateClocks, 1000);
         updateClocks();
 
-        // --- DATOS PRECARGADOS DE ESTADÍAS Y HOTELES (DESDE TU PLANILLA) ---
+        // --- DATOS PRECARGADOS DE ESTADÍAS Y HOTELES ---
         const initialStaysData = [
             // CHINA
             { id: "stay-1", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "24/08/2026 17:40", checkOut: "28/08/2026 08:00", nights: 4, estTotal: 250000, estPerPerson: 125000, defaultLocation: "PEOPLE'S SQUARE" },
@@ -705,6 +710,9 @@
             ]}
         ];
 
+        // CONSTANTE GRUPO
+        const NUM_PERSONAS = 2;
+
         // ESTADO Y LOCAL STORAGE
         let checkedItems = JSON.parse(localStorage.getItem('asiaTripChecked2026')) || {};
         let userDetails = JSON.parse(localStorage.getItem('asiaTripDetails2026')) || {}; 
@@ -855,7 +863,11 @@
             return null;
         }
 
-        // --- MÓDULO DE ESTADÍAS ---
+        // --- MÓDULO DE ESTADÍAS MULTIDIVISA ---
+        function getRates() {
+            return JSON.parse(localStorage.getItem('asiaRates')) || { jpy: 6.3, cny: 130, usd: 950 };
+        }
+
         function openStaysModal() {
             renderStays();
             document.getElementById('stays-modal').classList.remove('hidden');
@@ -870,17 +882,27 @@
             container.innerHTML = '';
 
             let totalEstSum = 0;
-            let totalRealSum = 0;
+            let totalRealSumCLP = 0;
+            const rates = getRates();
 
             initialStaysData.forEach(stay => {
                 totalEstSum += stay.estTotal;
+                
                 const userObj = staysUser[stay.id] || {};
-                const realCost = parseInt(userObj.realCost, 10) || 0;
-                totalRealSum += realCost;
-
                 const hotelName = userObj.hotelName || '';
                 const exactAddress = userObj.exactAddress || stay.defaultLocation;
                 
+                // Cálculo inicial para mostrar
+                const costPP = parseFloat(userObj.realCostPP) || 0;
+                const currency = userObj.realCurrency || 'CLP';
+                let multiplier = 1;
+                if(currency === 'JPY') multiplier = rates.jpy;
+                if(currency === 'CNY') multiplier = rates.cny;
+                if(currency === 'USD') multiplier = rates.usd;
+                
+                const stayTotalCLP = Math.round(costPP * NUM_PERSONAS * multiplier);
+                totalRealSumCLP += stayTotalCLP;
+
                 const card = document.createElement('div');
                 card.className = "bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm space-y-3";
 
@@ -904,38 +926,42 @@
 
                     <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border">
                         <div>
-                            <span class="text-[10px] text-gray-500 font-bold">Valor Total Estimado:</span>
+                            <span class="text-[10px] text-gray-500 font-bold">Est. Total Grupo (CLP):</span>
                             <p class="font-bold text-gray-800">$${stay.estTotal.toLocaleString('es-CL')}</p>
                         </div>
                         <div>
-                            <span class="text-[10px] text-gray-500 font-bold">Valor por Persona (x1):</span>
+                            <span class="text-[10px] text-gray-500 font-bold">Est. por Persona (CLP):</span>
                             <p class="font-bold text-indigo-700">$${stay.estPerPerson.toLocaleString('es-CL')}</p>
                         </div>
                     </div>
 
                     <div class="space-y-2 text-xs">
-                        <div>
-                            <label class="font-bold text-gray-700 text-[11px] block">Nombre del Hotel / Hospedaje:</label>
-                            <input type="text" placeholder="Ej: Grand Central Hotel" value="${hotelName}" oninput="updateStayField('${stay.id}', 'hotelName', this.value)" class="w-full p-1.5 border rounded bg-white font-medium outline-none focus:ring-1 focus:ring-indigo-600">
-                        </div>
-
-                        <div>
-                            <label class="font-bold text-gray-700 text-[11px] block">Dirección o Referencia:</label>
-                            <input type="text" placeholder="Ubicación o dirección" value="${exactAddress}" oninput="updateStayField('${stay.id}', 'exactAddress', this.value)" class="w-full p-1.5 border rounded bg-white font-medium outline-none focus:ring-1 focus:ring-indigo-600">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="font-bold text-emerald-800 text-[11px] block">Gasto Real Registrado ($):</label>
-                                <input type="number" placeholder="Ej: 240000" value="${userObj.realCost || ''}" oninput="updateStayField('${stay.id}', 'realCost', this.value)" class="w-full p-1.5 border border-emerald-300 rounded bg-emerald-50/50 font-bold text-emerald-900 outline-none">
+                                <label class="font-bold text-gray-700 text-[11px] block">Nombre del Hospedaje:</label>
+                                <input type="text" placeholder="Ej: Grand Hotel" value="${hotelName}" oninput="updateStayField('${stay.id}', 'hotelName', this.value)" class="w-full p-1.5 border rounded bg-white font-medium outline-none focus:ring-1 focus:ring-indigo-600">
                             </div>
                             <div class="flex flex-col justify-end">
-                                <span class="text-[10px] font-bold text-gray-500 mb-1">Abrir Mapa del Hotel:</span>
-                                <div class="flex gap-1.5">
-                                    <a href="${gmap}" target="_blank" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1.5 rounded flex items-center gap-0.5 shrink-0"><i data-lucide="map-pin" class="w-3 h-3"></i> Google</a>
-                                    ${isChina ? `<a href="${baidu}" target="_blank" class="bg-red-600 text-white text-[10px] font-bold px-2 py-1.5 rounded shrink-0">Baidu</a>` : ''}
-                                    <a href="${amap}" target="_blank" class="bg-gray-700 text-white text-[10px] font-bold px-2 py-1.5 rounded shrink-0">Apple</a>
+                                <div class="flex gap-1">
+                                    <a href="${gmap}" target="_blank" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1.5 rounded flex items-center justify-center flex-1 gap-0.5"><i data-lucide="map-pin" class="w-3 h-3"></i> Google</a>
+                                    ${isChina ? `<a href="${baidu}" target="_blank" class="bg-red-600 text-white text-[10px] font-bold px-2 py-1.5 rounded flex items-center justify-center flex-1">Baidu</a>` : ''}
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-1">
+                            <label class="font-bold text-emerald-800 text-[11px] block mb-0.5">Gasto Real x Persona (Toda la estadía):</label>
+                            <div class="flex gap-2">
+                                <input type="number" placeholder="Monto" value="${userObj.realCostPP || ''}" oninput="updateStayCost('${stay.id}', 'realCostPP', this.value)" class="flex-1 p-1.5 border border-emerald-300 rounded bg-emerald-50/50 font-bold text-emerald-900 outline-none focus:bg-white">
+                                <select onchange="updateStayCost('${stay.id}', 'realCurrency', this.value)" class="w-24 p-1.5 border border-emerald-300 rounded bg-emerald-50/50 font-bold text-emerald-900 outline-none">
+                                    <option value="CLP" ${currency === 'CLP' ? 'selected' : ''}>CLP</option>
+                                    <option value="USD" ${currency === 'USD' ? 'selected' : ''}>USD</option>
+                                    <option value="JPY" ${currency === 'JPY' ? 'selected' : ''}>JPY</option>
+                                    <option value="CNY" ${currency === 'CNY' ? 'selected' : ''}>CNY</option>
+                                </select>
+                            </div>
+                            <div class="text-[10px] text-gray-500 font-bold text-right mt-1">
+                                = Total Grupo (2p): <span class="text-emerald-700" id="total-calc-${stay.id}">$${stayTotalCLP.toLocaleString('es-CL')} CLP</span>
                             </div>
                         </div>
                     </div>
@@ -944,7 +970,7 @@
             });
 
             document.getElementById('stays-total-est').innerText = `$${totalEstSum.toLocaleString('es-CL')}`;
-            document.getElementById('stays-total-real').innerText = `$${totalRealSum.toLocaleString('es-CL')}`;
+            document.getElementById('stays-total-real').innerText = `$${totalRealSumCLP.toLocaleString('es-CL')}`;
             lucide.createIcons();
         }
 
@@ -952,23 +978,50 @@
             if (!staysUser[id]) staysUser[id] = {};
             staysUser[id][field] = value;
             localStorage.setItem('asiaStaysUser2026', JSON.stringify(staysUser));
+        }
+
+        function updateStayCost(id, field, value) {
+            if (!staysUser[id]) staysUser[id] = {};
+            staysUser[id][field] = value;
+            localStorage.setItem('asiaStaysUser2026', JSON.stringify(staysUser));
+
+            const rates = getRates();
+            const userObj = staysUser[id];
             
-            // Recalcular el total si cambia el gasto real
-            if (field === 'realCost') {
-                let totalRealSum = 0;
-                initialStaysData.forEach(s => {
-                    const r = parseInt(staysUser[s.id]?.realCost, 10) || 0;
-                    totalRealSum += r;
-                });
-                document.getElementById('stays-total-real').innerText = `$${totalRealSum.toLocaleString('es-CL')}`;
-            }
+            // Actualizar texto pequeño de esa tarjeta específica
+            const costPP = parseFloat(userObj.realCostPP) || 0;
+            const currency = userObj.realCurrency || 'CLP';
+            let mult = 1;
+            if(currency === 'JPY') mult = rates.jpy;
+            if(currency === 'CNY') mult = rates.cny;
+            if(currency === 'USD') mult = rates.usd;
+            
+            const stayTotalCLP = Math.round(costPP * NUM_PERSONAS * mult);
+            const label = document.getElementById(`total-calc-${id}`);
+            if(label) label.innerText = `$${stayTotalCLP.toLocaleString('es-CL')} CLP`;
+
+            // Recalcular Total Global Header
+            let totalRealSumCLP = 0;
+            initialStaysData.forEach(s => {
+                const uObj = staysUser[s.id] || {};
+                const cpp = parseFloat(uObj.realCostPP) || 0;
+                const c = uObj.realCurrency || 'CLP';
+                let m = 1;
+                if(c === 'JPY') m = rates.jpy;
+                if(c === 'CNY') m = rates.cny;
+                if(c === 'USD') m = rates.usd;
+                totalRealSumCLP += Math.round(cpp * NUM_PERSONAS * m);
+            });
+            document.getElementById('stays-total-real').innerText = `$${totalRealSumCLP.toLocaleString('es-CL')}`;
         }
 
         // --- PRESUPUESTO GLOBAL & FRASES ---
         function openBudgetModal() {
             let actEst = 0;
             let actReal = 0;
+            const rates = getRates();
 
+            // Actividades (Se asume valor directo en CLP)
             itineraryData.forEach(day => {
                 day.activities.forEach(act => {
                     actEst += parseCost(act.cost);
@@ -977,22 +1030,30 @@
                 });
             });
 
+            // Estadías (Conversión a CLP)
             let stayEst = 0;
-            let stayReal = 0;
+            let stayRealCLP = 0;
 
             initialStaysData.forEach(s => {
-                stayEst += s.estTotal;
-                const r = parseInt(staysUser[s.id]?.realCost, 10) || 0;
-                stayReal += r;
+                stayEst += s.estTotal; // Ya viene en CLP
+                
+                const uObj = staysUser[s.id] || {};
+                const cpp = parseFloat(uObj.realCostPP) || 0;
+                const c = uObj.realCurrency || 'CLP';
+                let m = 1;
+                if(c === 'JPY') m = rates.jpy;
+                if(c === 'CNY') m = rates.cny;
+                if(c === 'USD') m = rates.usd;
+                stayRealCLP += Math.round(cpp * NUM_PERSONAS * m);
             });
 
             document.getElementById('budget-act-est').innerText = `$${actEst.toLocaleString('es-CL')}`;
             document.getElementById('budget-act-real').innerText = `$${actReal.toLocaleString('es-CL')}`;
             document.getElementById('budget-stay-est').innerText = `$${stayEst.toLocaleString('es-CL')}`;
-            document.getElementById('budget-stay-real').innerText = `$${stayReal.toLocaleString('es-CL')}`;
+            document.getElementById('budget-stay-real').innerText = `$${stayRealCLP.toLocaleString('es-CL')}`;
 
             const totalEst = actEst + stayEst;
-            const totalReal = actReal + stayReal;
+            const totalReal = actReal + stayRealCLP;
 
             document.getElementById('budget-total-est').innerText = `$${totalEst.toLocaleString('es-CL')}`;
             document.getElementById('budget-total-real').innerText = `$${totalReal.toLocaleString('es-CL')}`;
@@ -1036,7 +1097,8 @@
         }
 
         function openCalcModal() {
-            const rates = JSON.parse(localStorage.getItem('asiaRates')) || { jpy: 6.3, cny: 130 };
+            const rates = getRates();
+            document.getElementById('rate-usd').value = rates.usd;
             document.getElementById('rate-jpy').value = rates.jpy;
             document.getElementById('rate-cny').value = rates.cny;
             calculateConversion();
@@ -1050,19 +1112,29 @@
 
         function saveRates() {
             const rates = {
+                usd: parseFloat(document.getElementById('rate-usd').value) || 950,
                 jpy: parseFloat(document.getElementById('rate-jpy').value) || 6.3,
                 cny: parseFloat(document.getElementById('rate-cny').value) || 130
             };
             localStorage.setItem('asiaRates', JSON.stringify(rates));
             calculateConversion();
+            
+            // Si el modal de estadías está abierto, refrescarlo para usar la nueva tasa
+            if(!document.getElementById('stays-modal').classList.contains('hidden')){
+                renderStays();
+            }
         }
 
         function calculateConversion() {
             const amount = parseFloat(document.getElementById('conv-amount').value) || 0;
             const currency = document.getElementById('conv-currency').value;
-            const rates = JSON.parse(localStorage.getItem('asiaRates')) || { jpy: 6.3, cny: 130 };
+            const rates = getRates();
 
-            const rate = currency === 'JPY' ? rates.jpy : rates.cny;
+            let rate = 1;
+            if(currency === 'JPY') rate = rates.jpy;
+            if(currency === 'CNY') rate = rates.cny;
+            if(currency === 'USD') rate = rates.usd;
+
             const clp = Math.round(amount * rate);
             document.getElementById('conv-result-clp').innerText = `$${clp.toLocaleString('es-CL')} CLP`;
         }
@@ -1246,7 +1318,7 @@
                 checked: checkedItems,
                 details: userDetails,
                 stays: staysUser,
-                rates: JSON.parse(localStorage.getItem('asiaRates'))
+                rates: getRates()
             };
             const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
