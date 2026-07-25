@@ -516,19 +516,19 @@
         setInterval(updateClocks, 1000);
         updateClocks();
 
-        // --- DATOS PRECARGADOS DE ESTADÍAS Y HOTELES ---
+        // --- DATOS PRECARGADOS DE ESTADÍAS Y HOTELES (DESDE TU PLANILLA) ---
         const initialStaysData = [
             // CHINA
-            { id: "stay-1", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "24/08/2026 17:40", checkOut: "28/08/2026 08:00", nights: 4, estTotal: 125000, estPerPerson: 125000, defaultLocation: "PEOPLE'S SQUARE" },
-            { id: "stay-2", country: "🇨🇳 China", city: "HANGZHOU", checkIn: "28/08/2026 11:00", checkOut: "30/08/2026 07:00", nights: 2, estTotal: 75000, estPerPerson: 75000, defaultLocation: "Longxiangqiao Metro Station" },
+            { id: "stay-1", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "24/08/2026 17:40", checkOut: "28/08/2026 08:00", nights: 4, estTotal: 250000, estPerPerson: 125000, defaultLocation: "PEOPLE'S SQUARE" },
+            { id: "stay-2", country: "🇨🇳 China", city: "HANGZHOU", checkIn: "28/08/2026 11:00", checkOut: "30/08/2026 07:00", nights: 2, estTotal: 150000, estPerPerson: 75000, defaultLocation: "Longxiangqiao Metro Station" },
             { id: "stay-3", country: "🇨🇳 China", city: "SUZHOU", checkIn: "30/08/2026 09:00", checkOut: "30/08/2026 19:00", nights: 0, estTotal: 0, estPerPerson: 0, defaultLocation: "Paso de Día (-)" },
-            { id: "stay-4", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "30/08/2026 21:00", checkOut: "31/08/2026 09:00", nights: 1, estTotal: 25000, estPerPerson: 25000, defaultLocation: "Airport PVG" },
+            { id: "stay-4", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "30/08/2026 21:00", checkOut: "31/08/2026 09:00", nights: 1, estTotal: 50000, estPerPerson: 25000, defaultLocation: "Airport PVG" },
             // JAPÓN
-            { id: "stay-5", country: "🇯🇵 Japón", city: "KANAZAWA", checkIn: "31/08/2026 17:00", checkOut: "02/09/2026 08:00", nights: 2, estTotal: 50000, estPerPerson: 50000, defaultLocation: "Cerca de atracciones o festival" },
-            { id: "stay-6", country: "🇯🇵 Japón", city: "TAKAYAMA", checkIn: "02/09/2026 19:00", checkOut: "03/09/2026 16:00", nights: 1, estTotal: 50000, estPerPerson: 50000, defaultLocation: "Cerca de estación de Takayama" },
-            { id: "stay-7", country: "🇯🇵 Japón", city: "MATSUMOTO", checkIn: "03/09/2026 20:00", checkOut: "04/09/2026 17:00", nights: 1, estTotal: 37500, estPerPerson: 37500, defaultLocation: "Cerca de la estación de Matsumoto" },
-            { id: "stay-8", country: "🇯🇵 Japón", city: "KAWAGUCHIKO", checkIn: "04/09/2026 21:00", checkOut: "06/09/2026 12:00", nights: 2, estTotal: 125000, estPerPerson: 125000, defaultLocation: "Lago Kawaguchi" },
-            { id: "stay-9", country: "🇯🇵 Japón", city: "TOKYO", checkIn: "06/09/2026 15:00", checkOut: "10/09/2026 12:00", nights: 4, estTotal: 150000, estPerPerson: 150000, defaultLocation: "Tokio Centro" }
+            { id: "stay-5", country: "🇯🇵 Japón", city: "KANAZAWA", checkIn: "31/08/2026 17:00", checkOut: "02/09/2026 08:00", nights: 2, estTotal: 100000, estPerPerson: 50000, defaultLocation: "Cerca de atracciones o festival" },
+            { id: "stay-6", country: "🇯🇵 Japón", city: "TAKAYAMA", checkIn: "02/09/2026 19:00", checkOut: "03/09/2026 16:00", nights: 1, estTotal: 100000, estPerPerson: 50000, defaultLocation: "Cerca de estación de Takayama" },
+            { id: "stay-7", country: "🇯🇵 Japón", city: "MATSUMOTO", checkIn: "03/09/2026 20:00", checkOut: "04/09/2026 17:00", nights: 1, estTotal: 75000, estPerPerson: 37500, defaultLocation: "Cerca de la estación de Matsumoto" },
+            { id: "stay-8", country: "🇯🇵 Japón", city: "KAWAGUCHIKO", checkIn: "04/09/2026 21:00", checkOut: "06/09/2026 12:00", nights: 2, estTotal: 250000, estPerPerson: 125000, defaultLocation: "Lago Kawaguchi" },
+            { id: "stay-9", country: "🇯🇵 Japón", city: "TOKYO", checkIn: "06/09/2026 15:00", checkOut: "10/09/2026 12:00", nights: 4, estTotal: 300000, estPerPerson: 150000, defaultLocation: "Tokio Centro" }
         ];
 
         // --- DATOS COMPLETOS DE ITINERARIO ---
@@ -873,8 +873,7 @@
             let totalRealSum = 0;
 
             initialStaysData.forEach(stay => {
-                const estTotalVal = stay.estTotal ?? stay.estPerPerson ?? 0;
-                totalEstSum += estTotalVal;
+                totalEstSum += stay.estTotal;
                 const userObj = staysUser[stay.id] || {};
                 const realCost = parseInt(userObj.realCost, 10) || 0;
                 totalRealSum += realCost;
@@ -906,7 +905,7 @@
                     <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border">
                         <div>
                             <span class="text-[10px] text-gray-500 font-bold">Valor Total Estimado:</span>
-                            <p class="font-bold text-gray-800">$${estTotalVal.toLocaleString('es-CL')}</p>
+                            <p class="font-bold text-gray-800">$${stay.estTotal.toLocaleString('es-CL')}</p>
                         </div>
                         <div>
                             <span class="text-[10px] text-gray-500 font-bold">Valor por Persona (x1):</span>
@@ -954,6 +953,7 @@
             staysUser[id][field] = value;
             localStorage.setItem('asiaStaysUser2026', JSON.stringify(staysUser));
             
+            // Recalcular el total si cambia el gasto real
             if (field === 'realCost') {
                 let totalRealSum = 0;
                 initialStaysData.forEach(s => {
@@ -981,7 +981,7 @@
             let stayReal = 0;
 
             initialStaysData.forEach(s => {
-                stayEst += s.estTotal ?? s.estPerPerson ?? 0;
+                stayEst += s.estTotal;
                 const r = parseInt(staysUser[s.id]?.realCost, 10) || 0;
                 stayReal += r;
             });
