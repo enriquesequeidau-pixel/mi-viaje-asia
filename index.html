@@ -45,7 +45,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="text-asia-ink font-sans pb-20">
+<body class="text-asia-ink font-sans pb-32">
 
     <!-- Header Fijo Superior -->
     <header class="sticky top-0 z-40 bg-asia-paper/95 backdrop-blur shadow-md border-b-2 border-asia-red px-3 py-2 md:px-4 md:py-3">
@@ -138,6 +138,27 @@
         <section id="today-panel"></section>
         <section id="itinerary-container" class="space-y-6"></section>
     </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t border-asia-red/15 bg-asia-paper/95 backdrop-blur shadow-[0_-8px_24px_rgba(0,0,0,0.08)]">
+        <div class="grid grid-cols-4 gap-1 p-2 max-w-3xl mx-auto">
+            <button type="button" onclick="scrollToSection('today-panel')" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-slate-900 text-white py-2.5 text-[11px] font-bold min-h-14">
+                <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+                Hoy
+            </button>
+            <button type="button" onclick="scrollToSection('itinerary-container')" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-slate-100 text-slate-800 py-2.5 text-[11px] font-bold min-h-14">
+                <i data-lucide="list" class="w-4 h-4 text-asia-indigo"></i>
+                Itinerario
+            </button>
+            <button type="button" onclick="openStaysModal()" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-indigo-700 text-white py-2.5 text-[11px] font-bold min-h-14">
+                <i data-lucide="bed" class="w-4 h-4 text-indigo-200"></i>
+                Estadías
+            </button>
+            <button type="button" onclick="openBudgetModal()" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-asia-red text-white py-2.5 text-[11px] font-bold min-h-14">
+                <i data-lucide="calculator" class="w-4 h-4 text-asia-gold"></i>
+                Presupuesto
+            </button>
+        </div>
+    </nav>
 
     <!-- MODAL DETALLES Y NOTAS ACTIVIDAD -->
     <div id="detail-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
@@ -757,6 +778,12 @@
             return new Date(year, month - 1, day);
         }
 
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
         function getTripOverview() {
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -822,6 +849,11 @@
                     ? `Tu próximo día del viaje es ${overview.nextTripDay.date}`
                     : 'No hay días del viaje cargados';
 
+            const nowLabel = new Intl.DateTimeFormat('es-CL', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(new Date());
+
             const nextActivityMessage = overview.nextActivity
                 ? `${overview.nextActivity.time} · ${overview.nextActivity.title}`
                 : 'No hay actividades pendientes';
@@ -839,6 +871,7 @@
                             <p class="text-[11px] uppercase tracking-[0.28em] text-amber-200 font-bold">Modo Hoy</p>
                             <h2 class="font-serif text-xl font-bold mt-1">${todayMessage}</h2>
                             <p class="text-sm text-slate-200 mt-1.5">${nextActivityMessage}</p>
+                            <p class="text-[11px] text-slate-300 mt-2">Hora local del teléfono: ${nowLabel}</p>
                         </div>
                         <div class="text-right shrink-0">
                             <p class="text-[11px] uppercase tracking-wider text-slate-300">Siguiente día</p>
