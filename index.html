@@ -141,19 +141,19 @@
 
     <nav class="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t border-asia-red/15 bg-asia-paper/95 backdrop-blur shadow-[0_-8px_24px_rgba(0,0,0,0.08)]">
         <div class="grid grid-cols-4 gap-1 p-2 max-w-3xl mx-auto">
-            <button type="button" onclick="scrollToSection('today-panel')" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-slate-900 text-white py-2.5 text-[11px] font-bold min-h-14">
+            <button id="nav-today" type="button" onclick="scrollToSection('today-panel')" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-slate-900 text-white py-2.5 text-[11px] font-bold min-h-14 transition-colors">
                 <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
                 Hoy
             </button>
-            <button type="button" onclick="scrollToSection('itinerary-container')" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-slate-100 text-slate-800 py-2.5 text-[11px] font-bold min-h-14">
+            <button id="nav-itinerary" type="button" onclick="scrollToSection('itinerary-container')" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-slate-100 text-slate-800 py-2.5 text-[11px] font-bold min-h-14 transition-colors">
                 <i data-lucide="list" class="w-4 h-4 text-asia-indigo"></i>
                 Itinerario
             </button>
-            <button type="button" onclick="openStaysModal()" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-indigo-700 text-white py-2.5 text-[11px] font-bold min-h-14">
+            <button id="nav-stays" type="button" onclick="openStaysModal()" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-indigo-700 text-white py-2.5 text-[11px] font-bold min-h-14 transition-colors">
                 <i data-lucide="bed" class="w-4 h-4 text-indigo-200"></i>
                 Estadías
             </button>
-            <button type="button" onclick="openBudgetModal()" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-asia-red text-white py-2.5 text-[11px] font-bold min-h-14">
+            <button id="nav-budget" type="button" onclick="openBudgetModal()" class="flex flex-col items-center justify-center gap-1 rounded-xl bg-asia-red text-white py-2.5 text-[11px] font-bold min-h-14 transition-colors">
                 <i data-lucide="calculator" class="w-4 h-4 text-asia-gold"></i>
                 Presupuesto
             </button>
@@ -784,6 +784,22 @@
             section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        function setMobileNavActive(activeId) {
+            const buttons = [
+                { id: 'nav-today', active: 'bg-slate-900 text-white', idle: 'bg-slate-100 text-slate-800' },
+                { id: 'nav-itinerary', active: 'bg-slate-900 text-white', idle: 'bg-slate-100 text-slate-800' },
+                { id: 'nav-stays', active: 'bg-slate-900 text-white', idle: 'bg-indigo-700 text-white' },
+                { id: 'nav-budget', active: 'bg-slate-900 text-white', idle: 'bg-asia-red text-white' }
+            ];
+
+            buttons.forEach(({ id, active, idle }) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.remove(...active.split(' '), ...idle.split(' '));
+                el.classList.add(...(id === activeId ? active : idle).split(' '));
+            });
+        }
+
         function getTripOverview() {
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -863,6 +879,7 @@
                 : 'Sin días próximos';
 
             const nextActivityId = overview.nextActivity ? overview.nextActivity.id : '';
+            const nextActivityLabel = overview.nextActivity ? `${overview.nextActivity.time} · ${overview.nextActivity.title}` : 'Revisar filtros / agenda';
 
             todayPanel.innerHTML = `
                 <div class="bg-gradient-to-br from-asia-indigo via-slate-800 to-asia-red text-white rounded-2xl p-4 shadow-lg border border-black/10">
@@ -895,6 +912,9 @@
                         <button type="button" onclick="${nextActivityId ? `completeNextActivity('${nextActivityId}')` : ''}" ${nextActivityId ? '' : 'disabled'} class="px-3 py-2 rounded-xl bg-amber-300 text-slate-900 font-bold text-sm shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
                             Marcar como hecha
                         </button>
+                    </div>
+                    <div class="mt-3 text-[11px] text-slate-200 border-t border-white/10 pt-3">
+                        Siguiente actividad sugerida: <span class="font-bold">${nextActivityLabel}</span>
                     </div>
                 </div>
             `;
@@ -1003,6 +1023,7 @@
 
             lucide.createIcons();
             updateStats(totalCount, checkedCount);
+            setMobileNavActive('nav-itinerary');
         }
 
         function toggleCheck(id) {
@@ -1030,6 +1051,7 @@
         function openStaysModal() {
             renderStays();
             document.getElementById('stays-modal').classList.remove('hidden');
+            setMobileNavActive('nav-stays');
         }
 
         function closeStaysModal() {
@@ -1172,6 +1194,7 @@
             document.getElementById('budget-total-real').innerText = `$${totalReal.toLocaleString('es-CL')}`;
 
             document.getElementById('budget-modal').classList.remove('hidden');
+            setMobileNavActive('nav-budget');
         }
 
         function closeBudgetModal() {
