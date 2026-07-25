@@ -205,7 +205,7 @@
             <div class="p-4 space-y-4">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex justify-between items-center text-xs">
                     <div>
-                        <span class="text-indigo-900 font-bold block">Total Estadías Estimado</span>
+                        <span class="text-indigo-900 font-bold block">Total Estadías Estimado (por Persona)</span>
                         <span id="stays-total-est" class="text-base font-extrabold text-indigo-950">$0</span>
                     </div>
                     <div class="text-right">
@@ -350,7 +350,7 @@
 
                 <!-- Estadías -->
                 <div class="p-3 bg-indigo-50 rounded-xl space-y-1">
-                    <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">🏨 Estadías y Hoteles</span>
+                    <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">🏨 Estadías y Hoteles (Por Persona)</span>
                     <div class="flex justify-between text-xs">
                         <span>Estimado: <strong id="budget-stay-est">$0</strong></span>
                         <span>Real: <strong id="budget-stay-real" class="text-emerald-700">$0</strong></span>
@@ -361,7 +361,7 @@
                     <div class="p-3 bg-red-50 rounded-xl border border-red-100 flex justify-between items-center">
                         <div>
                             <p class="text-xs font-bold text-asia-red">TOTAL ESTIMADO GENERAL</p>
-                            <p class="text-xs text-gray-500">Actividades + Hoteles</p>
+                            <p class="text-xs text-gray-500">Actividades + Hoteles (por Persona)</p>
                         </div>
                         <span id="budget-total-est" class="text-base font-bold text-gray-800">$0</span>
                     </div>
@@ -873,8 +873,10 @@
             let totalRealSum = 0;
 
             initialStaysData.forEach(stay => {
-                const estTotalVal = stay.estTotal ?? stay.estPerPerson ?? 0;
-                totalEstSum += estTotalVal;
+                // Modificado para acumular estrictamente el valor por persona
+                const estPerPersonVal = stay.estPerPerson || 0;
+                totalEstSum += estPerPersonVal;
+
                 const userObj = staysUser[stay.id] || {};
                 const realCost = parseInt(userObj.realCost, 10) || 0;
                 totalRealSum += realCost;
@@ -906,7 +908,7 @@
                     <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border">
                         <div>
                             <span class="text-[10px] text-gray-500 font-bold">Valor Total Estimado:</span>
-                            <p class="font-bold text-gray-800">$${estTotalVal.toLocaleString('es-CL')}</p>
+                            <p class="font-bold text-gray-800">$${(stay.estTotal || 0).toLocaleString('es-CL')}</p>
                         </div>
                         <div>
                             <span class="text-[10px] text-gray-500 font-bold">Valor por Persona (x1):</span>
@@ -981,7 +983,8 @@
             let stayReal = 0;
 
             initialStaysData.forEach(s => {
-                stayEst += s.estTotal ?? s.estPerPerson ?? 0;
+                // Modificado para basarse únicamente en el estimado por persona
+                stayEst += (s.estPerPerson || 0);
                 const r = parseInt(staysUser[s.id]?.realCost, 10) || 0;
                 stayReal += r;
             });
