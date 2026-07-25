@@ -45,30 +45,30 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="text-asia-ink font-sans pb-24">
+<body class="text-asia-ink font-sans pb-20">
 
     <!-- Header Fijo Superior -->
-    <header class="sticky top-0 z-40 bg-asia-paper/95 backdrop-blur shadow-md border-b-2 border-asia-red px-4 py-3">
-        <div class="max-w-3xl mx-auto space-y-2.5">
+    <header class="sticky top-0 z-40 bg-asia-paper/95 backdrop-blur shadow-md border-b-2 border-asia-red px-3 py-2 md:px-4 md:py-3">
+        <div class="max-w-3xl mx-auto space-y-2">
             <div class="flex justify-between items-center">
-                <h1 class="text-lg md:text-xl font-serif font-bold text-asia-red flex items-center gap-2">
-                    <i data-lucide="compass" class="text-asia-gold w-5 h-5"></i> 
+                <h1 class="text-base md:text-xl font-serif font-bold text-asia-red flex items-center gap-1.5">
+                    <i data-lucide="compass" class="text-asia-gold w-4.5 h-4.5 md:w-5 md:h-5"></i> 
                     Asia 2026
                 </h1>
-                <span id="progress-text" class="text-xs font-bold bg-asia-bamboo text-green-900 py-1 px-2.5 rounded-full border border-green-200">
+                <span id="progress-text" class="text-[11px] md:text-xs font-bold bg-asia-bamboo text-green-900 py-1 px-2.5 rounded-full border border-green-200">
                     0 / 0
                 </span>
             </div>
 
             <!-- Reloj Dual -->
-            <div class="bg-gray-900 text-white rounded-lg p-2 grid grid-cols-2 text-center text-xs border border-gray-700 shadow-inner">
+            <div class="bg-gray-900 text-white rounded-lg p-2 grid grid-cols-2 text-center text-[11px] md:text-xs border border-gray-700 shadow-inner">
                 <div class="border-r border-gray-700 pr-1">
-                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block">🇨🇱 Santiago (CLT)</span>
-                    <span id="clock-santiago" class="font-mono text-xs font-bold text-sky-400">00:00:00</span>
+                    <span class="text-gray-400 text-[9px] md:text-[10px] uppercase tracking-wider block">🇨🇱 Santiago (CLT)</span>
+                    <span id="clock-santiago" class="font-mono text-[11px] md:text-xs font-bold text-sky-400">00:00:00</span>
                 </div>
                 <div class="pl-1">
-                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block">🇯🇵 / 🇨🇳 Asia (JAP/CHN)</span>
-                    <span id="clock-asia" class="font-mono text-xs font-bold text-emerald-400">00:00:00</span>
+                    <span class="text-gray-400 text-[9px] md:text-[10px] uppercase tracking-wider block">🇯🇵 / 🇨🇳 Asia (JAP/CHN)</span>
+                    <span id="clock-asia" class="font-mono text-[11px] md:text-xs font-bold text-emerald-400">00:00:00</span>
                 </div>
             </div>
             
@@ -78,38 +78,38 @@
             </div>
 
             <!-- Botones de Acción Rápida (Herramientas) -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-                <button onclick="openStaysModal()" class="bg-indigo-700 hover:bg-indigo-800 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] md:text-xs no-scrollbar">
+                <button onclick="openStaysModal()" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="bed" class="w-3.5 h-3.5 text-indigo-200"></i> Estadías
                 </button>
-                <button onclick="openCalcModal()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
+                <button onclick="openCalcModal()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="coins" class="w-3.5 h-3.5 text-yellow-300"></i> Divisas & Tax-Free
                 </button>
-                <button onclick="openVaultModal()" class="bg-amber-700 hover:bg-amber-800 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
+                <button onclick="openVaultModal()" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="qr-code" class="w-3.5 h-3.5 text-amber-200"></i> Bóveda QRs
                 </button>
-                <button onclick="openBudgetModal()" class="bg-asia-indigo text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
+                <button onclick="openBudgetModal()" class="bg-asia-indigo text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="calculator" class="w-3.5 h-3.5 text-asia-gold"></i> Presupuesto
                 </button>
-                <button onclick="openPhrasesModal()" class="bg-asia-gold/20 text-yellow-900 border border-asia-gold/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
+                <button onclick="openPhrasesModal()" class="bg-asia-gold/20 text-yellow-900 border border-asia-gold/40 px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="languages" class="w-3.5 h-3.5"></i> Frases
                 </button>
-                <button onclick="exportData()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium">
+                <button onclick="exportData()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium min-h-10">
                     <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar
                 </button>
-                <label class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium cursor-pointer">
+                <label class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium cursor-pointer min-h-10">
                     <i data-lucide="upload" class="w-3.5 h-3.5"></i> Importar
                     <input type="file" accept=".json" onchange="importData(event)" class="hidden">
                 </label>
             </div>
 
             <!-- Buscador y Filtros -->
-            <div class="grid grid-cols-12 gap-2 text-xs pt-1">
-                <div class="col-span-6 relative">
-                    <input type="text" id="search-input" placeholder="Buscar actividad..." oninput="renderApp()" class="w-full pl-7 pr-2 py-1.5 bg-white border border-gray-300 rounded-lg outline-none focus:ring-1 focus:ring-asia-red">
-                    <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400 absolute left-2 top-2.5"></i>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs pt-1">
+                <div class="sm:col-span-6 relative">
+                    <input type="text" id="search-input" placeholder="Buscar actividad..." oninput="renderApp()" class="w-full pl-7 pr-2 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-1 focus:ring-asia-red min-h-10">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400 absolute left-2 top-3"></i>
                 </div>
-                <select id="city-filter" onchange="renderApp()" class="col-span-3 bg-white border border-gray-300 rounded-lg px-1 py-1.5 outline-none font-medium text-gray-700">
+                <select id="city-filter" onchange="renderApp()" class="sm:col-span-3 bg-white border border-gray-300 rounded-lg px-2 py-2 outline-none font-medium text-gray-700 min-h-10">
                     <option value="ALL">Todas Ciudades</option>
                     <option value="SHANGHAI">Shanghái</option>
                     <option value="HANGZHOU">Hangzhou</option>
@@ -121,7 +121,7 @@
                     <option value="KAWAGUCHIKO">Kawaguchiko</option>
                     <option value="YOKOHAMA">Yokohama</option>
                 </select>
-                <select id="type-filter" onchange="renderApp()" class="col-span-3 bg-white border border-gray-300 rounded-lg px-1 py-1.5 outline-none font-medium text-gray-700">
+                <select id="type-filter" onchange="renderApp()" class="sm:col-span-3 bg-white border border-gray-300 rounded-lg px-2 py-2 outline-none font-medium text-gray-700 min-h-10">
                     <option value="ALL">Todos Tipos</option>
                     <option value="Camera">Visita / Foto</option>
                     <option value="Utensils">Comida</option>
@@ -134,12 +134,15 @@
     </header>
 
     <!-- Contenedor Principal -->
-    <main class="max-w-3xl mx-auto p-3 md:p-4 space-y-6" id="itinerary-container"></main>
+    <main class="max-w-3xl mx-auto p-2.5 md:p-4 space-y-5">
+        <section id="today-panel"></section>
+        <section id="itinerary-container" class="space-y-6"></section>
+    </main>
 
     <!-- MODAL DETALLES Y NOTAS ACTIVIDAD -->
-    <div id="detail-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-asia-paper rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto card-shadow border border-asia-gold/30 flex flex-col">
-            <div class="bg-asia-indigo text-asia-paper p-4 flex justify-between items-start sticky top-0 z-10">
+    <div id="detail-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
+        <div class="bg-asia-paper rounded-t-2xl md:rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto card-shadow border border-asia-gold/30 flex flex-col">
+            <div class="bg-asia-indigo text-asia-paper p-3.5 md:p-4 flex justify-between items-start sticky top-0 z-10">
                 <div>
                     <span id="modal-time" class="text-xs font-bold text-asia-gold uppercase tracking-wider"></span>
                     <h2 id="modal-title" class="font-serif font-bold text-lg leading-snug"></h2>
@@ -150,7 +153,7 @@
                 </button>
             </div>
 
-            <div class="p-5 space-y-4">
+            <div class="p-4 md:p-5 space-y-4">
                 <div class="grid grid-cols-2 gap-3 bg-amber-50 p-3 rounded-xl border border-amber-200/60">
                     <div>
                         <label class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Estimado</label>
@@ -180,8 +183,8 @@
             </div>
 
             <div class="p-4 bg-gray-100 border-t border-gray-200 flex justify-end gap-2 rounded-b-2xl">
-                <button onclick="closeModal()" class="px-4 py-2 text-xs font-bold text-gray-600">Cancelar</button>
-                <button onclick="saveModalData()" class="px-5 py-2 text-xs font-bold bg-asia-red text-white rounded-lg shadow">Guardar Cambios</button>
+                <button onclick="closeModal()" class="px-4 py-2.5 text-xs font-bold text-gray-600 min-h-10">Cancelar</button>
+                <button onclick="saveModalData()" class="px-5 py-2.5 text-xs font-bold bg-asia-red text-white rounded-lg shadow min-h-10">Guardar Cambios</button>
             </div>
         </div>
     </div>
@@ -525,7 +528,7 @@
             { id: "stay-4", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "30/08/2026 21:00", checkOut: "31/08/2026 09:00", nights: 1, estTotal: 50000, estPerPerson: 25000, defaultLocation: "Airport PVG" },
             // JAPÓN
             { id: "stay-5", country: "🇯🇵 Japón", city: "KANAZAWA", checkIn: "31/08/2026 17:00", checkOut: "02/09/2026 08:00", nights: 2, estTotal: 100000, estPerPerson: 50000, defaultLocation: "Cerca de atracciones o festival" },
-            { id: "stay-6", country: "🇯🇵 Japón", city: "TAKAYAMA", checkIn: "02/09/2026 19:00", checkOut: "03/09/2026 16:00", nights: 1, estTotal: 100000, estPerPerson: 50000, defaultLocation: "Cerca de estación de Takayama" },
+            { id: "stay-6", country: "🇯🇵 Japón", city: "TAKAYAMA", checkIn: "02/09/2026 19:00", checkOut: "03/09/2026 16:00", nights: 1, estTotal: 100000, estPerPerson: 50000, defaultLocation: "Cerca del centro histórico de Takayama" },
             { id: "stay-7", country: "🇯🇵 Japón", city: "MATSUMOTO", checkIn: "03/09/2026 20:00", checkOut: "04/09/2026 17:00", nights: 1, estTotal: 75000, estPerPerson: 37500, defaultLocation: "Cerca de la estación de Matsumoto" },
             { id: "stay-8", country: "🇯🇵 Japón", city: "KAWAGUCHIKO", checkIn: "04/09/2026 21:00", checkOut: "06/09/2026 12:00", nights: 2, estTotal: 250000, estPerPerson: 125000, defaultLocation: "Lago Kawaguchi" },
             { id: "stay-9", country: "🇯🇵 Japón", city: "TOKYO", checkIn: "06/09/2026 15:00", checkOut: "10/09/2026 12:00", nights: 4, estTotal: 300000, estPerPerson: 150000, defaultLocation: "Tokio Centro" }
@@ -710,7 +713,11 @@
         let userDetails = JSON.parse(localStorage.getItem('asiaTripDetails2026')) || {}; 
         let staysUser = JSON.parse(localStorage.getItem('asiaStaysUser2026')) || {};
         let currentActivityId = null;
-        let tempPhotos = [];
+        // Las fotos existentes y las nuevas se mantienen separadas hasta pulsar
+        // "Guardar". Así cerrar el modal no modifica la galería por accidente.
+        let existingPhotos = [];
+        let newPhotos = [];
+        let photoIdsToDelete = new Set();
 
         function getLucideIconName(type) {
             const map = { 'Plane': 'plane', 'Train': 'train', 'Utensils': 'utensils', 'ShoppingBag': 'shopping-bag', 'Hotel': 'hotel', 'Camera': 'camera' };
@@ -745,6 +752,136 @@
             return parseInt(clean, 10) || 0;
         }
 
+        function parseTripDate(dateStr) {
+            const [day, month, year] = dateStr.split('/').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        function getTripOverview() {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const tripDays = itineraryData.map(day => {
+                const tripDate = parseTripDate(day.date);
+                const upcomingActivities = day.activities.filter(activity => {
+                    const [hours, minutes] = activity.time.split(':').map(Number);
+                    const activityDate = new Date(tripDate);
+                    activityDate.setHours(hours, minutes, 0, 0);
+                    return activityDate >= now;
+                });
+
+                return {
+                    ...day,
+                    tripDate,
+                    remainingActivities: upcomingActivities
+                };
+            });
+
+            const currentTripDay = tripDays.find(day => {
+                const endOfDay = new Date(day.tripDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                return todayStart >= day.tripDate && todayStart <= endOfDay;
+            });
+
+            const nextTripDay = tripDays.find(day => day.tripDate >= todayStart) || null;
+            const nextActivity = tripDays
+                .flatMap(day => day.activities.map(activity => ({
+                    ...activity,
+                    tripDate: day.tripDate,
+                    dayDate: day.date
+                })))
+                .map(activity => {
+                    const [hours, minutes] = activity.time.split(':').map(Number);
+                    const activityDate = new Date(activity.tripDate);
+                    activityDate.setHours(hours, minutes, 0, 0);
+                    return { ...activity, activityDate };
+                })
+                .filter(activity => activity.activityDate >= now)
+                .sort((a, b) => a.activityDate - b.activityDate)[0] || null;
+
+            return {
+                currentTripDay,
+                nextTripDay,
+                nextActivity
+            };
+        }
+
+        function renderTodayPanel() {
+            const overview = getTripOverview();
+            const todayPanel = document.getElementById('today-panel');
+            if (!todayPanel) return;
+
+            const formatTripDate = (dateObj) => dateObj.toLocaleDateString('es-CL', {
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short'
+            });
+
+            const todayMessage = overview.currentTripDay
+                ? `Hoy estás en ${overview.currentTripDay.date}`
+                : overview.nextTripDay
+                    ? `Tu próximo día del viaje es ${overview.nextTripDay.date}`
+                    : 'No hay días del viaje cargados';
+
+            const nextActivityMessage = overview.nextActivity
+                ? `${overview.nextActivity.time} · ${overview.nextActivity.title}`
+                : 'No hay actividades pendientes';
+
+            const remainingInNextDay = overview.nextTripDay
+                ? `${overview.nextTripDay.remainingActivities.length} actividad(es) por delante`
+                : 'Sin días próximos';
+
+            const nextActivityId = overview.nextActivity ? overview.nextActivity.id : '';
+
+            todayPanel.innerHTML = `
+                <div class="bg-gradient-to-br from-asia-indigo via-slate-800 to-asia-red text-white rounded-2xl p-4 shadow-lg border border-black/10">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-[11px] uppercase tracking-[0.28em] text-amber-200 font-bold">Modo Hoy</p>
+                            <h2 class="font-serif text-xl font-bold mt-1">${todayMessage}</h2>
+                            <p class="text-sm text-slate-200 mt-1.5">${nextActivityMessage}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-300">Siguiente día</p>
+                            <p class="font-serif text-base font-bold">${overview.nextTripDay ? formatTripDate(overview.nextTripDay.tripDate) : '—'}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                        <div class="bg-white/10 rounded-xl p-3">
+                            <p class="text-[10px] uppercase tracking-wider text-slate-300">Pendiente</p>
+                            <p class="font-bold mt-1">${remainingInNextDay}</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-3">
+                            <p class="text-[10px] uppercase tracking-wider text-slate-300">Próximo paso</p>
+                            <p class="font-bold mt-1">${overview.nextActivity ? overview.nextActivity.location : 'Revisar filtros / agenda'}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button type="button" onclick="${nextActivityId ? `focusNextActivity('${nextActivityId}')` : ''}" ${nextActivityId ? '' : 'disabled'} class="px-3 py-2 rounded-xl bg-white text-asia-indigo font-bold text-sm shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                            Abrir próxima actividad
+                        </button>
+                        <button type="button" onclick="${nextActivityId ? `completeNextActivity('${nextActivityId}')` : ''}" ${nextActivityId ? '' : 'disabled'} class="px-3 py-2 rounded-xl bg-amber-300 text-slate-900 font-bold text-sm shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                            Marcar como hecha
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function focusNextActivity(id) {
+            const element = document.getElementById(`activity-${id}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            openModal(id);
+        }
+
+        function completeNextActivity(id) {
+            if (!checkedItems[id]) {
+                toggleCheck(id);
+            }
+            focusNextActivity(id);
+        }
+
         function renderApp() {
             const container = document.getElementById('itinerary-container');
             container.innerHTML = '';
@@ -752,6 +889,7 @@
             const searchQuery = document.getElementById('search-input').value.toLowerCase();
             const cityFilter = document.getElementById('city-filter').value;
             const typeFilter = document.getElementById('type-filter').value;
+            renderTodayPanel();
 
             let totalCount = 0;
             let checkedCount = 0;
@@ -766,7 +904,7 @@
 
                 if (filteredActivities.length === 0) return;
 
-                day.activities.forEach(a => {
+                filteredActivities.forEach(a => {
                     totalCount++;
                     if (checkedItems[a.id]) checkedCount++;
                 });
@@ -792,8 +930,8 @@
                     const hasDetails = details.notes || details.realCost || (details.photosCount && details.photosCount > 0);
 
                     dayHTML += `
-                        <div class="activity-item p-3 flex gap-3 cursor-pointer hover:bg-[#faf8f5] ${isChecked ? 'checked-item' : ''}" onclick="openModal('${activity.id}')">
-                            <div class="flex-shrink-0 mt-0.5" onclick="event.stopPropagation(); toggleCheck('${activity.id}')">
+                        <div id="activity-${activity.id}" role="button" tabindex="0" aria-label="Abrir actividad ${activity.title}" class="activity-item p-3 flex gap-3 cursor-pointer hover:bg-[#faf8f5] ${isChecked ? 'checked-item' : ''}" onclick="openModal('${activity.id}')" onkeydown="if(event.key==='Enter' || event.key===' '){ event.preventDefault(); openModal('${activity.id}'); }">
+                            <div class="flex-shrink-0 mt-0.5" role="button" tabindex="0" aria-label="${isChecked ? 'Desmarcar' : 'Marcar'} actividad ${activity.title}" onclick="event.stopPropagation(); toggleCheck('${activity.id}')" onkeydown="if(event.key==='Enter' || event.key===' '){ event.preventDefault(); event.stopPropagation(); toggleCheck('${activity.id}'); }">
                                 ${isChecked 
                                     ? '<i data-lucide="check-circle-2" class="text-asia-red w-5 h-5"></i>' 
                                     : '<i data-lucide="circle" class="text-gray-300 w-5 h-5"></i>'}
@@ -1035,7 +1173,9 @@
 
         function closeModal() {
             document.getElementById('detail-modal').classList.add('hidden');
-            tempPhotos = [];
+            existingPhotos = [];
+            newPhotos = [];
+            photoIdsToDelete = new Set();
         }
 
         function openCalcModal() {
@@ -1184,10 +1324,12 @@
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                tempPhotos.push(evt.target.result);
+                newPhotos.push({ image: evt.target.result });
                 renderPhotoThumbnails();
             };
             reader.readAsDataURL(file);
+            // Permite elegir dos veces el mismo archivo si hace falta.
+            e.target.value = '';
         }
 
         function renderPhotoThumbnails() {
@@ -1196,13 +1338,36 @@
             grid.innerHTML = '';
             grid.appendChild(uploadBtn);
 
-            tempPhotos.forEach((src) => {
+            const visiblePhotos = [
+                ...existingPhotos.filter(photo => !photoIdsToDelete.has(photo.id)),
+                ...newPhotos
+            ];
+
+            visiblePhotos.forEach((photo) => {
                 const imgDiv = document.createElement('div');
-                imgDiv.className = "h-24 rounded-lg bg-cover bg-center border border-gray-200 relative cursor-pointer";
-                imgDiv.style.backgroundImage = `url('${src}')`;
-                imgDiv.onclick = () => viewImage("Foto de Actividad", src);
+                imgDiv.className = "h-24 rounded-lg bg-cover bg-center border border-gray-200 relative cursor-pointer group";
+                imgDiv.style.backgroundImage = `url('${photo.image}')`;
+                imgDiv.onclick = () => viewImage("Foto de Actividad", photo.image);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = "absolute top-1 right-1 rounded-full bg-black/65 p-1 text-white opacity-100 md:opacity-0 md:group-hover:opacity-100";
+                deleteButton.setAttribute('aria-label', 'Eliminar foto');
+                deleteButton.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5"></i>';
+                deleteButton.onclick = (event) => {
+                    event.stopPropagation();
+                    if (photo.id) {
+                        photoIdsToDelete.add(photo.id);
+                    } else {
+                        const newPhotoIndex = newPhotos.indexOf(photo);
+                        if (newPhotoIndex !== -1) newPhotos.splice(newPhotoIndex, 1);
+                    }
+                    renderPhotoThumbnails();
+                };
+                imgDiv.appendChild(deleteButton);
                 grid.appendChild(imgDiv);
             });
+            lucide.createIcons();
         }
 
         function saveModalData() {
@@ -1213,12 +1378,14 @@
             userDetails[currentActivityId].realCost = realCost;
             userDetails[currentActivityId].notes = notes;
 
-            if (tempPhotos.length > 0) {
+            const visiblePhotoCount = existingPhotos.filter(photo => !photoIdsToDelete.has(photo.id)).length + newPhotos.length;
+            if (db && (photoIdsToDelete.size > 0 || newPhotos.length > 0)) {
                 const tx = db.transaction("photos", "readwrite");
                 const store = tx.objectStore("photos");
-                tempPhotos.forEach(base64 => store.add({ activityId: currentActivityId, image: base64 }));
-                userDetails[currentActivityId].photosCount = (userDetails[currentActivityId].photosCount || 0) + tempPhotos.length;
+                photoIdsToDelete.forEach(id => store.delete(id));
+                newPhotos.forEach(photo => store.add({ activityId: currentActivityId, image: photo.image }));
             }
+            userDetails[currentActivityId].photosCount = visiblePhotoCount;
 
             localStorage.setItem('asiaTripDetails2026', JSON.stringify(userDetails));
             closeModal();
@@ -1226,8 +1393,13 @@
         }
 
         function loadPhotosFromDB(activityId) {
-            tempPhotos = [];
-            if (!db) return;
+            existingPhotos = [];
+            newPhotos = [];
+            photoIdsToDelete = new Set();
+            if (!db) {
+                renderPhotoThumbnails();
+                return;
+            }
             const tx = db.transaction("photos", "readonly");
             const store = tx.objectStore("photos");
             const request = store.openCursor();
@@ -1235,7 +1407,9 @@
             request.onsuccess = (e) => {
                 const cursor = e.target.result;
                 if (cursor) {
-                    if (cursor.value.activityId === activityId) tempPhotos.push(cursor.value.image);
+                    if (cursor.value.activityId === activityId) {
+                        existingPhotos.push({ id: cursor.value.id, image: cursor.value.image });
+                    }
                     cursor.continue();
                 } else {
                     renderPhotoThumbnails();
@@ -1244,12 +1418,51 @@
         }
 
         // --- RESPALDO (EXPORT / IMPORT) ---
-        function exportData() {
+        function getStoreData(storeName) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('La base de datos local todavía no está lista.'));
+                    return;
+                }
+                const request = db.transaction(storeName, 'readonly').objectStore(storeName).getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function replaceStoreData(storeName, records) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('La base de datos local todavía no está lista.'));
+                    return;
+                }
+                const tx = db.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                store.clear();
+                records.forEach(record => store.add(record));
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error);
+            });
+        }
+
+        async function exportData() {
+            let photos = [];
+            let docs = [];
+            try {
+                [photos, docs] = await Promise.all([getStoreData('photos'), getStoreData('docs')]);
+            } catch (error) {
+                alert('No se pudo preparar un respaldo completo. Inténtalo nuevamente cuando la app haya terminado de cargar.');
+                return;
+            }
             const exportObject = {
+                version: 2,
                 checked: checkedItems,
                 details: userDetails,
                 stays: staysUser,
-                rates: JSON.parse(localStorage.getItem('asiaRates'))
+                rates: JSON.parse(localStorage.getItem('asiaRates')),
+                photos,
+                docs
             };
             const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1264,9 +1477,15 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = async function(evt) {
                 try {
                     const data = JSON.parse(evt.target.result);
+                    if (!data || typeof data !== 'object') throw new Error('Formato inválido');
+
+                    // Los respaldos anteriores siguen siendo compatibles: sólo se
+                    // sustituyen los archivos cuando el respaldo los contiene.
+                    if (Array.isArray(data.photos)) await replaceStoreData('photos', data.photos);
+                    if (Array.isArray(data.docs)) await replaceStoreData('docs', data.docs);
                     if (data.checked) localStorage.setItem('asiaTripChecked2026', JSON.stringify(data.checked));
                     if (data.details) localStorage.setItem('asiaTripDetails2026', JSON.stringify(data.details));
                     if (data.stays) localStorage.setItem('asiaStaysUser2026', JSON.stringify(data.stays));
@@ -1277,7 +1496,7 @@
                     staysUser = data.stays || {};
 
                     renderApp();
-                    alert("¡Datos, estadías e itinerario importados exitosamente!");
+                    alert("¡Respaldo importado exitosamente!");
                 } catch(err) {
                     alert("Error al leer el archivo de respaldo.");
                 }
@@ -1285,13 +1504,18 @@
             reader.readAsText(file);
         }
 
-        document.getElementById('reset-btn').addEventListener('click', () => {
-            if(confirm('¿Seguro que deseas borrar todas las marcas, notas y registros de estadías?')) {
-                localStorage.clear();
-                checkedItems = {};
-                userDetails = {};
-                staysUser = {};
-                renderApp();
+        document.getElementById('reset-btn').addEventListener('click', async () => {
+            if(confirm('¿Seguro que deseas borrar todas las marcas, notas, estadías, fotos y documentos locales?')) {
+                try {
+                    await Promise.all([replaceStoreData('photos', []), replaceStoreData('docs', [])]);
+                    localStorage.clear();
+                    checkedItems = {};
+                    userDetails = {};
+                    staysUser = {};
+                    renderApp();
+                } catch (error) {
+                    alert('No se pudieron borrar todos los archivos locales. Inténtalo nuevamente.');
+                }
             }
         });
 
