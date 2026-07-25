@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Viaje a Asia 2026</title>
+    <title>Viaje a Asia 2026 - Master App</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -19,10 +19,6 @@
                 bamboo: '#e8eed2',
                 ink: '#212121',
               }
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              serif: ['"Noto Serif"', 'Georgia', 'serif'],
             }
           }
         }
@@ -39,41 +35,88 @@
         .checked-item h3 { text-decoration: line-through; color: #6b7280; }
         .activity-item { transition: all 0.2s ease-in-out; }
         .activity-item:active { transform: scale(0.99); }
-        header { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="text-asia-ink font-sans pb-24">
 
     <!-- Header Fijo Superior -->
-    <header class="sticky top-0 z-40 bg-asia-paper/95 backdrop-blur shadow-sm border-b-2 border-asia-red px-4 py-4">
-        <div class="max-w-3xl mx-auto flex flex-col gap-3">
+    <header class="sticky top-0 z-40 bg-asia-paper/95 backdrop-blur shadow-md border-b-2 border-asia-red px-4 py-3">
+        <div class="max-w-3xl mx-auto space-y-3">
             <div class="flex justify-between items-center">
-                <h1 class="text-xl md:text-2xl font-serif font-bold text-asia-red flex items-center gap-2">
-                    <i data-lucide="compass" class="text-asia-gold w-5 h-5 md:w-6 md:h-6"></i> 
-                    Viaje a Asia 2026
+                <h1 class="text-lg md:text-xl font-serif font-bold text-asia-red flex items-center gap-2">
+                    <i data-lucide="compass" class="text-asia-gold w-5 h-5"></i> 
+                    Asia 2026
                 </h1>
-                <span id="progress-text" class="text-xs md:text-sm font-bold bg-asia-bamboo text-green-900 py-1 px-3 rounded-full border border-green-200">
+                <span id="progress-text" class="text-xs font-bold bg-asia-bamboo text-green-900 py-1 px-2.5 rounded-full border border-green-200">
                     0 / 0
                 </span>
             </div>
             
-            <div class="w-full bg-orange-100 rounded-full h-2 shadow-inner overflow-hidden relative">
-                <div id="progress-bar" class="bg-gradient-to-r from-asia-red to-orange-500 h-2 rounded-full transition-all duration-500 ease-out absolute left-0 top-0" style="width: 0%"></div>
+            <!-- Barra de Progreso -->
+            <div class="w-full bg-orange-100 rounded-full h-1.5 shadow-inner overflow-hidden relative">
+                <div id="progress-bar" class="bg-gradient-to-r from-asia-red to-orange-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <!-- Botones de Acción Rápida -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+                <button onclick="openBudgetModal()" class="bg-asia-indigo text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium">
+                    <i data-lucide="calculator" class="w-3.5 h-3.5 text-asia-gold"></i> Presupuesto
+                </button>
+                <button onclick="openPhrasesModal()" class="bg-asia-gold/20 text-yellow-900 border border-asia-gold/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium">
+                    <i data-lucide="languages" class="w-3.5 h-3.5"></i> Frases
+                </button>
+                <button onclick="exportData()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar
+                </button>
+                <label class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium cursor-pointer">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Importar
+                    <input type="file" accept=".json" onchange="importData(event)" class="hidden">
+                </label>
+            </div>
+
+            <!-- Buscador y Filtros -->
+            <div class="grid grid-cols-12 gap-2 text-xs pt-1">
+                <div class="col-span-6 relative">
+                    <input type="text" id="search-input" placeholder="Buscar actividad..." oninput="renderApp()" class="w-full pl-7 pr-2 py-1.5 bg-white border border-gray-300 rounded-lg outline-none focus:ring-1 focus:ring-asia-red">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400 absolute left-2 top-2.5"></i>
+                </div>
+                <select id="city-filter" onchange="renderApp()" class="col-span-3 bg-white border border-gray-300 rounded-lg px-1 py-1.5 outline-none font-medium text-gray-700">
+                    <option value="ALL">Todas Ciudades</option>
+                    <option value="SHANGHAI">Shanghái</option>
+                    <option value="HANGZHOU">Hangzhou</option>
+                    <option value="SUZHOU">Suzhou</option>
+                    <option value="TOKYO">Tokio</option>
+                    <option value="KANAZAWA">Kanazawa</option>
+                    <option value="TAKAYAMA">Takayama</option>
+                    <option value="MATSUMOTO">Matsumoto</option>
+                    <option value="KAWAGUCHIKO">Kawaguchiko</option>
+                    <option value="YOKOHAMA">Yokohama</option>
+                </select>
+                <select id="type-filter" onchange="renderApp()" class="col-span-3 bg-white border border-gray-300 rounded-lg px-1 py-1.5 outline-none font-medium text-gray-700">
+                    <option value="ALL">Todos Tipos</option>
+                    <option value="Camera">Visita / Foto</option>
+                    <option value="Utensils">Comida</option>
+                    <option value="ShoppingBag">Compras</option>
+                    <option value="Train">Transporte</option>
+                    <option value="Hotel">Hotel</option>
+                </select>
             </div>
         </div>
     </header>
 
     <!-- Contenedor Principal -->
-    <main class="max-w-3xl mx-auto p-3 md:p-4 mt-2 space-y-6 md:space-y-8" id="itinerary-container"></main>
+    <main class="max-w-3xl mx-auto p-3 md:p-4 space-y-6" id="itinerary-container"></main>
 
-    <!-- Modal de Detalles -->
+    <!-- MODAL DETALLES Y NOTAS -->
     <div id="detail-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-asia-paper rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto card-shadow border border-asia-gold/30 flex flex-col">
             <div class="bg-asia-indigo text-asia-paper p-4 flex justify-between items-start sticky top-0 z-10">
                 <div>
                     <span id="modal-time" class="text-xs font-bold text-asia-gold uppercase tracking-wider"></span>
-                    <h2 id="modal-title" class="font-serif font-bold text-lg md:text-xl leading-snug"></h2>
-                    <p id="modal-location" class="text-xs text-gray-300 flex items-center gap-1 mt-1"></p>
+                    <h2 id="modal-title" class="font-serif font-bold text-lg leading-snug"></h2>
+                    <a id="modal-map-link" href="#" target="_blank" class="text-xs text-amber-300 hover:underline flex items-center gap-1 mt-1">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <span id="modal-location"></span> (Abrir Mapas)
+                    </a>
                 </div>
                 <button onclick="closeModal()" class="text-gray-300 hover:text-white p-1">
                     <i data-lucide="x" class="w-6 h-6"></i>
@@ -81,7 +124,6 @@
             </div>
 
             <div class="p-5 space-y-4">
-                <!-- Presupuesto Estimado vs Real -->
                 <div class="grid grid-cols-2 gap-3 bg-amber-50 p-3 rounded-xl border border-amber-200/60">
                     <div>
                         <label class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Estimado</label>
@@ -93,19 +135,16 @@
                     </div>
                 </div>
 
-                <!-- Comentarios / Notas -->
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Notas y Comentarios</label>
-                    <textarea id="modal-notes" rows="3" placeholder="¿Qué tal estuvo el lugar? ¿Recomendaciones?" class="w-full p-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-asia-indigo outline-none"></textarea>
+                    <textarea id="modal-notes" rows="3" placeholder="¿Qué tal estuvo el lugar? Recomendaciones..." class="w-full p-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-asia-indigo outline-none"></textarea>
                 </div>
 
-                <!-- Fotos -->
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-2">Fotos del Lugar</label>
                     <input type="file" id="modal-photo-input" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
-                    
                     <div class="grid grid-cols-3 gap-2" id="modal-photos-grid">
-                        <button onclick="document.getElementById('modal-photo-input').click()" class="h-24 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-asia-indigo hover:text-asia-indigo transition-colors bg-white">
+                        <button onclick="document.getElementById('modal-photo-input').click()" class="h-24 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-asia-indigo hover:text-asia-indigo bg-white">
                             <i data-lucide="camera" class="w-6 h-6 mb-1"></i>
                             <span class="text-[10px] font-bold">Añadir foto</span>
                         </button>
@@ -114,19 +153,106 @@
             </div>
 
             <div class="p-4 bg-gray-100 border-t border-gray-200 flex justify-end gap-2 rounded-b-2xl">
-                <button onclick="closeModal()" class="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-800">Cancelar</button>
-                <button onclick="saveModalData()" class="px-5 py-2 text-xs font-bold bg-asia-red text-white rounded-lg shadow hover:bg-red-800 transition-colors">Guardar Cambios</button>
+                <button onclick="closeModal()" class="px-4 py-2 text-xs font-bold text-gray-600">Cancelar</button>
+                <button onclick="saveModalData()" class="px-5 py-2 text-xs font-bold bg-asia-red text-white rounded-lg shadow">Guardar Cambios</button>
             </div>
         </div>
     </div>
 
-    <!-- Botón de Reset -->
+    <!-- MODAL PRESUPUESTO -->
+    <div id="budget-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-asia-paper rounded-2xl max-w-md w-full p-5 card-shadow border border-asia-gold/30 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h2 class="font-serif font-bold text-lg text-asia-indigo flex items-center gap-2">
+                    <i data-lucide="calculator" class="text-asia-gold"></i> Resumen de Gastos
+                </h2>
+                <button onclick="closeBudgetModal()"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
+            </div>
+            
+            <div class="space-y-3 text-sm">
+                <div class="p-3 bg-red-50 rounded-xl border border-red-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs font-bold text-asia-red">TOTAL ESTIMADO</p>
+                        <p class="text-xs text-gray-500">Suma proyectada</p>
+                    </div>
+                    <span id="budget-total-est" class="text-base font-bold text-gray-800">$0</span>
+                </div>
+                <div class="p-3 bg-green-50 rounded-xl border border-green-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs font-bold text-green-800">TOTAL REAL REGISTRADO</p>
+                        <p class="text-xs text-gray-500">Gasto ingresado en actividades</p>
+                    </div>
+                    <span id="budget-total-real" class="text-base font-bold text-green-900">$0</span>
+                </div>
+            </div>
+
+            <button onclick="closeBudgetModal()" class="w-full py-2 bg-asia-indigo text-white text-xs font-bold rounded-lg">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL FRASES DE SUPERVIVENCIA -->
+    <div id="phrases-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-asia-paper rounded-2xl max-w-md w-full p-5 card-shadow border border-asia-gold/30 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h2 class="font-serif font-bold text-lg text-asia-red flex items-center gap-2">
+                    <i data-lucide="languages" class="text-asia-gold"></i> Frases Útiles
+                </h2>
+                <button onclick="closePhrasesModal()"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
+            </div>
+
+            <!-- Chino -->
+            <div class="space-y-2">
+                <h3 class="text-xs font-bold bg-red-100 text-asia-red px-2 py-1 rounded">🇨🇳 China (Mandarín)</h3>
+                <div class="text-xs space-y-2">
+                    <div class="p-2 bg-white rounded border">
+                        <p class="font-bold text-gray-700">¿Dónde está el baño?</p>
+                        <p class="text-base font-bold text-asia-red">洗手间在哪里？</p>
+                        <p class="text-[11px] text-gray-500">Xǐshǒujiān zài nǎlǐ?</p>
+                    </div>
+                    <div class="p-2 bg-white rounded border">
+                        <p class="font-bold text-gray-700">¿Cuánto cuesta?</p>
+                        <p class="text-base font-bold text-asia-red">多少钱？</p>
+                        <p class="text-[11px] text-gray-500">Duōshao qián?</p>
+                    </div>
+                    <div class="p-2 bg-white rounded border">
+                        <p class="font-bold text-gray-700">La cuenta, por favor</p>
+                        <p class="text-base font-bold text-asia-red">买单</p>
+                        <p class="text-[11px] text-gray-500">Mǎidān</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Japonés -->
+            <div class="space-y-2 pt-2">
+                <h3 class="text-xs font-bold bg-blue-100 text-asia-indigo px-2 py-1 rounded">🇯🇵 Japón (Japonés)</h3>
+                <div class="text-xs space-y-2">
+                    <div class="p-2 bg-white rounded border">
+                        <p class="font-bold text-gray-700">¿Dónde está el baño?</p>
+                        <p class="text-base font-bold text-asia-indigo">トイレはどこですか？</p>
+                        <p class="text-[11px] text-gray-500">Toire wa doko desu ka?</p>
+                    </div>
+                    <div class="p-2 bg-white rounded border">
+                        <p class="font-bold text-gray-700">¿Cuánto cuesta?</p>
+                        <p class="text-base font-bold text-asia-indigo">いくらですか？</p>
+                        <p class="text-[11px] text-gray-500">Ikura desu ka?</p>
+                    </div>
+                    <div class="p-2 bg-white rounded border">
+                        <p class="font-bold text-gray-700">Disculpe / Con permiso</p>
+                        <p class="text-base font-bold text-asia-indigo">すみません</p>
+                        <p class="text-[11px] text-gray-500">Sumimasen</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón Reset -->
     <button id="reset-btn" class="fixed bottom-4 right-4 bg-gray-800 text-white p-3 rounded-full shadow-lg opacity-50 hover:opacity-100 transition-opacity z-30">
         <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
     </button>
 
     <script>
-        // --- BASE DE DATOS LOCAL (IndexedDB para fotos) ---
+        // --- BASE DE DATOS LOCAL (IndexedDB) ---
         let db;
         const dbRequest = indexedDB.open("AsiaTripDB", 1);
         dbRequest.onupgradeneeded = (e) => {
@@ -137,304 +263,272 @@
         };
         dbRequest.onsuccess = (e) => db = e.target.result;
 
-        // --- DATOS DEL ITINERARIO COMPLETOS ---
+        // --- DATOS COMPLETOS DE ITINERARIO ---
         const itineraryData = [
-            {
-                date: "24/08/2026",
-                activities: [
-                    { id: "24-1", time: "17:40", city: "SHANGHAI", title: "Llegada al Aeropuerto PVG", location: "Aeropuerto PVG", cost: "$0", type: "Plane" },
-                    { id: "24-2", time: "20:00", city: "SHANGHAI", title: "Paseo nocturno por el malecón", location: "The Bund", cost: "$0", type: "Camera" },
-                    { id: "24-3", time: "20:45", city: "SHANGHAI", title: "Cruce del río en ferry", location: "Ferry The Bund", cost: "$260", type: "MapPin" },
-                    { id: "24-4", time: "21:00", city: "SHANGHAI", title: "Paseo distrito financiero", location: "Lujiazui", cost: "$0", type: "Camera" },
-                    { id: "24-5", time: "22:00", city: "SHANGHAI", title: "Cena", location: "Din Tai Fung", cost: "$25.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "25/08/2026",
-                activities: [
-                    { id: "25-1", time: "08:30", city: "SHANGHAI", title: "Visita al jardín clásico", location: "Yuyuan Garden", cost: "$5.200", type: "Camera" },
-                    { id: "25-2", time: "10:30", city: "SHANGHAI", title: "Templo taoísta", location: "City God Temple", cost: "$1.300", type: "Camera" },
-                    { id: "25-3", time: "11:15", city: "SHANGHAI", title: "Casco antiguo y bazar", location: "Yuyuan Bazaar", cost: "$0", type: "Camera" },
-                    { id: "25-4", time: "12:45", city: "SHANGHAI", title: "Almuerzo (Xiaolongbao)", location: "Nanxiang", cost: "$12.000", type: "Utensils" },
-                    { id: "25-5", time: "14:30", city: "SHANGHAI", title: "Museo de Shanghai", location: "Shanghai Museum", cost: "$0", type: "Camera" },
-                    { id: "25-6", time: "16:30", city: "SHANGHAI", title: "People's Square", location: "People's Square", cost: "$0", type: "Camera" },
-                    { id: "25-7", time: "17:15", city: "SHANGHAI", title: "Calle comercial", location: "Nanjing Road", cost: "$0", type: "ShoppingBag" },
-                    { id: "25-8", time: "19:00", city: "SHANGHAI", title: "Atardecer skyline", location: "The Bund", cost: "$0", type: "Camera" },
-                    { id: "25-9", time: "20:00", city: "SHANGHAI", title: "Cena", location: "Jia Jia Tang Bao", cost: "$20.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "26/08/2026",
-                activities: [
-                    { id: "26-1", time: "09:00", city: "SHANGHAI", title: "Visita al distrito financiero", location: "Lujiazui", cost: "$0", type: "Camera" },
-                    { id: "26-2", time: "09:30", city: "SHANGHAI", title: "Mirador de Shanghai Tower", location: "Shanghai Tower", cost: "$23.400", type: "Camera" },
-                    { id: "26-3", time: "11:30", city: "SHANGHAI", title: "Paseo entre rascacielos", location: "Jin Mao Tower", cost: "$0", type: "Camera" },
-                    { id: "26-4", time: "12:00", city: "SHANGHAI", title: "Visita a la Apple Store", location: "Apple Store Pudong", cost: "$0", type: "ShoppingBag" },
-                    { id: "26-5", time: "13:00", city: "SHANGHAI", title: "Almuerzo", location: "IFC Mall", cost: "$18.000", type: "Utensils" },
-                    { id: "26-6", time: "14:30", city: "SHANGHAI", title: "Visita al Museo de Astronomía", location: "Astronomy Museum", cost: "$3.900", type: "Camera" },
-                    { id: "26-7", time: "17:00", city: "SHANGHAI", title: "Paseo junto al río", location: "Riverside Promenade", cost: "$0", type: "Camera" },
-                    { id: "26-8", time: "19:30", city: "SHANGHAI", title: "Cena (Hot Pot)", location: "Haidilao", cost: "$28.000", type: "Utensils" },
-                    { id: "26-9", time: "21:00", city: "SHANGHAI", title: "Rooftop con vista panorámica", location: "Flair / POP Bar", cost: "$20.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "27/08/2026",
-                activities: [
-                    { id: "27-1", time: "08:30", city: "SHANGHAI", title: "Visita al Jade Buddha Temple", location: "Jade Buddha Temple", cost: "$2.600", type: "Camera" },
-                    { id: "27-2", time: "10:30", city: "SHANGHAI", title: "Distrito de arte contemporáneo", location: "M50 Creative Park", cost: "$0", type: "Camera" },
-                    { id: "27-3", time: "12:00", city: "SHANGHAI", title: "Paseo por Suzhou Creek", location: "Suzhou Creek", cost: "$0", type: "Camera" },
-                    { id: "27-4", time: "13:00", city: "SHANGHAI", title: "Almuerzo", location: "Cafés de Suzhou Creek", cost: "$15.000", type: "Utensils" },
-                    { id: "27-5", time: "14:30", city: "SHANGHAI", title: "Recorrido por Rockbund", location: "Rockbund", cost: "$0", type: "Camera" },
-                    { id: "27-6", time: "16:30", city: "SHANGHAI", title: "Paseo por North Bund", location: "North Bund", cost: "$0", type: "Camera" },
-                    { id: "27-7", time: "19:30", city: "SHANGHAI", title: "Cena de alta gastronomía", location: "Hakkasan", cost: "$60.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "28/08/2026",
-                activities: [
-                    { id: "28-1", time: "08:30", city: "SHANGHAI", title: "Visita al Longhua Temple", location: "Longhua Temple", cost: "$2.600", type: "Camera" },
-                    { id: "28-2", time: "10:30", city: "SHANGHAI", title: "Traslado estación Hongqiao", location: "Hongqiao Station", cost: "$0", type: "MapPin" },
-                    { id: "28-3", time: "12:30", city: "HANGZHOU", title: "Llegada y hotel", location: "Hangzhou East Station", cost: "$0", type: "Train" },
-                    { id: "28-4", time: "14:30", city: "HANGZHOU", title: "Paseo por el lago", location: "West Lake", cost: "$0", type: "Camera" },
-                    { id: "28-5", time: "15:30", city: "HANGZHOU", title: "Paseo en barco tradicional", location: "West Lake Cruise", cost: "$8.000", type: "Camera" },
-                    { id: "28-6", time: "17:00", city: "HANGZHOU", title: "Visita pagoda histórica", location: "Leifeng Pagoda", cost: "$7.000", type: "Camera" },
-                    { id: "28-7", time: "18:30", city: "HANGZHOU", title: "Atardecer en senderos", location: "Su Causeway", cost: "$0", type: "Camera" },
-                    { id: "28-8", time: "20:00", city: "HANGZHOU", title: "Cena gastronomía local", location: "Hubin / Lakeside", cost: "$20.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "29/08/2026",
-                activities: [
-                    { id: "29-1", time: "08:30", city: "HANGZHOU", title: "Templo budista Lingyin", location: "Lingyin Temple", cost: "$9.000", type: "Camera" },
-                    { id: "29-2", time: "10:30", city: "HANGZHOU", title: "Formaciones rocosas", location: "Feilai Peak", cost: "$9.000", type: "Camera" },
-                    { id: "29-3", time: "12:30", city: "HANGZHOU", title: "Almuerzo tradicional", location: "Restaurante local", cost: "$15.000", type: "Utensils" },
-                    { id: "29-4", time: "14:00", city: "HANGZHOU", title: "Plantaciones té verde", location: "Longjing Village", cost: "$0", type: "Camera" },
-                    { id: "29-5", time: "15:00", city: "HANGZHOU", title: "Degustación té Longjing", location: "Casa de té", cost: "$6.000", type: "Coffee" },
-                    { id: "29-6", time: "16:30", city: "HANGZHOU", title: "Jardín tradicional", location: "Mengxiyuan", cost: "$0", type: "Camera" },
-                    { id: "29-7", time: "18:00", city: "HANGZHOU", title: "Calle histórica", location: "Hefang Street", cost: "$0", type: "ShoppingBag" },
-                    { id: "29-8", time: "19:30", city: "HANGZHOU", title: "Cena y paseo nocturno", location: "Hefang Street", cost: "$20.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "30/08/2026",
-                activities: [
-                    { id: "30-1", time: "06:30", city: "HANGZHOU", title: "Check-out hotel", location: "Hotel", cost: "$0", type: "Hotel" },
-                    { id: "30-2", time: "07:00", city: "HANGZHOU", title: "Traslado a estación", location: "Hangzhou East", cost: "$0", type: "MapPin" },
-                    { id: "30-3", time: "09:00", city: "SUZHOU", title: "Llegada desde Hangzhou", location: "Suzhou Station", cost: "$0", type: "Train" },
-                    { id: "30-4", time: "09:30", city: "SUZHOU", title: "Jardín clásico", location: "Humble Administrator's", cost: "$7.000", type: "Camera" },
-                    { id: "30-5", time: "11:15", city: "SUZHOU", title: "Paseo calle histórica", location: "Pingjiang Road", cost: "$0", type: "Camera" },
-                    { id: "30-6", time: "12:30", city: "SUZHOU", title: "Almuerzo local", location: "Pingjiang Road", cost: "$15.000", type: "Utensils" },
-                    { id: "30-7", time: "13:45", city: "SUZHOU", title: "Templo histórico", location: "Hanshan Temple", cost: "$3.000", type: "Camera" },
-                    { id: "30-8", time: "15:15", city: "SUZHOU", title: "Zona de canales", location: "Shantang Street", cost: "$0", type: "Camera" },
-                    { id: "30-9", time: "16:30", city: "SUZHOU", title: "Paseo en barco", location: "Canal Boat", cost: "$7.000", type: "Camera" },
-                    { id: "30-10", time: "17:30", city: "SUZHOU", title: "Traslado estación", location: "Suzhou Station", cost: "$5.000", type: "MapPin" },
-                    { id: "30-11", time: "18:40", city: "SHANGHAI", title: "Llegada a Shanghái", location: "Hongqiao Station", cost: "$0", type: "Train" },
-                    { id: "30-12", time: "19:00", city: "SHANGHAI", title: "Traslado y Check-in", location: "Hotel PVG", cost: "$18.000", type: "Hotel" },
-                    { id: "30-13", time: "20:30", city: "SHANGHAI", title: "Cena", location: "Cerca Hotel", cost: "$15.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "31/08/2026",
-                activities: [
-                    { id: "31-1", time: "06:30", city: "SHANGHAI", title: "Check-out y aeropuerto", location: "Pudong PVG", cost: "$0", type: "Hotel" },
-                    { id: "31-2", time: "09:00", city: "SHANGHAI", title: "Vuelo a Tokio", location: "Aeropuerto PVG", cost: "$0", type: "Plane" },
-                    { id: "31-3", time: "14:30", city: "TOKYO", title: "Vuelo a Komatsu", location: "Haneda HND", cost: "$0", type: "Plane" },
-                    { id: "31-4", time: "16:00", city: "KOMATSU", title: "Llegada Komatsu", location: "Komatsu KMQ", cost: "$0", type: "Plane" },
-                    { id: "31-5", time: "16:30", city: "KOMATSU", title: "Traslado a Kanazawa", location: "Bus Limousine", cost: "$2.500", type: "MapPin" },
-                    { id: "31-6", time: "17:30", city: "KANAZAWA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
-                    { id: "31-7", time: "19:00", city: "KANAZAWA", title: "Cena", location: "Estación Kanazawa", cost: "$20.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "01/09/2026",
-                activities: [
-                    { id: "01-1", time: "08:30", city: "KANAZAWA", title: "Jardín Kenroku-en", location: "Kenroku-en", cost: "$2.000", type: "Camera" },
-                    { id: "01-2", time: "10:30", city: "KANAZAWA", title: "Castillo Kanazawa", location: "Castle Park", cost: "$0", type: "Camera" },
-                    { id: "01-3", time: "12:30", city: "KANAZAWA", title: "Almuerzo mercado", location: "Mercado Omicho", cost: "$18.000", type: "Utensils" },
-                    { id: "01-4", time: "14:00", city: "KANAZAWA", title: "Museo Arte S.XXI", location: "21st Century Museum", cost: "$3.500", type: "Camera" },
-                    { id: "01-5", time: "15:45", city: "KANAZAWA", title: "Higashi Chaya", location: "Higashi Chaya", cost: "$0", type: "Camera" },
-                    { id: "01-6", time: "16:45", city: "KANAZAWA", title: "Traslado a Toyama", location: "Shinkansen", cost: "$0", type: "Train" },
-                    { id: "01-7", time: "17:30", city: "TOYAMA", title: "Festival Kaze no Bon", location: "Yatsuo", cost: "$0", type: "Camera" },
-                    { id: "01-8", time: "22:00", city: "TOYAMA", title: "Regreso a Kanazawa", location: "Shinkansen", cost: "$0", type: "Train" }
-                ]
-            },
-            {
-                date: "02/09/2026",
-                activities: [
-                    { id: "02-1", time: "08:00", city: "KANAZAWA", title: "Check-out y Salida", location: "Nohi Bus", cost: "$0", type: "MapPin" },
-                    { id: "02-2", time: "10:00", city: "SHIRAKAWA-GO", title: "Pueblo histórico", location: "Shirakawa-go", cost: "$0", type: "Camera" },
-                    { id: "02-3", time: "12:30", city: "SHIRAKAWA-GO", title: "Almuerzo", location: "Local", cost: "$15.000", type: "Utensils" },
-                    { id: "02-4", time: "14:00", city: "SHIRAKAWA-GO", title: "Bus a Takayama", location: "Nohi Bus", cost: "$0", type: "MapPin" },
-                    { id: "02-5", time: "15:00", city: "TAKAYAMA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
-                    { id: "02-6", time: "16:00", city: "TAKAYAMA", title: "Sanmachi Suji", location: "Casco Histórico", cost: "$0", type: "Camera" },
-                    { id: "02-7", time: "19:00", city: "TAKAYAMA", title: "Cena carne Hida", location: "Local", cost: "$25.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "03/09/2026",
-                activities: [
-                    { id: "03-1", time: "08:00", city: "TAKAYAMA", title: "Mercado Miyagawa", location: "Morning Market", cost: "$0", type: "ShoppingBag" },
-                    { id: "03-2", time: "09:30", city: "TAKAYAMA", title: "Takayama Jinya", location: "Takayama Jinya", cost: "$3.000", type: "Camera" },
-                    { id: "03-3", time: "11:00", city: "TAKAYAMA", title: "Paseo Sanmachi", location: "Old Town", cost: "$0", type: "Camera" },
-                    { id: "03-4", time: "12:30", city: "TAKAYAMA", title: "Almuerzo", location: "Local", cost: "$18.000", type: "Utensils" },
-                    { id: "03-5", time: "14:00", city: "TAKAYAMA", title: "Baño termal (Onsen)", location: "Green Hotel", cost: "$8.000", type: "Camera" },
-                    { id: "03-6", time: "16:30", city: "TAKAYAMA", title: "Traslado Matsumoto", location: "JR Hida", cost: "$0", type: "Train" },
-                    { id: "03-7", time: "19:30", city: "MATSUMOTO", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" }
-                ]
-            },
-            {
-                date: "04/09/2026",
-                activities: [
-                    { id: "04-1", time: "08:30", city: "MATSUMOTO", title: "Castillo Matsumoto", location: "Matsumoto Castle", cost: "$4.000", type: "Camera" },
-                    { id: "04-2", time: "10:30", city: "MATSUMOTO", title: "Nawate-dori", location: "Nawate Street", cost: "$0", type: "Camera" },
-                    { id: "04-3", time: "11:30", city: "MATSUMOTO", title: "Nakamachi", location: "Nakamachi Street", cost: "$0", type: "Camera" },
-                    { id: "04-4", time: "12:30", city: "MATSUMOTO", title: "Almuerzo", location: "Local", cost: "$18.000", type: "Utensils" },
-                    { id: "04-5", time: "14:00", city: "MATSUMOTO", title: "Traslado Kawaguchiko", location: "JR + Fujikyuko", cost: "$0", type: "Train" },
-                    { id: "04-6", time: "17:30", city: "KAWAGUCHIKO", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
-                    { id: "04-7", time: "18:30", city: "KAWAGUCHIKO", title: "Atardecer", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
-                    { id: "04-8", time: "19:30", city: "KAWAGUCHIKO", title: "Cena", location: "Local", cost: "$20.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "05/09/2026",
-                activities: [
-                    { id: "05-1", time: "07:30", city: "KAWAGUCHIKO", title: "Chureito Pagoda", location: "Arakurayama", cost: "$0", type: "Camera" },
-                    { id: "05-2", time: "10:00", city: "KAWAGUCHIKO", title: "Oishi Park", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
-                    { id: "05-3", time: "11:30", city: "KAWAGUCHIKO", title: "Museo de Música", location: "Music Forest", cost: "$12.000", type: "Camera" },
-                    { id: "05-4", time: "13:30", city: "KAWAGUCHIKO", title: "Almuerzo", location: "Local", cost: "$18.000", type: "Utensils" },
-                    { id: "05-5", time: "15:00", city: "KAWAGUCHIKO", title: "Teleférico Mt. Fuji", location: "Ropeway", cost: "$6.000", type: "Camera" },
-                    { id: "05-6", time: "17:00", city: "KAWAGUCHIKO", title: "Ribera del lago", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
-                    { id: "05-7", time: "19:00", city: "KAWAGUCHIKO", title: "Cena", location: "Local", cost: "$20.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "06/09/2026",
-                activities: [
-                    { id: "06-1", time: "09:00", city: "KAWAGUCHIKO", title: "Traslado a Tokio", location: "Fujikyuko + JR", cost: "$0", type: "Train" },
-                    { id: "06-2", time: "12:30", city: "TOKYO", title: "Check-in", location: "Hotel Shimbashi", cost: "$0", type: "Hotel" },
-                    { id: "06-3", time: "14:00", city: "TOKYO", title: "Jardines Palacio", location: "East Gardens", cost: "$0", type: "Camera" },
-                    { id: "06-4", time: "16:00", city: "TOKYO", title: "Marunouchi", location: "Marunouchi", cost: "$0", type: "Camera" },
-                    { id: "06-5", time: "18:00", city: "TOKYO", title: "Cóctel vista panorámica", location: "Sky Gallery", cost: "$20.000", type: "Coffee" },
-                    { id: "06-6", time: "20:00", city: "TOKYO", title: "Cena", location: "Akasaka", cost: "$22.000", type: "Utensils" }
-                ]
-            },
-            {
-                date: "07/09/2026",
-                activities: [
-                    { id: "07-1", time: "09:30", city: "TOKYO", title: "Ropa", location: "UNIQLO Ginza", cost: "$0", type: "ShoppingBag" },
-                    { id: "07-2", time: "10:45", city: "TOKYO", title: "Ropa", location: "GU Ginza", cost: "$0", type: "ShoppingBag" },
-                    { id: "07-3", time: "11:30", city: "TOKYO", title: "Hogar y papelería", location: "MUJI Ginza", cost: "$0", type: "ShoppingBag" },
-                    { id: "07-4", time: "12:30", city: "TOKYO", title: "Almuerzo", location: "Ginza", cost: "$18.000", type: "Utensils" },
-                    { id: "07-5", time: "13:30", city: "TOKYO", title: "Cosmética", location: "Matsumoto Kiyoshi", cost: "$0", type: "ShoppingBag" },
-                    { id: "07-6", time: "14:30", city: "TOKYO", title: "Recuerdos", location: "Loft Ginza", cost: "$0", type: "ShoppingBag" },
-                    { id: "07-7", time: "15:30", city: "TOKYO", title: "Snacks Don Quijote", location: "Donki", cost: "$0", type: "ShoppingBag" },
-                    { id: "07-8", time: "17:00", city: "TOKYO", title: "Moda japonesa", location: "Ginza Six", cost: "$0", type: "ShoppingBag" },
-                    { id: "07-9", time: "19:00", city: "TOKYO", title: "Organizar equipaje", location: "Hotel", cost: "$0", type: "Hotel" }
-                ]
-            },
-            {
-                date: "08/09/2026",
-                activities: [
-                    { id: "08-1", time: "09:30", city: "TOKYO", title: "Kagurazaka", location: "Kagurazaka", cost: "$0", type: "Camera" },
-                    { id: "08-2", time: "10:30", city: "TOKYO", title: "Cafetería tradicional", location: "Kagurazaka", cost: "$8.000", type: "Coffee" },
-                    { id: "08-3", time: "11:30", city: "TOKYO", title: "Callejones históricos", location: "Kagurazaka", cost: "$0", type: "Camera" },
-                    { id: "08-4", time: "13:00", city: "TOKYO", title: "Almuerzo", location: "Kagurazaka", cost: "$18.000", type: "Utensils" },
-                    { id: "08-5", time: "14:30", city: "YOKOHAMA", title: "Traslado Yokohama", location: "JR Line", cost: "$0", type: "Train" },
-                    { id: "08-6", time: "15:30", city: "YOKOHAMA", title: "Red Brick Warehouse", location: "Minato Mirai", cost: "$0", type: "Camera" },
-                    { id: "08-7", time: "17:00", city: "YOKOHAMA", title: "Osanbashi Pier", location: "Minato Mirai", cost: "$0", type: "Camera" },
-                    { id: "08-8", time: "18:15", city: "YOKOHAMA", title: "Atardecer bahía", location: "Minato Mirai", cost: "$0", type: "Camera" },
-                    { id: "08-9", time: "19:00", city: "YOKOHAMA", title: "Noria Cosmo Clock", location: "Cosmo World", cost: "$6.000", type: "Camera" },
-                    { id: "08-10", time: "20:00", city: "YOKOHAMA", title: "Cena", location: "Chinatown", cost: "$22.000", type: "Utensils" },
-                    { id: "08-11", time: "22:00", city: "TOKYO", title: "Regreso hotel", location: "Shimbashi", cost: "$3.000", type: "Train" }
-                ]
-            },
-            {
-                date: "09/09/2026",
-                activities: [
-                    { id: "09-1", time: "09:30", city: "TOKYO", title: "Azabudai Hills", location: "Azabudai Hills", cost: "$0", type: "Camera" },
-                    { id: "09-2", time: "11:00", city: "TOKYO", title: "Templo Zojo-ji", location: "Zojo-ji", cost: "$0", type: "Camera" },
-                    { id: "09-3", time: "13:00", city: "TOKYO", title: "Almuerzo", location: "Roppongi", cost: "$20.000", type: "Utensils" },
-                    { id: "09-4", time: "14:30", city: "TOKYO", title: "Mirador", location: "Tokyo City View", cost: "$15.000", type: "Camera" },
-                    { id: "09-5", time: "16:45", city: "TOKYO", title: "Shibuya", location: "Shibuya", cost: "$0", type: "Camera" },
-                    { id: "09-6", time: "17:45", city: "TOKYO", title: "Atardecer", location: "Shibuya Sky", cost: "$18.000", type: "Camera" },
-                    { id: "09-7", time: "20:00", city: "TOKYO", title: "Cena de despedida", location: "Shibuya", cost: "$25.000", type: "Utensils" }
-                ]
-            }
+            { date: "24/08/2026", activities: [
+                { id: "24-1", time: "17:40", city: "SHANGHAI", title: "Llegada al Aeropuerto PVG", location: "Aeropuerto PVG", cost: "$0", type: "Plane" },
+                { id: "24-2", time: "20:00", city: "SHANGHAI", title: "Paseo nocturno por el malecón", location: "The Bund", cost: "$0", type: "Camera" },
+                { id: "24-3", time: "20:45", city: "SHANGHAI", title: "Cruce del río en ferry", location: "Ferry The Bund", cost: "$260", type: "Train" },
+                { id: "24-4", time: "21:00", city: "SHANGHAI", title: "Paseo distrito financiero", location: "Lujiazui", cost: "$0", type: "Camera" },
+                { id: "24-5", time: "22:00", city: "SHANGHAI", title: "Cena", location: "Din Tai Fung", cost: "$25.000", type: "Utensils" }
+            ]},
+            { date: "25/08/2026", activities: [
+                { id: "25-1", time: "08:30", city: "SHANGHAI", title: "Visita al jardín clásico", location: "Yuyuan Garden", cost: "$5.200", type: "Camera" },
+                { id: "25-2", time: "10:30", city: "SHANGHAI", title: "Templo taoísta", location: "City God Temple", cost: "$1.300", type: "Camera" },
+                { id: "25-3", time: "11:15", city: "SHANGHAI", title: "Casco antiguo y bazar", location: "Yuyuan Bazaar", cost: "$0", type: "Camera" },
+                { id: "25-4", time: "12:45", city: "SHANGHAI", title: "Almuerzo (Xiaolongbao)", location: "Nanxiang", cost: "$12.000", type: "Utensils" },
+                { id: "25-5", time: "14:30", city: "SHANGHAI", title: "Museo de Shanghai", location: "Shanghai Museum", cost: "$0", type: "Camera" },
+                { id: "25-6", time: "16:30", city: "SHANGHAI", title: "People's Square", location: "People's Square", cost: "$0", type: "Camera" },
+                { id: "25-7", time: "17:15", city: "SHANGHAI", title: "Calle comercial", location: "Nanjing Road", cost: "$0", type: "ShoppingBag" },
+                { id: "25-8", time: "19:00", city: "SHANGHAI", title: "Atardecer skyline", location: "The Bund", cost: "$0", type: "Camera" },
+                { id: "25-9", time: "20:00", city: "SHANGHAI", title: "Cena", location: "Jia Jia Tang Bao", cost: "$20.000", type: "Utensils" }
+            ]},
+            { date: "26/08/2026", activities: [
+                { id: "26-1", time: "09:00", city: "SHANGHAI", title: "Visita al distrito financiero", location: "Lujiazui", cost: "$0", type: "Camera" },
+                { id: "26-2", time: "09:30", city: "SHANGHAI", title: "Mirador de Shanghai Tower", location: "Shanghai Tower", cost: "$23.400", type: "Camera" },
+                { id: "26-3", time: "11:30", city: "SHANGHAI", title: "Paseo entre rascacielos", location: "Jin Mao Tower", cost: "$0", type: "Camera" },
+                { id: "26-4", time: "12:00", city: "SHANGHAI", title: "Visita a la Apple Store", location: "Apple Store Pudong", cost: "$0", type: "ShoppingBag" },
+                { id: "26-5", time: "13:00", city: "SHANGHAI", title: "Almuerzo", location: "IFC Mall", cost: "$18.000", type: "Utensils" },
+                { id: "26-6", time: "14:30", city: "SHANGHAI", title: "Visita al Museo de Astronomía", location: "Astronomy Museum", cost: "$3.900", type: "Camera" },
+                { id: "26-7", time: "17:00", city: "SHANGHAI", title: "Paseo junto al río", location: "Riverside Promenade", cost: "$0", type: "Camera" },
+                { id: "26-8", time: "19:30", city: "SHANGHAI", title: "Cena (Hot Pot)", location: "Haidilao", cost: "$28.000", type: "Utensils" },
+                { id: "26-9", time: "21:00", city: "SHANGHAI", title: "Rooftop con vista panorámica", location: "Flair / POP Bar", cost: "$20.000", type: "Utensils" }
+            ]},
+            { date: "27/08/2026", activities: [
+                { id: "27-1", time: "08:30", city: "SHANGHAI", title: "Visita al Jade Buddha Temple", location: "Jade Buddha Temple", cost: "$2.600", type: "Camera" },
+                { id: "27-2", time: "10:30", city: "SHANGHAI", title: "Distrito de arte contemporáneo", location: "M50 Creative Park", cost: "$0", type: "Camera" },
+                { id: "27-3", time: "12:00", city: "SHANGHAI", title: "Paseo por Suzhou Creek", location: "Suzhou Creek", cost: "$0", type: "Camera" },
+                { id: "27-4", time: "13:00", city: "SHANGHAI", title: "Almuerzo", location: "Cafés de Suzhou Creek", cost: "$15.000", type: "Utensils" },
+                { id: "27-5", time: "14:30", city: "SHANGHAI", title: "Recorrido por Rockbund", location: "Rockbund", cost: "$0", type: "Camera" },
+                { id: "27-6", time: "16:30", city: "SHANGHAI", title: "Paseo por North Bund", location: "North Bund", cost: "$0", type: "Camera" },
+                { id: "27-7", time: "19:30", city: "SHANGHAI", title: "Cena de alta gastronomía", location: "Hakkasan", cost: "$60.000", type: "Utensils" }
+            ]},
+            { date: "28/08/2026", activities: [
+                { id: "28-1", time: "08:30", city: "SHANGHAI", title: "Visita al Longhua Temple", location: "Longhua Temple", cost: "$2.600", type: "Camera" },
+                { id: "28-2", time: "10:30", city: "SHANGHAI", title: "Traslado estación Hongqiao", location: "Hongqiao Station", cost: "$0", type: "Train" },
+                { id: "28-3", time: "12:30", city: "HANGZHOU", title: "Llegada y hotel", location: "Hangzhou East Station", cost: "$0", type: "Train" },
+                { id: "28-4", time: "14:30", city: "HANGZHOU", title: "Paseo por el lago", location: "West Lake", cost: "$0", type: "Camera" },
+                { id: "28-5", time: "15:30", city: "HANGZHOU", title: "Paseo en barco tradicional", location: "West Lake Cruise", cost: "$8.000", type: "Camera" },
+                { id: "28-6", time: "17:00", city: "HANGZHOU", title: "Visita pagoda histórica", location: "Leifeng Pagoda", cost: "$7.000", type: "Camera" },
+                { id: "28-7", time: "18:30", city: "HANGZHOU", title: "Atardecer en senderos", location: "Su Causeway", cost: "$0", type: "Camera" },
+                { id: "28-8", time: "20:00", city: "HANGZHOU", title: "Cena gastronomía local", location: "Hubin / Lakeside", cost: "$20.000", type: "Utensils" }
+            ]},
+            { date: "29/08/2026", activities: [
+                { id: "29-1", time: "08:30", city: "HANGZHOU", title: "Templo budista Lingyin", location: "Lingyin Temple", cost: "$9.000", type: "Camera" },
+                { id: "29-2", time: "10:30", city: "HANGZHOU", title: "Formaciones rocosas", location: "Feilai Peak", cost: "$9.000", type: "Camera" },
+                { id: "29-3", time: "12:30", city: "HANGZHOU", title: "Almuerzo tradicional", location: "Restaurante local", cost: "$15.000", type: "Utensils" },
+                { id: "29-4", time: "14:00", city: "HANGZHOU", title: "Plantaciones té verde", location: "Longjing Village", cost: "$0", type: "Camera" },
+                { id: "29-5", time: "15:00", city: "HANGZHOU", title: "Degustación té Longjing", location: "Casa de té", cost: "$6.000", type: "Utensils" },
+                { id: "29-6", time: "16:30", city: "HANGZHOU", title: "Jardín tradicional", location: "Mengxiyuan", cost: "$0", type: "Camera" },
+                { id: "29-7", time: "18:00", city: "HANGZHOU", title: "Calle histórica", location: "Hefang Street", cost: "$0", type: "ShoppingBag" },
+                { id: "29-8", time: "19:30", city: "HANGZHOU", title: "Cena y paseo nocturno", location: "Hefang Street", cost: "$20.000", type: "Utensils" }
+            ]},
+            { date: "30/08/2026", activities: [
+                { id: "30-1", time: "06:30", city: "HANGZHOU", title: "Check-out hotel", location: "Hotel", cost: "$0", type: "Hotel" },
+                { id: "30-2", time: "07:00", city: "HANGZHOU", title: "Traslado a estación", location: "Hangzhou East", cost: "$0", type: "Train" },
+                { id: "30-3", time: "09:00", city: "SUZHOU", title: "Llegada desde Hangzhou", location: "Suzhou Station", cost: "$0", type: "Train" },
+                { id: "30-4", time: "09:30", city: "SUZHOU", title: "Jardín clásico", location: "Humble Administrator's", cost: "$7.000", type: "Camera" },
+                { id: "30-5", time: "11:15", city: "SUZHOU", title: "Paseo calle histórica", location: "Pingjiang Road", cost: "$0", type: "Camera" },
+                { id: "30-6", time: "12:30", city: "SUZHOU", title: "Almuerzo local", location: "Pingjiang Road", cost: "$15.000", type: "Utensils" },
+                { id: "30-7", time: "13:45", city: "SUZHOU", title: "Templo histórico", location: "Hanshan Temple", cost: "$3.000", type: "Camera" },
+                { id: "30-8", time: "15:15", city: "SUZHOU", title: "Zona de canales", location: "Shantang Street", cost: "$0", type: "Camera" },
+                { id: "30-9", time: "16:30", city: "SUZHOU", title: "Paseo en barco", location: "Canal Boat", cost: "$7.000", type: "Camera" },
+                { id: "30-10", time: "17:30", city: "SUZHOU", title: "Traslado estación", location: "Suzhou Station", cost: "$5.000", type: "Train" },
+                { id: "30-11", time: "18:40", city: "SHANGHAI", title: "Llegada a Shanghái", location: "Hongqiao Station", cost: "$0", type: "Train" },
+                { id: "30-12", time: "19:00", city: "SHANGHAI", title: "Traslado y Check-in", location: "Hotel PVG", cost: "$18.000", type: "Hotel" },
+                { id: "30-13", time: "20:30", city: "SHANGHAI", title: "Cena", location: "Cerca Hotel", cost: "$15.000", type: "Utensils" }
+            ]},
+            { date: "31/08/2026", activities: [
+                { id: "31-1", time: "06:30", city: "SHANGHAI", title: "Check-out y aeropuerto", location: "Pudong PVG", cost: "$0", type: "Hotel" },
+                { id: "31-2", time: "09:00", city: "SHANGHAI", title: "Vuelo a Tokio", location: "Aeropuerto PVG", cost: "$0", type: "Plane" },
+                { id: "31-3", time: "14:30", city: "TOKYO", title: "Vuelo a Komatsu", location: "Haneda HND", cost: "$0", type: "Plane" },
+                { id: "31-4", time: "16:00", city: "KANAZAWA", title: "Llegada Komatsu", location: "Komatsu KMQ", cost: "$0", type: "Plane" },
+                { id: "31-5", time: "16:30", city: "KANAZAWA", title: "Traslado a Kanazawa", location: "Bus Limousine", cost: "$2.500", type: "Train" },
+                { id: "31-6", time: "17:30", city: "KANAZAWA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
+                { id: "31-7", time: "19:00", city: "KANAZAWA", title: "Cena", location: "Estación Kanazawa", cost: "$20.000", type: "Utensils" }
+            ]},
+            { date: "01/09/2026", activities: [
+                { id: "01-1", time: "08:30", city: "KANAZAWA", title: "Jardín Kenroku-en", location: "Kenroku-en", cost: "$2.000", type: "Camera" },
+                { id: "01-2", time: "10:30", city: "KANAZAWA", title: "Castillo Kanazawa", location: "Castle Park", cost: "$0", type: "Camera" },
+                { id: "01-3", time: "12:30", city: "KANAZAWA", title: "Almuerzo mercado", location: "Mercado Omicho", cost: "$18.000", type: "Utensils" },
+                { id: "01-4", time: "14:00", city: "KANAZAWA", title: "Museo Arte S.XXI", location: "21st Century Museum", cost: "$3.500", type: "Camera" },
+                { id: "01-5", time: "15:45", city: "KANAZAWA", title: "Higashi Chaya", location: "Higashi Chaya", cost: "$0", type: "Camera" },
+                { id: "01-6", time: "16:45", city: "KANAZAWA", title: "Traslado a Toyama", location: "Shinkansen", cost: "$0", type: "Train" },
+                { id: "01-7", time: "17:30", city: "KANAZAWA", title: "Festival Kaze no Bon", location: "Yatsuo", cost: "$0", type: "Camera" },
+                { id: "01-8", time: "22:00", city: "KANAZAWA", title: "Regreso a Kanazawa", location: "Shinkansen", cost: "$0", type: "Train" }
+            ]},
+            { date: "02/09/2026", activities: [
+                { id: "02-1", time: "08:00", city: "KANAZAWA", title: "Check-out y Salida", location: "Nohi Bus", cost: "$0", type: "Hotel" },
+                { id: "02-2", time: "10:00", city: "TAKAYAMA", title: "Pueblo histórico", location: "Shirakawa-go", cost: "$0", type: "Camera" },
+                { id: "02-3", time: "12:30", city: "TAKAYAMA", title: "Almuerzo", location: "Shirakawa-go Local", cost: "$15.000", type: "Utensils" },
+                { id: "02-4", time: "14:00", city: "TAKAYAMA", title: "Bus a Takayama", location: "Nohi Bus", cost: "$0", type: "Train" },
+                { id: "02-5", time: "15:00", city: "TAKAYAMA", title: "Check-in", location: "Hotel", cost: "$0", type: "Hotel" },
+                { id: "02-6", time: "16:00", city: "TAKAYAMA", title: "Sanmachi Suji", location: "Casco Histórico", cost: "$0", type: "Camera" },
+                { id: "02-7", time: "19:00", city: "TAKAYAMA", title: "Cena carne Hida", location: "Takayama Local", cost: "$25.000", type: "Utensils" }
+            ]},
+            { date: "03/09/2026", activities: [
+                { id: "03-1", time: "08:00", city: "TAKAYAMA", title: "Mercado Miyagawa", location: "Morning Market", cost: "$0", type: "ShoppingBag" },
+                { id: "03-2", time: "09:30", city: "TAKAYAMA", title: "Takayama Jinya", location: "Takayama Jinya", cost: "$3.000", type: "Camera" },
+                { id: "03-3", time: "11:00", city: "TAKAYAMA", title: "Paseo Sanmachi", location: "Old Town", cost: "$0", type: "Camera" },
+                { id: "03-4", time: "12:30", city: "TAKAYAMA", title: "Almuerzo", location: "Takayama Local", cost: "$18.000", type: "Utensils" },
+                { id: "03-5", time: "14:00", city: "TAKAYAMA", title: "Baño termal (Onsen)", location: "Green Hotel", cost: "$8.000", type: "Hotel" },
+                { id: "03-6", time: "16:30", city: "MATSUMOTO", title: "Traslado Matsumoto", location: "JR Hida", cost: "$0", type: "Train" },
+                { id: "03-7", time: "19:30", city: "MATSUMOTO", title: "Check-in", location: "Hotel Matsumoto", cost: "$0", type: "Hotel" }
+            ]},
+            { date: "04/09/2026", activities: [
+                { id: "04-1", time: "08:30", city: "MATSUMOTO", title: "Castillo Matsumoto", location: "Matsumoto Castle", cost: "$4.000", type: "Camera" },
+                { id: "04-2", time: "10:30", city: "MATSUMOTO", title: "Nawate-dori", location: "Nawate Street", cost: "$0", type: "Camera" },
+                { id: "04-3", time: "11:30", city: "MATSUMOTO", title: "Nakamachi", location: "Nakamachi Street", cost: "$0", type: "Camera" },
+                { id: "04-4", time: "12:30", city: "MATSUMOTO", title: "Almuerzo", location: "Matsumoto Local", cost: "$18.000", type: "Utensils" },
+                { id: "04-5", time: "14:00", city: "KAWAGUCHIKO", title: "Traslado Kawaguchiko", location: "JR Fujikyuko", cost: "$0", type: "Train" },
+                { id: "04-6", time: "17:30", city: "KAWAGUCHIKO", title: "Check-in", location: "Hotel Kawaguchiko", cost: "$0", type: "Hotel" },
+                { id: "04-7", time: "18:30", city: "KAWAGUCHIKO", title: "Atardecer", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
+                { id: "04-8", time: "19:30", city: "KAWAGUCHIKO", title: "Cena", location: "Kawaguchiko Local", cost: "$20.000", type: "Utensils" }
+            ]},
+            { date: "05/09/2026", activities: [
+                { id: "05-1", time: "07:30", city: "KAWAGUCHIKO", title: "Chureito Pagoda", location: "Arakurayama", cost: "$0", type: "Camera" },
+                { id: "05-2", time: "10:00", city: "KAWAGUCHIKO", title: "Oishi Park", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
+                { id: "05-3", time: "11:30", city: "KAWAGUCHIKO", title: "Museo de Música", location: "Music Forest", cost: "$12.000", type: "Camera" },
+                { id: "05-4", time: "13:30", city: "KAWAGUCHIKO", title: "Almuerzo", location: "Kawaguchiko Local", cost: "$18.000", type: "Utensils" },
+                { id: "05-5", time: "15:00", city: "KAWAGUCHIKO", title: "Teleférico Mt. Fuji", location: "Ropeway", cost: "$6.000", type: "Camera" },
+                { id: "05-6", time: "17:00", city: "KAWAGUCHIKO", title: "Ribera del lago", location: "Lago Kawaguchi", cost: "$0", type: "Camera" },
+                { id: "05-7", time: "19:00", city: "KAWAGUCHIKO", title: "Cena", location: "Kawaguchiko Local", cost: "$20.000", type: "Utensils" }
+            ]},
+            { date: "06/09/2026", activities: [
+                { id: "06-1", time: "09:00", city: "TOKYO", title: "Traslado a Tokio", location: "Fujikyuko JR", cost: "$0", type: "Train" },
+                { id: "06-2", time: "12:30", city: "TOKYO", title: "Check-in", location: "Hotel Shimbashi", cost: "$0", type: "Hotel" },
+                { id: "06-3", time: "14:00", city: "TOKYO", title: "Jardines Palacio", location: "East Gardens", cost: "$0", type: "Camera" },
+                { id: "06-4", time: "16:00", city: "TOKYO", title: "Marunouchi", location: "Marunouchi", cost: "$0", type: "Camera" },
+                { id: "06-5", time: "18:00", city: "TOKYO", title: "Cóctel vista panorámica", location: "Sky Gallery", cost: "$20.000", type: "Utensils" },
+                { id: "06-6", time: "20:00", city: "TOKYO", title: "Cena", location: "Akasaka", cost: "$22.000", type: "Utensils" }
+            ]},
+            { date: "07/09/2026", activities: [
+                { id: "07-1", time: "09:30", city: "TOKYO", title: "Ropa", location: "UNIQLO Ginza", cost: "$0", type: "ShoppingBag" },
+                { id: "07-2", time: "10:45", city: "TOKYO", title: "Ropa", location: "GU Ginza", cost: "$0", type: "ShoppingBag" },
+                { id: "07-3", time: "11:30", city: "TOKYO", title: "Hogar y papelería", location: "MUJI Ginza", cost: "$0", type: "ShoppingBag" },
+                { id: "07-4", time: "12:30", city: "TOKYO", title: "Almuerzo", location: "Ginza Local", cost: "$18.000", type: "Utensils" },
+                { id: "07-5", time: "13:30", city: "TOKYO", title: "Cosmética", location: "Matsumoto Kiyoshi", cost: "$0", type: "ShoppingBag" },
+                { id: "07-6", time: "14:30", city: "TOKYO", title: "Recuerdos", location: "Loft Ginza", cost: "$0", type: "ShoppingBag" },
+                { id: "07-7", time: "15:30", city: "TOKYO", title: "Snacks Don Quijote", location: "Donki Ginza", cost: "$0", type: "ShoppingBag" },
+                { id: "07-8", time: "17:00", city: "TOKYO", title: "Moda japonesa", location: "Ginza Six", cost: "$0", type: "ShoppingBag" },
+                { id: "07-9", time: "19:00", city: "TOKYO", title: "Organizar equipaje", location: "Hotel Shimbashi", cost: "$0", type: "Hotel" }
+            ]},
+            { date: "08/09/2026", activities: [
+                { id: "08-1", time: "09:30", city: "TOKYO", title: "Kagurazaka", location: "Kagurazaka", cost: "$0", type: "Camera" },
+                { id: "08-2", time: "10:30", city: "TOKYO", title: "Cafetería tradicional", location: "Kagurazaka Cafe", cost: "$8.000", type: "Utensils" },
+                { id: "08-3", time: "11:30", city: "TOKYO", title: "Callejones históricos", location: "Kagurazaka", cost: "$0", type: "Camera" },
+                { id: "08-4", time: "13:00", city: "TOKYO", title: "Almuerzo", location: "Kagurazaka Local", cost: "$18.000", type: "Utensils" },
+                { id: "08-5", time: "14:30", city: "YOKOHAMA", title: "Traslado Yokohama", location: "JR Line", cost: "$0", type: "Train" },
+                { id: "08-6", time: "15:30", city: "YOKOHAMA", title: "Red Brick Warehouse", location: "Minato Mirai", cost: "$0", type: "Camera" },
+                { id: "08-7", time: "17:00", city: "YOKOHAMA", title: "Osanbashi Pier", location: "Minato Mirai", cost: "$0", type: "Camera" },
+                { id: "08-8", time: "18:15", city: "YOKOHAMA", title: "Atardecer bahía", location: "Minato Mirai", cost: "$0", type: "Camera" },
+                { id: "08-9", time: "19:00", city: "YOKOHAMA", title: "Noria Cosmo Clock", location: "Cosmo World", cost: "$6.000", type: "Camera" },
+                { id: "08-10", time: "20:00", city: "YOKOHAMA", title: "Cena", location: "Chinatown Yokohama", cost: "$22.000", type: "Utensils" },
+                { id: "08-11", time: "22:00", city: "TOKYO", title: "Regreso hotel", location: "Shimbashi", cost: "$3.000", type: "Train" }
+            ]},
+            { date: "09/09/2026", activities: [
+                { id: "09-1", time: "09:30", city: "TOKYO", title: "Azabudai Hills", location: "Azabudai Hills", cost: "$0", type: "Camera" },
+                { id: "09-2", time: "11:00", city: "TOKYO", title: "Templo Zojo-ji", location: "Zojo-ji", cost: "$0", type: "Camera" },
+                { id: "09-3", time: "13:00", city: "TOKYO", title: "Almuerzo", location: "Roppongi", cost: "$20.000", type: "Utensils" },
+                { id: "09-4", time: "14:30", city: "TOKYO", title: "Mirador", location: "Tokyo City View", cost: "$15.000", type: "Camera" },
+                { id: "09-5", time: "16:45", city: "TOKYO", title: "Shibuya", location: "Shibuya", cost: "$0", type: "Camera" },
+                { id: "09-6", time: "17:45", city: "TOKYO", title: "Atardecer", location: "Shibuya Sky", cost: "$18.000", type: "Camera" },
+                { id: "09-7", time: "20:00", city: "TOKYO", title: "Cena de despedida", location: "Shibuya Local", cost: "$25.000", type: "Utensils" }
+            ]}
         ];
 
-        // ESTADO LOCAL
+        // ESTADO Y LOCAL STORAGE
         let checkedItems = JSON.parse(localStorage.getItem('asiaTripChecked2026')) || {};
         let userDetails = JSON.parse(localStorage.getItem('asiaTripDetails2026')) || {}; 
         let currentActivityId = null;
         let tempPhotos = [];
 
-        function getIconColorClass(type) {
-            const map = { 'Plane': 'text-asia-indigo', 'Train': 'text-asia-indigo opacity-80', 'Utensils': 'text-asia-red', 'Coffee': 'text-yellow-700', 'ShoppingBag': 'text-purple-700', 'Hotel': 'text-teal-700', 'MapPin': 'text-gray-500', 'Camera': 'text-asia-gold' };
-            return map[type] || 'text-gray-500';
+        function getLucideIconName(type) {
+            const map = { 'Plane': 'plane', 'Train': 'train', 'Utensils': 'utensils', 'ShoppingBag': 'shopping-bag', 'Hotel': 'hotel', 'Camera': 'camera' };
+            return map[type] || 'circle';
         }
 
-        function getLucideIconName(type) {
-            const map = { 'Plane': 'plane', 'Train': 'train', 'Utensils': 'utensils', 'Coffee': 'coffee', 'ShoppingBag': 'shopping-bag', 'Hotel': 'hotel', 'MapPin': 'map-pin', 'Camera': 'camera' };
-            return map[type] || 'circle';
+        function getMapsUrl(location, city) {
+            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location + ' ' + city)}`;
+        }
+
+        function parseCost(costStr) {
+            if (!costStr) return 0;
+            const clean = costStr.replace(/[^0-9]/g, '');
+            return parseInt(clean, 10) || 0;
         }
 
         function renderApp() {
             const container = document.getElementById('itinerary-container');
             container.innerHTML = '';
-            let totalActivities = 0;
+            
+            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+            const cityFilter = document.getElementById('city-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+
+            let totalCount = 0;
+            let checkedCount = 0;
 
             itineraryData.forEach((day) => {
-                totalActivities += day.activities.length;
-                const isDayCompleted = day.activities.every(act => checkedItems[act.id]);
-                const completedDayCount = day.activities.filter(act => checkedItems[act.id]).length;
+                const filteredActivities = day.activities.filter(act => {
+                    const matchSearch = act.title.toLowerCase().includes(searchQuery) || act.location.toLowerCase().includes(searchQuery);
+                    const matchCity = cityFilter === 'ALL' || act.city === cityFilter;
+                    const matchType = typeFilter === 'ALL' || act.type === typeFilter;
+                    return matchSearch && matchCity && matchType;
+                });
 
+                if (filteredActivities.length === 0) return;
+
+                day.activities.forEach(a => {
+                    totalCount++;
+                    if (checkedItems[a.id]) checkedCount++;
+                });
+
+                const isDayCompleted = filteredActivities.every(act => checkedItems[act.id]);
                 const dayDiv = document.createElement('div');
-                dayDiv.className = `bg-asia-paper rounded-xl card-shadow border border-[#e0dbd5] overflow-hidden relative mb-6 transition-opacity ${isDayCompleted ? 'opacity-80' : ''}`;
+                dayDiv.className = `bg-asia-paper rounded-xl card-shadow border border-[#e0dbd5] overflow-hidden relative transition-all ${isDayCompleted ? 'opacity-75' : ''}`;
                 
                 let dayHTML = `
                     <div class="h-1 w-full bg-asia-red absolute top-0 left-0 right-0"></div>
-                    <div class="bg-asia-indigo text-asia-paper p-4 flex justify-between items-center ${isDayCompleted ? 'bg-gray-800' : ''}">
+                    <div class="bg-asia-indigo text-asia-paper px-4 py-2.5 flex justify-between items-center ${isDayCompleted ? 'bg-gray-800' : ''}">
                         <div class="flex items-center gap-2">
-                            <i data-lucide="calendar" class="w-5 h-5 ${isDayCompleted ? 'text-gray-400' : 'text-asia-gold'}"></i>
-                            <h2 class="font-serif font-bold text-lg">${day.date}</h2>
-                        </div>
-                        <div class="text-xs bg-black/30 text-asia-gold px-3 py-1 rounded font-medium">
-                            ${completedDayCount}/${day.activities.length}
+                            <i data-lucide="calendar" class="w-4 h-4 text-asia-gold"></i>
+                            <h2 class="font-serif font-bold text-sm md:text-base">${day.date}</h2>
                         </div>
                     </div>
                     <div class="divide-y divide-[#e0dbd5]">
                 `;
 
-                day.activities.forEach(activity => {
+                filteredActivities.forEach(activity => {
                     const isChecked = checkedItems[activity.id];
                     const details = userDetails[activity.id] || {};
                     const hasDetails = details.notes || details.realCost || (details.photosCount && details.photosCount > 0);
 
                     dayHTML += `
-                        <div class="activity-item p-4 flex gap-3 cursor-pointer hover:bg-[#faf8f5] ${isChecked ? 'checked-item' : 'bg-asia-paper'}" onclick="openModal('${activity.id}')">
-                            <div class="flex-shrink-0 mt-1" onclick="event.stopPropagation(); toggleCheck('${activity.id}')">
+                        <div class="activity-item p-3 flex gap-3 cursor-pointer hover:bg-[#faf8f5] ${isChecked ? 'checked-item' : ''}" onclick="openModal('${activity.id}')">
+                            <div class="flex-shrink-0 mt-0.5" onclick="event.stopPropagation(); toggleCheck('${activity.id}')">
                                 ${isChecked 
-                                    ? '<i data-lucide="check-circle-2" class="text-asia-red w-6 h-6"></i>' 
-                                    : '<i data-lucide="circle" class="text-gray-300 w-6 h-6"></i>'}
+                                    ? '<i data-lucide="check-circle-2" class="text-asia-red w-5 h-5"></i>' 
+                                    : '<i data-lucide="circle" class="text-gray-300 w-5 h-5"></i>'}
                             </div>
                             
                             <div class="flex-1 space-y-1">
-                                <div class="flex justify-between items-start gap-2">
-                                    <h3 class="font-serif font-bold text-base ${isChecked ? '' : 'text-asia-ink'}">${activity.title}</h3>
-                                    <span class="text-[10px] font-bold text-asia-indigo bg-[#e8eaf6] px-1.5 py-1 rounded shrink-0">${activity.time}</span>
+                                <div class="flex justify-between items-start gap-1">
+                                    <h3 class="font-serif font-bold text-sm ${isChecked ? '' : 'text-asia-ink'}">${activity.title}</h3>
+                                    <span class="text-[10px] font-bold text-asia-indigo bg-[#e8eaf6] px-1.5 py-0.5 rounded shrink-0">${activity.time}</span>
                                 </div>
                                 
-                                <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600 mt-2">
-                                    <div class="flex items-center gap-1">
-                                        <i data-lucide="${getLucideIconName(activity.type)}" class="${getIconColorClass(activity.type)} w-3.5 h-3.5"></i>
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600">
+                                    <a href="${getMapsUrl(activity.location, activity.city)}" target="_blank" onclick="event.stopPropagation()" class="flex items-center gap-0.5 text-blue-700 hover:underline">
+                                        <i data-lucide="${getLucideIconName(activity.type)}" class="w-3 h-3"></i>
                                         <span>${activity.location}</span>
-                                    </div>
-                                    ${activity.cost !== "$0" && activity.cost !== "$O" ? `<span class="text-gray-400">| Est: ${activity.cost}</span>` : ''}
+                                    </a>
+                                    ${activity.cost !== "$0" ? `<span class="text-gray-400">| Est: ${activity.cost}</span>` : ''}
                                     ${details.realCost ? `<span class="font-bold text-asia-red bg-red-50 px-1 rounded">Gasto: $${details.realCost}</span>` : ''}
                                 </div>
 
                                 ${hasDetails ? `
-                                    <div class="flex items-center gap-2 mt-2 pt-1 border-t border-gray-100 text-[11px] text-gray-500">
+                                    <div class="flex items-center gap-2 pt-0.5 text-[10px] text-gray-500">
                                         ${details.notes ? '<span class="flex items-center gap-0.5"><i data-lucide="file-text" class="w-3 h-3"></i> Nota</span>' : ''}
                                         ${details.photosCount ? `<span class="flex items-center gap-0.5"><i data-lucide="image" class="w-3 h-3"></i> ${details.photosCount} foto(s)</span>` : ''}
                                     </div>
@@ -450,7 +544,7 @@
             });
 
             lucide.createIcons();
-            updateStats(totalActivities);
+            updateStats(totalCount, checkedCount);
         }
 
         function toggleCheck(id) {
@@ -460,14 +554,12 @@
             renderApp();
         }
 
-        function updateStats(total) {
-            const completedCount = Object.keys(checkedItems).length;
-            const progressPercentage = Math.round((completedCount / total) * 100) || 0;
-            document.getElementById('progress-text').innerText = `${completedCount} / ${total}`;
+        function updateStats(total, completed) {
+            const progressPercentage = Math.round((completed / total) * 100) || 0;
+            document.getElementById('progress-text').innerText = `${completed} / ${total}`;
             document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
         }
 
-        // --- GESTIÓN DEL MODAL Y FOTOS ---
         function getActivityById(id) {
             for (let day of itineraryData) {
                 let act = day.activities.find(a => a.id === id);
@@ -476,6 +568,7 @@
             return null;
         }
 
+        // --- MODALES Y ACCIONES ---
         function openModal(id) {
             currentActivityId = id;
             const activity = getActivityById(id);
@@ -484,6 +577,7 @@
             document.getElementById('modal-title').innerText = activity.title;
             document.getElementById('modal-time').innerText = `${activity.city} • ${activity.time}`;
             document.getElementById('modal-location').innerText = activity.location;
+            document.getElementById('modal-map-link').href = getMapsUrl(activity.location, activity.city);
             document.getElementById('modal-est-cost').innerText = activity.cost;
             document.getElementById('modal-real-cost').value = details.realCost || '';
             document.getElementById('modal-notes').value = details.notes || '';
@@ -497,13 +591,43 @@
             tempPhotos = [];
         }
 
-        function handlePhotoUpload(event) {
-            const file = event.target.files[0];
+        function openBudgetModal() {
+            let totalEst = 0;
+            let totalReal = 0;
+
+            itineraryData.forEach(day => {
+                day.activities.forEach(act => {
+                    totalEst += parseCost(act.cost);
+                    const real = userDetails[act.id]?.realCost;
+                    if (real) totalReal += parseInt(real, 10) || 0;
+                });
+            });
+
+            document.getElementById('budget-total-est').innerText = `$${totalEst.toLocaleString('es-CL')}`;
+            document.getElementById('budget-total-real').innerText = `$${totalReal.toLocaleString('es-CL')}`;
+            document.getElementById('budget-modal').classList.remove('hidden');
+        }
+
+        function closeBudgetModal() {
+            document.getElementById('budget-modal').classList.add('hidden');
+        }
+
+        function openPhrasesModal() {
+            document.getElementById('phrases-modal').classList.remove('hidden');
+        }
+
+        function closePhrasesModal() {
+            document.getElementById('phrases-modal').classList.add('hidden');
+        }
+
+        // --- FOTOS E INDEXEDDB ---
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
-                tempPhotos.push(e.target.result);
+            reader.onload = function(evt) {
+                tempPhotos.push(evt.target.result);
                 renderPhotoThumbnails();
             };
             reader.readAsDataURL(file);
@@ -528,17 +652,13 @@
             const notes = document.getElementById('modal-notes').value;
 
             if (!userDetails[currentActivityId]) userDetails[currentActivityId] = {};
-            
             userDetails[currentActivityId].realCost = realCost;
             userDetails[currentActivityId].notes = notes;
 
-            // Guardar fotos en IndexedDB
             if (tempPhotos.length > 0) {
                 const tx = db.transaction("photos", "readwrite");
                 const store = tx.objectStore("photos");
-                tempPhotos.forEach(base64 => {
-                    store.add({ activityId: currentActivityId, image: base64 });
-                });
+                tempPhotos.forEach(base64 => store.add({ activityId: currentActivityId, image: base64 }));
                 userDetails[currentActivityId].photosCount = (userDetails[currentActivityId].photosCount || 0) + tempPhotos.length;
             }
 
@@ -557,9 +677,7 @@
             request.onsuccess = (e) => {
                 const cursor = e.target.result;
                 if (cursor) {
-                    if (cursor.value.activityId === activityId) {
-                        tempPhotos.push(cursor.value.image);
-                    }
+                    if (cursor.value.activityId === activityId) tempPhotos.push(cursor.value.image);
                     cursor.continue();
                 } else {
                     renderPhotoThumbnails();
@@ -567,10 +685,44 @@
             };
         }
 
+        // --- RESPALDO (EXPORT / IMPORT) ---
+        function exportData() {
+            const exportObject = {
+                checked: checkedItems,
+                details: userDetails
+            };
+            const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Respaldo_Viaje_Asia_2026.json`;
+            a.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if (data.checked) localStorage.setItem('asiaTripChecked2026', JSON.stringify(data.checked));
+                    if (data.details) localStorage.setItem('asiaTripDetails2026', JSON.stringify(data.details));
+                    checkedItems = data.checked || {};
+                    userDetails = data.details || {};
+                    renderApp();
+                    alert("¡Datos e itinerario importados exitosamente!");
+                } catch(err) {
+                    alert("Error al leer el archivo de respaldo.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
         document.getElementById('reset-btn').addEventListener('click', () => {
-            if(confirm('¿Seguro que deseas borrar todos los registros y checks guardados?')) {
-                localStorage.removeItem('asiaTripChecked2026');
-                localStorage.removeItem('asiaTripDetails2026');
+            if(confirm('¿Seguro que deseas borrar todas las marcas y notas?')) {
+                localStorage.clear();
                 checkedItems = {};
                 userDetails = {};
                 renderApp();
