@@ -112,6 +112,11 @@
                 </label>
             </div>
 
+            <div id="backup-reminder" class="hidden items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-950" role="status" aria-live="polite">
+                <span id="backup-reminder-text" class="min-w-0">Tus cambios se guardan solo en este dispositivo.</span>
+                <button type="button" onclick="exportData()" class="shrink-0 rounded-md bg-amber-700 px-2.5 py-1.5 font-bold text-white hover:bg-amber-800">Exportar ahora</button>
+            </div>
+
             <!-- Buscador y Filtros -->
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs pt-1">
                 <div class="sm:col-span-6 relative">
@@ -368,6 +373,10 @@
 
             <p class="text-xs text-gray-600">Guarda tus pases, QRs de inmigración y pasaportes para acceder <strong>100% offline</strong> durante el viaje.</p>
 
+            <div id="storage-status" class="rounded-xl border border-sky-100 bg-sky-50 p-3 text-[11px] text-slate-700" aria-live="polite">
+                Calculando el espacio usado por fotos y documentos…
+            </div>
+
             <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-2">
                 <span class="text-xs font-bold text-amber-800 block">+ Subir Nuevo QR / Documento</span>
                 <input type="text" id="doc-title" placeholder="Ej: QR Japan Visit / Pasaporte" class="w-full p-2 border rounded text-xs outline-none">
@@ -532,33 +541,8 @@
         dbRequest.onsuccess = (e) => {
             db = e.target.result;
             renderVaultDocs();
+            updateStorageStatus();
         };
-
-        // --- REGISTRO PWA INLINE ---
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                const CACHE_NAME = 'asia-trip-v2';
-                self.addEventListener('install', e => {
-                    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./'])));
-                });
-                self.addEventListener('fetch', e => {
-                    e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
-                });
-            `;
-            const blobSW = new Blob([swCode], { type: 'application/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(blobSW)).catch(() => {});
-        }
-
-        const manifestData = {
-            "name": "Viaje Asia 2026",
-            "short_name": "Asia2026",
-            "start_url": "./",
-            "display": "standalone",
-            "background_color": "#f5f3f0",
-            "theme_color": "#c62828"
-        };
-        const blobManifest = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
-        document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blobManifest)}">`);
 
         // --- RELOJ DUAL EN TIEMPO REAL ---
         function updateClocks() {
@@ -779,6 +763,89 @@
         let existingPhotos = [];
         let newPhotos = [];
         let photoIdsToDelete = new Set();
+
+        // --- ESTADO DE RESPALDO LOCAL ---
+        // Los datos de esta app viven en este navegador. Este estado permite
+        // avisar de forma visible cuando hay cambios que aún no se exportaron.
+        const BACKUP_STATE_KEY = 'asiaTripBackupState2026';
+
+        function hasSavedTripData() {
+            return Object.keys(checkedItems).length > 0 ||
+                Object.keys(userDetails).length > 0 ||
+                Object.keys(staysUser).length > 0 ||
+                Object.keys(transportCosts).length > 0 ||
+                Boolean(localStorage.getItem('asiaRates'));
+        }
+
+        function loadBackupState() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(BACKUP_STATE_KEY));
+                if (saved && typeof saved === 'object') {
+                    return {
+                        dirty: Boolean(saved.dirty),
+                        lastExportedAt: typeof saved.lastExportedAt === 'string' ? saved.lastExportedAt : null,
+                        lastChangedAt: typeof saved.lastChangedAt === 'string' ? saved.lastChangedAt : null
+                    };
+                }
+            } catch (_) {
+                // Un estado de respaldo dañado no debe impedir abrir el viaje.
+            }
+
+            // Si la app ya tenía datos antes de esta mejora, es más seguro
+            // asumir que conviene crear un respaldo nuevo.
+            return { dirty: hasSavedTripData(), lastExportedAt: null, lastChangedAt: null };
+        }
+
+        let backupState = loadBackupState();
+
+        function saveBackupState() {
+            localStorage.setItem(BACKUP_STATE_KEY, JSON.stringify(backupState));
+        }
+
+        function formatBackupDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            if (Number.isNaN(date.getTime())) return '';
+            return new Intl.DateTimeFormat('es-CL', {
+                dateStyle: 'short',
+                timeStyle: 'short'
+            }).format(date);
+        }
+
+        function updateBackupReminder() {
+            const reminder = document.getElementById('backup-reminder');
+            const text = document.getElementById('backup-reminder-text');
+            if (!reminder || !text) return;
+
+            reminder.classList.toggle('hidden', !backupState.dirty);
+            reminder.classList.toggle('flex', backupState.dirty);
+            if (!backupState.dirty) return;
+
+            const lastBackup = formatBackupDate(backupState.lastExportedAt);
+            text.textContent = lastBackup
+                ? `Tienes cambios locales sin respaldo. Último respaldo: ${lastBackup}.`
+                : 'Tienes cambios guardados solo en este dispositivo. Crea un respaldo para protegerlos.';
+        }
+
+        function markDataChanged() {
+            backupState = {
+                ...backupState,
+                dirty: true,
+                lastChangedAt: new Date().toISOString()
+            };
+            saveBackupState();
+            updateBackupReminder();
+        }
+
+        function markBackupCreated(exportedAt = new Date().toISOString()) {
+            backupState = {
+                dirty: false,
+                lastExportedAt: exportedAt,
+                lastChangedAt: backupState.lastChangedAt
+            };
+            saveBackupState();
+            updateBackupReminder();
+        }
 
         function getLucideIconName(type) {
             const map = { 'Plane': 'plane', 'Train': 'train', 'Utensils': 'utensils', 'ShoppingBag': 'shopping-bag', 'Hotel': 'hotel', 'Camera': 'camera' };
@@ -1080,6 +1147,7 @@
             checkedItems[id] = !checkedItems[id];
             if (!checkedItems[id]) delete checkedItems[id];
             localStorage.setItem('asiaTripChecked2026', JSON.stringify(checkedItems));
+            markDataChanged();
             renderApp();
         }
 
@@ -1169,6 +1237,7 @@
             if (!transportCosts[id]) transportCosts[id] = {};
             transportCosts[id][field] = value;
             localStorage.setItem('asiaTransportCosts2026', JSON.stringify(transportCosts));
+            markDataChanged();
         }
 
         function renderStays() {
@@ -1261,6 +1330,7 @@
             if (!staysUser[id]) staysUser[id] = {};
             staysUser[id][field] = value;
             localStorage.setItem('asiaStaysUser2026', JSON.stringify(staysUser));
+            markDataChanged();
             
             if (field === 'realCost') {
                 let totalRealSum = 0;
@@ -1382,6 +1452,7 @@
                 cny: parseFloat(document.getElementById('rate-cny').value) || 130
             };
             localStorage.setItem('asiaRates', JSON.stringify(rates));
+            markDataChanged();
             calculateConversion();
         }
 
@@ -1417,6 +1488,7 @@
         function openVaultModal() {
             document.getElementById('vault-modal').classList.remove('hidden');
             renderVaultDocs();
+            updateStorageStatus();
         }
 
         function closeVaultModal() {
@@ -1434,6 +1506,11 @@
                 return;
             }
 
+            if (!db) {
+                alert('La bóveda local aún se está preparando. Inténtalo nuevamente en unos segundos.');
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 const tx = db.transaction("docs", "readwrite");
@@ -1444,6 +1521,8 @@
                     titleInput.value = '';
                     fileInput.value = '';
                     renderVaultDocs();
+                    updateStorageStatus();
+                    markDataChanged();
                 };
             };
             reader.readAsDataURL(file);
@@ -1488,7 +1567,11 @@
             if (confirm("¿Borrar este documento de tu bóveda local?")) {
                 const tx = db.transaction("docs", "readwrite");
                 tx.objectStore("docs").delete(id);
-                tx.oncomplete = () => renderVaultDocs();
+                tx.oncomplete = () => {
+                    renderVaultDocs();
+                    updateStorageStatus();
+                    markDataChanged();
+                };
             }
         }
 
@@ -1569,10 +1652,12 @@
                 const store = tx.objectStore("photos");
                 photoIdsToDelete.forEach(id => store.delete(id));
                 newPhotos.forEach(photo => store.add({ activityId: currentActivityId, image: photo.image }));
+                tx.oncomplete = () => updateStorageStatus();
             }
             userDetails[currentActivityId].photosCount = visiblePhotoCount;
 
             localStorage.setItem('asiaTripDetails2026', JSON.stringify(userDetails));
+            markDataChanged();
             closeModal();
             renderApp();
         }
@@ -1615,6 +1700,56 @@
             });
         }
 
+        function formatBytes(bytes) {
+            if (!Number.isFinite(bytes) || bytes <= 0) return '0 KB';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+            const value = bytes / Math.pow(1024, unitIndex);
+            return `${value.toLocaleString('es-CL', { maximumFractionDigits: value >= 10 ? 0 : 1 })} ${units[unitIndex]}`;
+        }
+
+        function getRecordImageBytes(record) {
+            return typeof record.image === 'string' ? new Blob([record.image]).size : 0;
+        }
+
+        async function updateStorageStatus() {
+            const status = document.getElementById('storage-status');
+            if (!status) return;
+
+            if (!db) {
+                status.textContent = 'Preparando el almacenamiento local…';
+                return;
+            }
+
+            try {
+                const [photos, docs] = await Promise.all([getStoreData('photos'), getStoreData('docs')]);
+                const mediaBytes = [...photos, ...docs].reduce((total, record) => total + getRecordImageBytes(record), 0);
+                const mediaLabel = `${photos.length} foto(s) y ${docs.length} documento(s): ${formatBytes(mediaBytes)} aprox.`;
+
+                let browserLabel = '';
+                if (navigator.storage && typeof navigator.storage.estimate === 'function') {
+                    const estimate = await navigator.storage.estimate();
+                    if (Number.isFinite(estimate.usage) && Number.isFinite(estimate.quota)) {
+                        browserLabel = ` Esta app usa ${formatBytes(estimate.usage)} de los ${formatBytes(estimate.quota)} disponibles en este navegador.`;
+                    }
+                }
+
+                status.innerHTML = `
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="hard-drive" class="mt-0.5 h-4 w-4 shrink-0 text-sky-700"></i>
+                        <div>
+                            <p class="font-bold text-sky-900">Espacio local</p>
+                            <p class="mt-0.5">${mediaLabel}${browserLabel}</p>
+                            <p class="mt-1 text-slate-500">Las imágenes quedan solo en este dispositivo; expórtalas junto con tu respaldo.</p>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            } catch (_) {
+                status.textContent = 'No se pudo calcular el espacio local ahora. Tus archivos siguen guardados en este dispositivo.';
+            }
+        }
+
         function replaceStoreData(storeName, records) {
             return new Promise((resolve, reject) => {
                 if (!db) {
@@ -1640,8 +1775,10 @@
                 alert('No se pudo preparar un respaldo completo. Inténtalo nuevamente cuando la app haya terminado de cargar.');
                 return;
             }
+            const exportedAt = new Date().toISOString();
             const exportObject = {
-                version: 2,
+                version: 3,
+                exportedAt,
                 checked: checkedItems,
                 details: userDetails,
                 stays: staysUser,
@@ -1655,7 +1792,11 @@
             const a = document.createElement('a');
             a.href = url;
             a.download = `Respaldo_Viaje_Asia_2026.json`;
+            document.body.appendChild(a);
             a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+            markBackupCreated(exportedAt);
         }
 
         function importData(e) {
@@ -1683,10 +1824,17 @@
                     staysUser = data.stays || {};
                     transportCosts = data.transportCosts || {};
 
+                    const importedAt = typeof data.exportedAt === 'string' && !Number.isNaN(new Date(data.exportedAt).getTime())
+                        ? data.exportedAt
+                        : new Date().toISOString();
+                    markBackupCreated(importedAt);
                     renderApp();
+                    updateStorageStatus();
                     alert("¡Respaldo importado exitosamente!");
                 } catch(err) {
                     alert("Error al leer el archivo de respaldo.");
+                } finally {
+                    e.target.value = '';
                 }
             };
             reader.readAsText(file);
@@ -1701,6 +1849,9 @@
                     userDetails = {};
                     staysUser = {};
                     transportCosts = {};
+                    backupState = { dirty: false, lastExportedAt: null, lastChangedAt: null };
+                    updateBackupReminder();
+                    updateStorageStatus();
                     renderApp();
                 } catch (error) {
                     alert('No se pudieron borrar todos los archivos locales. Inténtalo nuevamente.');
@@ -1761,6 +1912,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             renderApp();
+            updateBackupReminder();
             registerOfflineSupport();
         });
     </script>
