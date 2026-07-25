@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Viaje a Asia 2026 - Master App</title>
+    <title>Viaje a Asia 2026 - Master App PWA</title>
+    
+    <!-- Meta tags PWA -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#c62828">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -35,13 +41,15 @@
         .checked-item h3 { text-decoration: line-through; color: #6b7280; }
         .activity-item { transition: all 0.2s ease-in-out; }
         .activity-item:active { transform: scale(0.99); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="text-asia-ink font-sans pb-24">
 
     <!-- Header Fijo Superior -->
     <header class="sticky top-0 z-40 bg-asia-paper/95 backdrop-blur shadow-md border-b-2 border-asia-red px-4 py-3">
-        <div class="max-w-3xl mx-auto space-y-3">
+        <div class="max-w-3xl mx-auto space-y-2.5">
             <div class="flex justify-between items-center">
                 <h1 class="text-lg md:text-xl font-serif font-bold text-asia-red flex items-center gap-2">
                     <i data-lucide="compass" class="text-asia-gold w-5 h-5"></i> 
@@ -51,18 +59,36 @@
                     0 / 0
                 </span>
             </div>
+
+            <!-- Reloj Dual -->
+            <div class="bg-gray-900 text-white rounded-lg p-2 grid grid-cols-2 text-center text-xs border border-gray-700 shadow-inner">
+                <div class="border-r border-gray-700 pr-1">
+                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block">🇨🇱 Santiago (CLT)</span>
+                    <span id="clock-santiago" class="font-mono text-xs font-bold text-sky-400">00:00:00</span>
+                </div>
+                <div class="pl-1">
+                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block">🇯🇵 / 🇨🇳 Asia (JAP/CHN)</span>
+                    <span id="clock-asia" class="font-mono text-xs font-bold text-emerald-400">00:00:00</span>
+                </div>
+            </div>
             
             <!-- Barra de Progreso -->
             <div class="w-full bg-orange-100 rounded-full h-1.5 shadow-inner overflow-hidden relative">
                 <div id="progress-bar" class="bg-gradient-to-r from-asia-red to-orange-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
 
-            <!-- Botones de Acción Rápida -->
+            <!-- Botones de Acción Rápida (Herramientas) -->
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-                <button onclick="openBudgetModal()" class="bg-asia-indigo text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium">
+                <button onclick="openCalcModal()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
+                    <i data-lucide="coins" class="w-3.5 h-3.5 text-yellow-300"></i> Divisas & Tax-Free
+                </button>
+                <button onclick="openVaultModal()" class="bg-amber-700 hover:bg-amber-800 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
+                    <i data-lucide="qr-code" class="w-3.5 h-3.5 text-amber-200"></i> Bóveda QRs
+                </button>
+                <button onclick="openBudgetModal()" class="bg-asia-indigo text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
                     <i data-lucide="calculator" class="w-3.5 h-3.5 text-asia-gold"></i> Presupuesto
                 </button>
-                <button onclick="openPhrasesModal()" class="bg-asia-gold/20 text-yellow-900 border border-asia-gold/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium">
+                <button onclick="openPhrasesModal()" class="bg-asia-gold/20 text-yellow-900 border border-asia-gold/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm">
                     <i data-lucide="languages" class="w-3.5 h-3.5"></i> Frases
                 </button>
                 <button onclick="exportData()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 font-medium">
@@ -114,9 +140,7 @@
                 <div>
                     <span id="modal-time" class="text-xs font-bold text-asia-gold uppercase tracking-wider"></span>
                     <h2 id="modal-title" class="font-serif font-bold text-lg leading-snug"></h2>
-                    <a id="modal-map-link" href="#" target="_blank" class="text-xs text-amber-300 hover:underline flex items-center gap-1 mt-1">
-                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <span id="modal-location"></span> (Abrir Mapas)
-                    </a>
+                    <div id="modal-map-links" class="flex flex-wrap gap-2 text-xs mt-1.5"></div>
                 </div>
                 <button onclick="closeModal()" class="text-gray-300 hover:text-white p-1">
                     <i data-lucide="x" class="w-6 h-6"></i>
@@ -156,6 +180,114 @@
                 <button onclick="closeModal()" class="px-4 py-2 text-xs font-bold text-gray-600">Cancelar</button>
                 <button onclick="saveModalData()" class="px-5 py-2 text-xs font-bold bg-asia-red text-white rounded-lg shadow">Guardar Cambios</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL HERRAMIENTAS: DIVISAS Y TAX-FREE -->
+    <div id="calc-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-asia-paper rounded-2xl max-w-md w-full p-5 card-shadow border border-asia-gold/30 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h2 class="font-serif font-bold text-lg text-emerald-900 flex items-center gap-2">
+                    <i data-lucide="coins" class="text-emerald-600"></i> Conversor & Tax-Free
+                </h2>
+                <button onclick="closeCalcModal()"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
+            </div>
+
+            <!-- Conversor Multidivisa -->
+            <div class="bg-white p-3.5 rounded-xl border border-gray-200 space-y-3">
+                <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center gap-1">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-600"></i> Conversor Rápido
+                </h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-gray-500 block font-bold">Monto Extranjero</label>
+                        <input type="number" id="conv-amount" value="1000" oninput="calculateConversion()" class="w-full p-2 border rounded text-sm font-bold bg-gray-50 focus:bg-white outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 block font-bold">Moneda</label>
+                        <select id="conv-currency" onchange="calculateConversion()" class="w-full p-2 border rounded text-sm font-bold bg-gray-50 outline-none">
+                            <option value="JPY">¥ Yen Japonés (JPY)</option>
+                            <option value="CNY">¥ Yuan Chino (CNY)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200 text-center">
+                    <span class="text-[11px] text-emerald-800 font-medium">Equivalente Estimado:</span>
+                    <p id="conv-result-clp" class="text-lg font-extrabold text-emerald-900">$0 CLP</p>
+                </div>
+            </div>
+
+            <!-- Calculadora Tax-Free (Japón) -->
+            <div class="bg-white p-3.5 rounded-xl border border-gray-200 space-y-3">
+                <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center gap-1">
+                    <i data-lucide="receipt" class="w-3.5 h-3.5 text-asia-red"></i> Calculadora Tax-Free 🇯🇵 (10%)
+                </h3>
+                <div>
+                    <label class="text-[10px] text-gray-500 block font-bold">Monto en Tienda (JPY)</label>
+                    <input type="number" id="tax-amount" placeholder="Ej: 5500" oninput="calculateTaxFree()" class="w-full p-2 border rounded text-sm font-bold bg-gray-50 outline-none">
+                </div>
+
+                <div id="tax-result-box" class="p-2.5 rounded-lg text-xs space-y-1 bg-gray-50 border border-gray-200">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Precio Exento de Impuesto:</span>
+                        <span id="tax-base" class="font-bold">¥0 JPY</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Ahorro Impuesto (10%):</span>
+                        <span id="tax-saved" class="font-bold text-green-600">¥0 JPY</span>
+                    </div>
+                    <div id="tax-status" class="pt-1.5 border-t text-[11px] font-bold text-amber-700">
+                        ⚠️ Ingresa ¥5,000 JPY o más para validar la exención.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Tasas -->
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                <span class="text-[11px] font-bold text-gray-600 block">⚙️ Configurar Tasas de Cambio (Ajuste Local)</span>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <label class="text-[10px] text-gray-500">1 JPY a CLP:</label>
+                        <input type="number" step="0.1" id="rate-jpy" value="6.3" onchange="saveRates()" class="w-full p-1 border rounded text-xs">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500">1 CNY a CLP:</label>
+                        <input type="number" step="1" id="rate-cny" value="130" onchange="saveRates()" class="w-full p-1 border rounded text-xs">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="closeCalcModal()" class="w-full py-2 bg-emerald-800 text-white text-xs font-bold rounded-lg shadow">Listo</button>
+        </div>
+    </div>
+
+    <!-- MODAL BÓVEDA DIGITAL DE QRS Y DOCUMENTOS -->
+    <div id="vault-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-asia-paper rounded-2xl max-w-md w-full p-5 card-shadow border border-asia-gold/30 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h2 class="font-serif font-bold text-lg text-amber-900 flex items-center gap-2">
+                    <i data-lucide="qr-code" class="text-amber-600"></i> Bóveda Digital QR & Docs
+                </h2>
+                <button onclick="closeVaultModal()"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
+            </div>
+
+            <p class="text-xs text-gray-600">Guarda tus pases, QRs de inmigración y pasaportes para acceder <strong>100% offline</strong> durante el viaje.</p>
+
+            <!-- Agregar Documento -->
+            <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-2">
+                <span class="text-xs font-bold text-amber-800 block">+ Subir Nuevo QR / Documento</span>
+                <input type="text" id="doc-title" placeholder="Ej: QR Japan Visit / Pasaporte" class="w-full p-2 border rounded text-xs outline-none">
+                <input type="file" id="doc-file" accept="image/*" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                <button onclick="uploadDocument()" class="w-full py-2 bg-amber-700 text-white text-xs font-bold rounded-lg shadow mt-1">Guardar en Bóveda Local</button>
+            </div>
+
+            <!-- Lista de Documentos -->
+            <div class="space-y-3" id="vault-list-container">
+                <p class="text-xs text-gray-400 text-center py-4">Cargando documentos...</p>
+            </div>
+
+            <button onclick="closeVaultModal()" class="w-full py-2 bg-gray-800 text-white text-xs font-bold rounded-lg">Cerrar</button>
         </div>
     </div>
 
@@ -246,22 +378,86 @@
         </div>
     </div>
 
+    <!-- VISOR DE DOCUMENTO FULLSCREEN -->
+    <div id="image-viewer-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex flex-col justify-between p-4 backdrop-blur-md">
+        <div class="flex justify-between items-center text-white">
+            <h3 id="viewer-title" class="font-bold text-sm"></h3>
+            <button onclick="closeImageViewer()" class="p-2 text-white hover:text-gray-300"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <div class="flex-1 flex items-center justify-center overflow-hidden py-2">
+            <img id="viewer-img" class="max-h-full max-w-full object-contain rounded-lg">
+        </div>
+        <button onclick="closeImageViewer()" class="w-full py-2.5 bg-white/20 text-white rounded-lg text-xs font-bold">Volver</button>
+    </div>
+
     <!-- Botón Reset -->
     <button id="reset-btn" class="fixed bottom-4 right-4 bg-gray-800 text-white p-3 rounded-full shadow-lg opacity-50 hover:opacity-100 transition-opacity z-30">
         <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
     </button>
 
     <script>
-        // --- BASE DE DATOS LOCAL (IndexedDB) ---
+        // --- BASE DE DATOS LOCAL AMPLIADA (IndexedDB) ---
         let db;
-        const dbRequest = indexedDB.open("AsiaTripDB", 1);
+        const dbRequest = indexedDB.open("AsiaTripDB", 2);
+        
         dbRequest.onupgradeneeded = (e) => {
             db = e.target.result;
             if (!db.objectStoreNames.contains("photos")) {
                 db.createObjectStore("photos", { keyPath: "id", autoIncrement: true });
             }
+            if (!db.objectStoreNames.contains("docs")) {
+                db.createObjectStore("docs", { keyPath: "id", autoIncrement: true });
+            }
         };
-        dbRequest.onsuccess = (e) => db = e.target.result;
+        dbRequest.onsuccess = (e) => {
+            db = e.target.result;
+            renderVaultDocs();
+        };
+
+        // --- REGISTRO PWA INLINE (SERVICE WORKER + MANIFEST DINO) ---
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'asia-trip-v1';
+                self.addEventListener('install', e => {
+                    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./'])));
+                });
+                self.addEventListener('fetch', e => {
+                    e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+                });
+            `;
+            const blobSW = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blobSW)).catch(() => {});
+        }
+
+        const manifestData = {
+            "name": "Viaje Asia 2026",
+            "short_name": "Asia2026",
+            "start_url": "./",
+            "display": "standalone",
+            "background_color": "#f5f3f0",
+            "theme_color": "#c62828"
+        };
+        const blobManifest = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+        document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blobManifest)}">`);
+
+        // --- RELOJ DUAL EN TIEMPO REAL ---
+        function updateClocks() {
+            const now = new Date();
+            const santiagoTime = new Intl.DateTimeFormat('es-CL', {
+                timeZone: 'America/Santiago',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            }).format(now);
+
+            const asiaTime = new Intl.DateTimeFormat('es-CL', {
+                timeZone: 'Asia/Tokyo',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            }).format(now);
+
+            document.getElementById('clock-santiago').innerText = santiagoTime;
+            document.getElementById('clock-asia').innerText = asiaTime;
+        }
+        setInterval(updateClocks, 1000);
+        updateClocks();
 
         // --- DATOS COMPLETOS DE ITINERARIO ---
         const itineraryData = [
@@ -448,8 +644,27 @@
             return map[type] || 'circle';
         }
 
-        function getMapsUrl(location, city) {
-            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location + ' ' + city)}`;
+        function getMapLinksHTML(location, city) {
+            const query = encodeURIComponent(`${location} ${city}`);
+            const gmap = `https://www.google.com/maps/search/?api=1&query=${query}`;
+            const amap = `https://maps.apple.com/?q=${query}`;
+            const baidu = `https://api.map.baidu.com/geocoder?address=${query}&output=html`;
+
+            const isChina = ['SHANGHAI', 'HANGZHOU', 'SUZHOU'].includes(city);
+
+            return `
+                <a href="${gmap}" target="_blank" onclick="event.stopPropagation()" class="text-xs text-amber-300 hover:underline flex items-center gap-1">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Google Maps
+                </a>
+                ${isChina ? `
+                    <a href="${baidu}" target="_blank" onclick="event.stopPropagation()" class="text-xs text-red-300 hover:underline flex items-center gap-1">
+                        🇨🇳 Baidu Maps
+                    </a>
+                ` : ''}
+                <a href="${amap}" target="_blank" onclick="event.stopPropagation()" class="text-xs text-blue-200 hover:underline flex items-center gap-1">
+                     Apple Maps
+                </a>
+            `;
         }
 
         function parseCost(costStr) {
@@ -519,10 +734,10 @@
                                 </div>
                                 
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600">
-                                    <a href="${getMapsUrl(activity.location, activity.city)}" target="_blank" onclick="event.stopPropagation()" class="flex items-center gap-0.5 text-blue-700 hover:underline">
-                                        <i data-lucide="${getLucideIconName(activity.type)}" class="w-3 h-3"></i>
-                                        <span>${activity.location}</span>
-                                    </a>
+                                    <span class="flex items-center gap-1 font-medium text-gray-700">
+                                        <i data-lucide="${getLucideIconName(activity.type)}" class="w-3.5 h-3.5 text-asia-indigo"></i>
+                                        ${activity.location}
+                                    </span>
                                     ${activity.cost !== "$0" ? `<span class="text-gray-400">| Est: ${activity.cost}</span>` : ''}
                                     ${details.realCost ? `<span class="font-bold text-asia-red bg-red-50 px-1 rounded">Gasto: $${details.realCost}</span>` : ''}
                                 </div>
@@ -576,14 +791,14 @@
 
             document.getElementById('modal-title').innerText = activity.title;
             document.getElementById('modal-time').innerText = `${activity.city} • ${activity.time}`;
-            document.getElementById('modal-location').innerText = activity.location;
-            document.getElementById('modal-map-link').href = getMapsUrl(activity.location, activity.city);
+            document.getElementById('modal-map-links').innerHTML = getMapLinksHTML(activity.location, activity.city);
             document.getElementById('modal-est-cost').innerText = activity.cost;
             document.getElementById('modal-real-cost').value = details.realCost || '';
             document.getElementById('modal-notes').value = details.notes || '';
 
             loadPhotosFromDB(id);
             document.getElementById('detail-modal').classList.remove('hidden');
+            lucide.createIcons();
         }
 
         function closeModal() {
@@ -591,6 +806,147 @@
             tempPhotos = [];
         }
 
+        // --- MODAL CONVERSOR & TAX-FREE ---
+        function openCalcModal() {
+            const rates = JSON.parse(localStorage.getItem('asiaRates')) || { jpy: 6.3, cny: 130 };
+            document.getElementById('rate-jpy').value = rates.jpy;
+            document.getElementById('rate-cny').value = rates.cny;
+            calculateConversion();
+            calculateTaxFree();
+            document.getElementById('calc-modal').classList.remove('hidden');
+        }
+
+        function closeCalcModal() {
+            document.getElementById('calc-modal').classList.add('hidden');
+        }
+
+        function saveRates() {
+            const rates = {
+                jpy: parseFloat(document.getElementById('rate-jpy').value) || 6.3,
+                cny: parseFloat(document.getElementById('rate-cny').value) || 130
+            };
+            localStorage.setItem('asiaRates', JSON.stringify(rates));
+            calculateConversion();
+        }
+
+        function calculateConversion() {
+            const amount = parseFloat(document.getElementById('conv-amount').value) || 0;
+            const currency = document.getElementById('conv-currency').value;
+            const rates = JSON.parse(localStorage.getItem('asiaRates')) || { jpy: 6.3, cny: 130 };
+
+            const rate = currency === 'JPY' ? rates.jpy : rates.cny;
+            const clp = Math.round(amount * rate);
+            document.getElementById('conv-result-clp').innerText = `$${clp.toLocaleString('es-CL')} CLP`;
+        }
+
+        function calculateTaxFree() {
+            const jpyAmount = parseFloat(document.getElementById('tax-amount').value) || 0;
+            const basePrice = Math.round(jpyAmount / 1.10);
+            const savedTax = jpyAmount - basePrice;
+
+            document.getElementById('tax-base').innerText = `¥${basePrice.toLocaleString()} JPY`;
+            document.getElementById('tax-saved').innerText = `¥${savedTax.toLocaleString()} JPY`;
+
+            const statusEl = document.getElementById('tax-status');
+            if (jpyAmount >= 5000) {
+                statusEl.className = "pt-1.5 border-t text-[11px] font-bold text-green-700 flex items-center gap-1";
+                statusEl.innerHTML = "✅ ¡Cumple el mínimo para Tax-Free (¥5,000 JPY)! Muestra tu pasaporte al pagar.";
+            } else {
+                statusEl.className = "pt-1.5 border-t text-[11px] font-bold text-amber-700";
+                statusEl.innerHTML = "⚠️ Mínimo de compra para exención: ¥5,000 JPY (sin impuestos).";
+            }
+        }
+
+        // --- MODAL BÓVEDA DIGITAL QR & DOCS ---
+        function openVaultModal() {
+            document.getElementById('vault-modal').classList.remove('hidden');
+            renderVaultDocs();
+        }
+
+        function closeVaultModal() {
+            document.getElementById('vault-modal').classList.add('hidden');
+        }
+
+        function uploadDocument() {
+            const titleInput = document.getElementById('doc-title');
+            const fileInput = document.getElementById('doc-file');
+            const title = titleInput.value.trim();
+            const file = fileInput.files[0];
+
+            if (!title || !file) {
+                alert("Por favor pon un título y selecciona una imagen del código QR o documento.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const tx = db.transaction("docs", "readwrite");
+                const store = tx.objectStore("docs");
+                store.add({ title: title, image: e.target.result, date: new Date().toLocaleDateString() });
+
+                tx.oncomplete = () => {
+                    titleInput.value = '';
+                    fileInput.value = '';
+                    renderVaultDocs();
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderVaultDocs() {
+            const container = document.getElementById('vault-list-container');
+            if (!container || !db) return;
+
+            const tx = db.transaction("docs", "readonly");
+            const store = tx.objectStore("docs");
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                const docs = request.result;
+                if (docs.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4 bg-white rounded-xl border">No hay documentos guardados aún.</p>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                docs.forEach(doc => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-2.5 rounded-xl border border-gray-200 flex items-center justify-between gap-2 shadow-sm";
+                    card.innerHTML = `
+                        <div class="flex items-center gap-2 cursor-pointer flex-1 overflow-hidden" onclick="viewImage('${doc.title}', '${doc.image}')">
+                            <img src="${doc.image}" class="w-10 h-10 object-cover rounded-lg border">
+                            <div class="truncate">
+                                <h4 class="text-xs font-bold text-gray-800 truncate">${doc.title}</h4>
+                                <span class="text-[10px] text-gray-400">Toca para ampliar QR</span>
+                            </div>
+                        </div>
+                        <button onclick="deleteDoc(${doc.id})" class="p-1.5 text-gray-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    `;
+                    container.appendChild(card);
+                });
+                lucide.createIcons();
+            };
+        }
+
+        function deleteDoc(id) {
+            if (confirm("¿Borrar este documento de tu bóveda local?")) {
+                const tx = db.transaction("docs", "readwrite");
+                tx.objectStore("docs").delete(id);
+                tx.oncomplete = () => renderVaultDocs();
+            }
+        }
+
+        function viewImage(title, imgSrc) {
+            document.getElementById('viewer-title').innerText = title;
+            document.getElementById('viewer-img').src = imgSrc;
+            document.getElementById('image-viewer-modal').classList.remove('hidden');
+        }
+
+        function closeImageViewer() {
+            document.getElementById('image-viewer-modal').classList.add('hidden');
+        }
+
+        // --- PRESUPUESTO & FRASES ---
         function openBudgetModal() {
             let totalEst = 0;
             let totalReal = 0;
@@ -620,7 +976,7 @@
             document.getElementById('phrases-modal').classList.add('hidden');
         }
 
-        // --- FOTOS E INDEXEDDB ---
+        // --- FOTOS E INDEXEDDB ACTIVIDADES ---
         function handlePhotoUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -641,8 +997,9 @@
 
             tempPhotos.forEach((src) => {
                 const imgDiv = document.createElement('div');
-                imgDiv.className = "h-24 rounded-lg bg-cover bg-center border border-gray-200 relative";
+                imgDiv.className = "h-24 rounded-lg bg-cover bg-center border border-gray-200 relative cursor-pointer";
                 imgDiv.style.backgroundImage = `url('${src}')`;
+                imgDiv.onclick = () => viewImage("Foto de Actividad", src);
                 grid.appendChild(imgDiv);
             });
         }
@@ -689,7 +1046,8 @@
         function exportData() {
             const exportObject = {
                 checked: checkedItems,
-                details: userDetails
+                details: userDetails,
+                rates: JSON.parse(localStorage.getItem('asiaRates'))
             };
             const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -709,6 +1067,7 @@
                     const data = JSON.parse(evt.target.result);
                     if (data.checked) localStorage.setItem('asiaTripChecked2026', JSON.stringify(data.checked));
                     if (data.details) localStorage.setItem('asiaTripDetails2026', JSON.stringify(data.details));
+                    if (data.rates) localStorage.setItem('asiaRates', JSON.stringify(data.rates));
                     checkedItems = data.checked || {};
                     userDetails = data.details || {};
                     renderApp();
