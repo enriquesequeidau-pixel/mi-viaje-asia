@@ -1,10 +1,10 @@
-const CACHE_NAME = 'asia-2026-offline-v5';
+const CACHE_NAME = 'asia-2026-offline-v6';
 
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './app-icon.png'
+  './app-icon-v2.png'
 ];
 
 // Estas dependencias son las que dan estilo e iconos a la app. Se guardan al
