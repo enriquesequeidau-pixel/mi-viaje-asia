@@ -22,6 +22,7 @@ const dom = {
 let filters = { query: '', city: 'ALL', type: 'ALL' };
 let deferredInstall = null;
 let currentCloud = cloud.snapshot();
+let activePhotoView = null;
 
 function iconFor(type) {
   return ({ Vuelo: '✈', Transporte: '↗', Comida: '♨', Compras: '◇', Estadía: '⌂', Visita: '◎', Otro: '•' })[type] || '•';
@@ -34,6 +35,7 @@ function toast(message, error = false) {
 }
 
 function openDialog(title, eyebrow, content) {
+  activePhotoView = null;
   dom.dialogTitle.textContent = title;
   dom.dialogEyebrow.textContent = eyebrow;
   dom.dialogContent.replaceChildren(content);
@@ -236,6 +238,7 @@ function openActivity(id, edit = false) {
     )
   );
   openDialog(item.title, item.city, content);
+  activePhotoView = { activityId: id, grid: photoGrid, status: photoStatus };
   renderActivityPhotos(id, photoGrid, photoStatus).catch(error => {
     photoStatus.textContent = 'No se pudieron cargar las fotos.';
     toast(error.message, true);
@@ -288,11 +291,19 @@ async function renderActivityPhotos(activityId, grid, status) {
 
   const detail = store.get().details[activityId] || {};
   if (Number(detail.photosCount || 0) !== unique.length) store.setMap('details', activityId, { ...detail, photosCount: unique.length });
+  const remoteIds = new Set(remotePhotos.map(photo => photo.cloudMediaId));
+  const localOnly = localPhotos.filter(photo =>
+    !photo.cloudMediaId || (currentCloud.user && navigator.onLine && !remoteIds.has(photo.cloudMediaId))
+  ).length;
   status.textContent = cloudError
-    ? `${unique.length} foto(s) local(es). La nube no respondió: ${cloudError.message}`
-    : currentCloud.user
-      ? `${unique.length} foto(s) · copia privada sincronizada`
-      : `${unique.length} foto(s) guardada(s) en este dispositivo`;
+    ? `${unique.length} foto(s) · no se pudo comprobar la nube: ${cloudError.message}`
+    : !currentCloud.user
+      ? `${unique.length} foto(s) · solo en este dispositivo; tu pareja aún no puede verla(s)`
+      : !navigator.onLine
+        ? `${unique.length} foto(s) · sin conexión; lo pendiente se compartirá al volver la red`
+        : localOnly
+          ? `${unique.length} foto(s) · ${localOnly} pendiente(s) de subir; tu pareja aún no la(s) ve`
+          : `${unique.length} foto(s) · compartida(s) en privado con integrantes del viaje`;
 }
 
 async function addActivityPhotos(activityId, fileList, grid, status) {
@@ -365,6 +376,7 @@ function openBudget() {
       el('div', { class: 'info-card' }, el('div', { class: 'row' }, el('strong', { text: 'Actividades planificadas' }), el('span', { text: money(budget.plannedActivities) }))),
       el('div', { class: 'info-card' }, el('div', { class: 'row' }, el('strong', { text: 'Estadías planificadas / persona' }), el('span', { text: money(budget.plannedStays) }))),
       el('div', { class: 'info-card' }, el('div', { class: 'row' }, el('strong', { text: 'Traslados planificados' }), el('span', { text: money(budget.plannedTransport) }))),
+      el('div', { class: 'info-card' }, el('div', { class: 'row' }, el('strong', { text: 'Vuelos incluidos en planificado (costo real)' }), el('span', { text: money(budget.plannedFlights) }))),
       el('div', { class: 'info-card' }, el('div', { class: 'row' }, el('strong', { text: 'Actividades registradas' }), el('span', { text: money(budget.actualActivities) }))),
       el('div', { class: 'info-card' }, el('div', { class: 'row' }, el('strong', { text: 'Estadías registradas' }), el('span', { text: money(budget.actualStays) }))),
       el('div', { class: 'info-card' }, el('div', { class: 'row' }, el('strong', { text: 'Traslados registrados' }), el('span', { text: money(budget.actualTransport) }))),
@@ -857,7 +869,7 @@ dom.more.addEventListener('click', () => {
 dom.syncButton.addEventListener('click', openAccount);
 $('#dialog-close').addEventListener('click', closeDialog);
 dom.dialog.addEventListener('click', event => { if (event.target === dom.dialog) closeDialog(); });
-dom.dialog.addEventListener('close', () => dom.dialogContent.replaceChildren());
+dom.dialog.addEventListener('close', () => { activePhotoView = null; dom.dialogContent.replaceChildren(); });
 dom.search.addEventListener('input', event => { filters.query = event.target.value.trim(); renderItinerary(); });
 dom.city.addEventListener('change', event => { filters.city = event.target.value; renderItinerary(); });
 dom.type.addEventListener('change', event => { filters.type = event.target.value; renderItinerary(); });
@@ -875,7 +887,29 @@ window.addEventListener('appinstalled', () => { deferredInstall = null; toast('A
 window.addEventListener('online', renderStatus);
 window.addEventListener('offline', renderStatus);
 store.subscribe(renderAll);
-cloud.subscribe(snapshot => { currentCloud = snapshot; renderStatus(); });
+cloud.subscribe(async snapshot => {
+  const mediaChanged = snapshot.mediaVersion !== currentCloud.mediaVersion;
+  currentCloud = snapshot;
+  renderStatus();
+  if (mediaChanged) {
+    try {
+      if (snapshot.mediaDeletedId) {
+        const localPhotos = await listActivityPhotos();
+        await Promise.all(localPhotos
+          .filter(photo => photo.cloudMediaId === snapshot.mediaDeletedId)
+          .map(photo => deleteActivityPhoto(photo.id)));
+      }
+      if (activePhotoView &&
+          (!snapshot.mediaActivityId || snapshot.mediaActivityId === activePhotoView.activityId)) {
+        const { activityId, grid, status } = activePhotoView;
+        await renderActivityPhotos(activityId, grid, status);
+      }
+    } catch (error) {
+      if (activePhotoView) activePhotoView.status.textContent = 'No se pudieron actualizar las fotos compartidas.';
+      console.error(error);
+    }
+  }
+});
 
 renderActions(); renderAll(); updateClocks(); setInterval(updateClocks, 30000);
 cloud.init().catch(error => { console.error(error); toast('No fue posible iniciar la sincronización.', true); });

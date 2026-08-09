@@ -29,10 +29,12 @@ export function budgetTotals(state, travellers = 2) {
     const perPerson = stay.estPerPerson ?? (parseMoney(stay.estTotal) / Math.max(1, travellers));
     return total + parseMoney(perPerson);
   }, 0);
-  const plannedFlights = 0;
   const actualFlights = Object.values(state.flightDetails || {}).reduce((total, detail) => {
     return total + parseMoney(detail?.realCost ?? detail?.cost);
   }, 0);
+  // Flights have no separate estimate in this trip. Their confirmed real cost
+  // is also the amount reserved in the per-person plan.
+  const plannedFlights = actualFlights;
   const actualActivities = Object.entries(state.details || {}).reduce((total, [id, detail]) => {
     return total + (isBudgetTransport(activityById.get(id)) ? 0 : parseMoney(detail?.realCost));
   }, 0);

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'asia-2026-v34';
+const CACHE_VERSION = 'asia-2026-v35';
 const APP_SHELL = [
   './',
   './index.html',

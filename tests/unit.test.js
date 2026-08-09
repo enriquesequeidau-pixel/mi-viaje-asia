@@ -26,14 +26,14 @@ test('budget keeps the original per-person lodging criterion', () => {
   assert.equal(budgetTotals({ ...DEFAULT_STATE, transportCosts: { legacy: { real: '21.000' } } }).actualTransport, 21000);
 });
 
-test('flight costs are real-only and never increase the planned budget', () => {
+test('flight real costs also reserve the same amount in the planned budget', () => {
   const state = structuredClone(DEFAULT_STATE);
   state.flights[0].estimatedCost = 500000;
   state.flightDetails[state.flights[0].id] = { realCost: 475000 };
   const budget = budgetTotals(state);
-  assert.equal(budget.plannedFlights, 0);
+  assert.equal(budget.plannedFlights, 475000);
   assert.equal(budget.actualFlights, 475000);
-  assert.equal(budget.planned, 1620340);
+  assert.equal(budget.planned, 2095340);
   assert.equal(budget.registered, 475000);
 });
 
@@ -46,8 +46,9 @@ test('legacy flight costs and bookingRef migrate to real spending and booking', 
   assert.equal(normalized.flightDetails[candidate.flights[0].id].realCost, 180220);
   assert.equal(normalized.flightDetails[candidate.flights[0].id].booking, 'ABC123');
   assert.equal(normalized.flightDetails[candidate.flights[0].id].confirmed, true);
-  assert.equal(budget.plannedFlights, 0);
+  assert.equal(budget.plannedFlights, 180220);
   assert.equal(budget.actualFlights, 180220);
+  assert.equal(budget.planned, 1800560);
   assert.equal(budget.registered, 180220);
 });
 

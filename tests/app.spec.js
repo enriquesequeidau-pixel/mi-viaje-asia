@@ -48,14 +48,14 @@ test('corrupted local storage cannot prevent startup', async ({ page }) => {
   await expect(page.locator('.activity-row').first()).toBeVisible();
 });
 
-test('v33 visibly invalidates stale cloud revision once', async ({ page }) => {
+test('v35 visibly invalidates stale cloud revision once', async ({ page }) => {
   await page.evaluate(() => localStorage.setItem('asiaTripCloudMeta2026.v1', JSON.stringify({ tripId: 'test-trip', revision: 999, schemaVersion: 7 })));
   await page.reload();
   const meta = await page.evaluate(() => JSON.parse(localStorage.getItem('asiaTripCloudMeta2026.v1')));
   expect(meta.revision).toBe(0);
   expect(meta.schemaVersion).toBe(8);
   await page.getByRole('button', { name: 'Abrir herramientas' }).click();
-  await expect(page.getByLabel('Versión de la vista')).toHaveText('Vista v33');
+  await expect(page.getByLabel('Versión de la vista')).toHaveText('Vista v35');
 });
 
 test('filters do not alter global progress', async ({ page }) => {
@@ -89,6 +89,8 @@ test('restores legacy activity photos and allows new uploads', async ({ page }) 
   await page.reload();
   await page.locator('.activity-copy').first().click();
   await expect(page.locator('.photo-card')).toHaveCount(1);
+  await expect(page.locator('.photo-status')).toContainText('solo en este dispositivo');
+  await expect(page.locator('.photo-status')).toContainText('tu pareja aún no puede verla');
   await page.locator('input[type="file"][accept*="image/jpeg"]').setInputFiles('assets/icon-192.png');
   await expect(page.locator('.photo-card')).toHaveCount(2);
   await page.screenshot({ path: 'test-results/photo-dialog.png', fullPage: false });
@@ -104,7 +106,7 @@ test('shows the original planned budget instead of doubling stays', async ({ pag
   await expect(page.locator('#app-dialog')).toContainText('801.760');
   await expect(page.locator('#app-dialog')).toContainText('181.080');
   await expect(page.locator('#app-dialog')).toContainText('637.500');
-  await expect(page.locator('#app-dialog')).not.toContainText('Vuelos planificados');
+  await expect(page.locator('#app-dialog')).toContainText('Vuelos incluidos en planificado (costo real)');
 });
 
 test('keeps estimates separate and manages stays, transports and flights', async ({ page }) => {
@@ -180,6 +182,12 @@ test('keeps estimates separate and manages stays, transports and flights', async
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(flightCard).toContainText('Costo real: $90.000');
   await expect(flightCard).toContainText('Reserva TEST123 · Confirmada');
+  await page.locator('#dialog-close').click();
+  await page.getByRole('button', { name: /Presupuesto/ }).click();
+  await expect(dialog).toContainText('1.710.340');
+  await expect(dialog.locator('.info-card').filter({ hasText: 'Vuelos incluidos en planificado' })).toContainText('90.000');
+  await page.locator('#dialog-close').click();
+  await page.getByRole('button', { name: /Vuelos/ }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: 'test-results/management-mobile.png', fullPage: false });
   await flightCard.getByRole('button', { name: 'Editar vuelo' }).click();

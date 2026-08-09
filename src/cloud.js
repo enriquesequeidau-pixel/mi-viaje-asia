@@ -13,7 +13,10 @@ function isBrowserSafeKey(key) {
 const configured = /^https:\/\/[^/]+\.supabase\.co$/.test(config.supabaseUrl || '') && isBrowserSafeKey(config.supabaseKey || '');
 let client = null;
 let channel = null;
-let state = { status: configured ? 'signed-out' : 'local', user: null, error: null, pending: store.outbox().length };
+let state = {
+  status: configured ? 'signed-out' : 'local', user: null, error: null,
+  pending: store.outbox().length, mediaVersion: 0, mediaActivityId: null, mediaDeletedId: null
+};
 const listeners = new Set();
 let flushing = false;
 
@@ -47,7 +50,17 @@ async function subscribe(tripId) {
         applyRemoteItem(record);
         store.setCloudMeta({ revision: record.revision });
       }
-    }).subscribe();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_media' }, payload => {
+      const media = payload.new?.trip_id ? payload.new : payload.old;
+      if (media?.trip_id && media.trip_id !== tripId) return;
+      emit({
+        mediaVersion: state.mediaVersion + 1,
+        mediaActivityId: media?.activity_id || null,
+        mediaDeletedId: payload.eventType === 'DELETE' ? media?.id || null : null
+      });
+    })
+    .subscribe();
 }
 
 function mediaExtension(mimeType) {
@@ -94,29 +107,42 @@ async function remoteActivityPhotos(activityId) {
     .select('id,activity_id,storage_path,mime_type,created_at')
     .eq('trip_id', tripId).eq('kind', 'photo').eq('activity_id', activityId).order('created_at');
   if (error) throw error;
-  return Promise.all((data || []).map(async media => {
+  const signedPhotos = await Promise.all((data || []).map(async media => {
     const { data: signed, error: signedError } = await supabase.storage.from('trip-media').createSignedUrl(media.storage_path, 3600);
-    if (signedError || !signed?.signedUrl) throw signedError || new Error('No se pudo abrir una foto compartida.');
+    if (signedError || !signed?.signedUrl) {
+      console.warn('No se pudo abrir una foto compartida:', signedError?.message || media.id);
+      return null;
+    }
     return { ...media, cloudMediaId: media.id, cloudPath: media.storage_path, image: signed.signedUrl };
   }));
+  return signedPhotos.filter(Boolean);
 }
 
 async function deleteRemotePhoto(photo) {
   if (!state.user || !photo.cloudMediaId || !photo.cloudPath) return;
   const supabase = requireClient();
-  const { error: storageError } = await supabase.storage.from('trip-media').remove([photo.cloudPath]);
-  if (storageError) throw storageError;
   const { error: metadataError } = await supabase.from('trip_media').delete().eq('id', photo.cloudMediaId);
   if (metadataError) throw metadataError;
+  const { error: storageError } = await supabase.storage.from('trip-media').remove([photo.cloudPath]);
+  if (storageError) throw storageError;
 }
 
 async function syncPendingPhotos() {
-  if (!state.user || !navigator.onLine) return;
+  if (!state.user || !navigator.onLine) return 0;
+  const tripId = await getTripId();
+  if (!tripId) return 0;
+  const { data: remoteMedia, error: remoteError } = await requireClient().from('trip_media')
+    .select('id').eq('trip_id', tripId).eq('kind', 'photo');
+  if (remoteError) throw remoteError;
+  const remoteIds = new Set((remoteMedia || []).map(media => media.id));
   const localPhotos = await listActivityPhotos();
-  for (const photo of localPhotos.filter(item => !item.cloudMediaId)) {
+  let uploaded = 0;
+  for (const photo of localPhotos.filter(item => !item.cloudMediaId || !remoteIds.has(item.cloudMediaId))) {
     const media = await uploadActivityPhoto(photo.activityId, photo.image);
     await saveActivityPhoto({ ...photo, cloudMediaId: media.id, cloudPath: media.storage_path });
+    uploaded += 1;
   }
+  return uploaded;
 }
 
 export const cloud = {
@@ -173,7 +199,10 @@ export const cloud = {
   listActivityPhotos: remoteActivityPhotos,
   uploadActivityPhoto,
   deleteActivityPhoto: deleteRemotePhoto,
-  async syncPhotos() { await syncPendingPhotos(); },
+  async syncPhotos() {
+    const uploaded = await syncPendingPhotos();
+    if (uploaded) emit({ mediaVersion: state.mediaVersion + 1, mediaActivityId: null, mediaDeletedId: null });
+  },
   async seed() {
     const snapshot = store.get();
     for (const section of ['activities', 'stays', 'flights', 'extraExpenses']) for (const item of snapshot[section]) store.upsert(section, item);
