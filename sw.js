@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asia-2026-offline-v17';
+const CACHE_NAME = 'asia-2026-offline-v18';
 
 const APP_SHELL = [
   './',

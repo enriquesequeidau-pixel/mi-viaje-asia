@@ -1226,6 +1226,7 @@
             }
             cloudLastRevision = Math.max(cloudLastRevision, revision);
             updateCloudIndicator('ok', 'Sincronizado');
+            markCloudSaved();
         }
 
         function subscribeToSharedTrip() {
@@ -1289,6 +1290,7 @@
             showAccountPanel('connected-trip-panel');
             document.getElementById('account-modal').classList.add('hidden');
             updateCloudIndicator('ok', 'Sincronizado');
+            markCloudSaved();
         }
 
         async function forceCloudRefresh() {
@@ -1320,6 +1322,15 @@
                 dirty: false,
                 lastExportedAt: exportedAt,
                 lastChangedAt: backupState.lastChangedAt
+            };
+            saveBackupState();
+            updateBackupReminder();
+        }
+
+        function markCloudSaved() {
+            backupState = {
+                ...backupState,
+                dirty: false
             };
             saveBackupState();
             updateBackupReminder();
