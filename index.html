@@ -1532,6 +1532,7 @@
         }
 
         function renderApp() {
+            sortAllEditableData();
             const container = document.getElementById('itinerary-container');
             container.innerHTML = '';
             
@@ -1700,6 +1701,48 @@
             return `${day}/${month}/${year}`;
         }
 
+        function toDateTimeInput(value) {
+            if (!value) return '';
+            const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+            if (!match) return value.includes('T') ? value.slice(0, 16) : '';
+            return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}T${(match[4] || '00').padStart(2, '0')}:${match[5] || '00'}`;
+        }
+
+        function fromDateTimeInput(value) {
+            if (!value) return '';
+            const [date, time] = value.split('T');
+            return `${fromInputDate(date)} ${time}`;
+        }
+
+        function flightDateToISO(flight) {
+            if (flight.dateValue) return flight.dateValue;
+            const months = { enero: '01', febrero: '02', marzo: '03', abril: '04', mayo: '05', junio: '06', julio: '07', agosto: '08', septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12' };
+            const match = String(flight.date || '').toLowerCase().match(/(\d{1,2})\s+de\s+([a-záéíóú]+)\s+de\s+(\d{4})/);
+            if (!match || !months[match[2]]) return '';
+            return `${match[3]}-${months[match[2]]}-${match[1].padStart(2, '0')}`;
+        }
+
+        function formatFlightDate(dateValue) {
+            if (!dateValue) return '';
+            const date = new Date(`${dateValue}T12:00:00`);
+            const formatted = new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+            return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+        }
+
+        function formatFlightShortDate(dateValue) {
+            if (!dateValue) return '';
+            const date = new Date(`${dateValue}T12:00:00`);
+            return new Intl.DateTimeFormat('es-CL', { day: '2-digit', month: 'short' }).format(date).replace('.', '').toUpperCase();
+        }
+
+        function sortAllEditableData() {
+            itineraryData.forEach(day => day.activities.sort((a, b) => String(a.time).localeCompare(String(b.time))));
+            itineraryData.sort((a, b) => parseTripDate(a.date) - parseTripDate(b.date));
+            initialStaysData.sort((a, b) => String(toDateTimeInput(a.checkIn)).localeCompare(String(toDateTimeInput(b.checkIn))));
+            flightsData.sort((a, b) => `${flightDateToISO(a)}T${a.time || '00:00'}`.localeCompare(`${flightDateToISO(b)}T${b.time || '00:00'}`));
+            extraExpenses.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+        }
+
         function findActivityWithDate(id) {
             for (const day of itineraryData) {
                 const activity = day.activities.find(item => item.id === id);
@@ -1736,15 +1779,14 @@
             } else if (kind === 'stay') {
                 form.innerHTML = `
                     <div class="grid grid-cols-2 gap-2">${editorSelect('country', 'País', item.country || '🇯🇵 Japón', STAY_COUNTRIES, 'required')}${editorSelect('city', 'Ciudad', item.city || 'TOKYO', EDITOR_CITIES, 'required')}</div>
-                    ${editorField('checkIn', 'Entrada', item.checkIn || '', 'text', 'required placeholder="24/08/2026 15:00"')}
-                    ${editorField('checkOut', 'Salida', item.checkOut || '', 'text', 'required placeholder="25/08/2026 11:00"')}
+                    ${editorField('checkIn', 'Entrada', toDateTimeInput(item.checkIn), 'datetime-local', 'required')}
+                    ${editorField('checkOut', 'Salida', toDateTimeInput(item.checkOut), 'datetime-local', 'required')}
                     <div class="grid grid-cols-2 gap-2">${editorField('nights', 'Noches', item.nights || 0, 'number', 'min="0"')}${editorField('estPerPerson', 'Estimado por persona', item.estPerPerson || 0, 'number', 'min="0"')}</div>
                     ${editorField('defaultLocation', 'Dirección o referencia', item.defaultLocation || '', 'text')}
                     <button class="w-full rounded-lg bg-indigo-800 py-3 text-sm font-bold text-white">Guardar</button>`;
             } else if (kind === 'flight') {
                 form.innerHTML = `
-                    ${editorField('date', 'Fecha descriptiva', item.date || '', 'text', 'required')}
-                    <div class="grid grid-cols-2 gap-2">${editorField('shortDate', 'Fecha corta', item.shortDate || '', 'text', 'required')}${editorField('time', 'Hora', item.time || '', 'time', 'required')}</div>
+                    <div class="grid grid-cols-2 gap-2">${editorField('dateValue', 'Fecha', flightDateToISO(item) || getTodayInputValue(), 'date', 'required')}${editorField('time', 'Hora', item.time || '', 'time', 'required')}</div>
                     <div class="grid grid-cols-2 gap-2">${editorField('from', 'Origen', item.from || '', 'text', 'required')}${editorField('fromCode', 'Código origen', item.fromCode || '', 'text', 'required')}</div>
                     <div class="grid grid-cols-2 gap-2">${editorField('to', 'Destino', item.to || '', 'text', 'required')}${editorField('toCode', 'Código destino', item.toCode || '', 'text', 'required')}</div>
                     <div class="grid grid-cols-2 gap-2">${editorField('airline', 'Aerolínea', item.airline || '', 'text', 'required')}${editorField('flight', 'Nº de vuelo', item.flight || '', 'text', 'required')}</div>
@@ -1787,11 +1829,11 @@
                 day.activities.sort((a, b) => a.time.localeCompare(b.time));
                 itineraryData.sort((a, b) => parseTripDate(a.date) - parseTripDate(b.date));
             } else if (kind === 'stay') {
-                const stay = { id: entityId, country: values.country, city: values.city.toUpperCase(), checkIn: values.checkIn, checkOut: values.checkOut, nights: Number(values.nights), estPerPerson: Number(values.estPerPerson), estTotal: Number(values.estPerPerson) * 2, defaultLocation: values.defaultLocation };
+                const stay = { id: entityId, country: values.country, city: values.city.toUpperCase(), checkIn: fromDateTimeInput(values.checkIn), checkOut: fromDateTimeInput(values.checkOut), nights: Number(values.nights), estPerPerson: Number(values.estPerPerson), estTotal: Number(values.estPerPerson) * 2, defaultLocation: values.defaultLocation };
                 const index = initialStaysData.findIndex(row => row.id === id);
                 index >= 0 ? initialStaysData.splice(index, 1, stay) : initialStaysData.push(stay);
             } else if (kind === 'flight') {
-                const flight = { id: entityId, date: values.date, shortDate: values.shortDate.toUpperCase(), time: values.time, from: values.from, fromCode: values.fromCode.toUpperCase(), to: values.to, toCode: values.toCode.toUpperCase(), airline: values.airline, flight: values.flight.toUpperCase() };
+                const flight = { id: entityId, dateValue: values.dateValue, date: formatFlightDate(values.dateValue), shortDate: formatFlightShortDate(values.dateValue), time: values.time, from: values.from, fromCode: values.fromCode.toUpperCase(), to: values.to, toCode: values.toCode.toUpperCase(), airline: values.airline, flight: values.flight.toUpperCase() };
                 const index = flightsData.findIndex(row => row.id === id);
                 index >= 0 ? flightsData.splice(index, 1, flight) : flightsData.push(flight);
                 flightDetails[entityId] = { ...(flightDetails[entityId] || {}), cost: values.cost };
@@ -1801,6 +1843,7 @@
                 const index = extraExpenses.findIndex(row => row.id === id);
                 index >= 0 ? extraExpenses.splice(index, 1, expense) : extraExpenses.push(expense);
             }
+            sortAllEditableData();
             persistEditableData();
             closeEntityEditor();
             renderApp();
@@ -1859,7 +1902,7 @@
                 if (seenLegs.has(key)) return false;
                 seenLegs.add(key);
                 return true;
-            });
+            }).sort((a, b) => `${toInputDate(a.date)}T${a.time}`.localeCompare(`${toInputDate(b.date)}T${b.time}`));
 
             container.innerHTML = `<button type="button" onclick="openEntityEditor('transport')" class="w-full rounded-xl bg-sky-700 px-3 py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Agregar transporte</button>` + legs.map(leg => {
                 const costs = transportCosts[leg.id] || {};
@@ -1917,6 +1960,7 @@
         }
 
         function renderStays() {
+            sortAllEditableData();
             const container = document.getElementById('stays-list-container');
             container.innerHTML = `<button type="button" onclick="openEntityEditor('stay')" class="w-full rounded-xl bg-indigo-700 px-3 py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Agregar estadía</button>`;
 
@@ -2045,6 +2089,7 @@
         }
 
         function renderFlights() {
+            sortAllEditableData();
             const container = document.getElementById('flights-list');
             let ready = 0;
             container.innerHTML = `<button type="button" onclick="openEntityEditor('flight')" class="w-full rounded-xl bg-violet-800 px-3 py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Agregar vuelo</button>` + flightsData.map((flight) => {
@@ -2123,7 +2168,7 @@
             document.getElementById('extra-expenses-total').innerText = `$${total.toLocaleString('es-CL')}`;
             list.innerHTML = extraExpenses.length ? extraExpenses
                 .slice()
-                .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+                .sort((a, b) => String(a.date).localeCompare(String(b.date)))
                 .map(expense => `
                     <div class="flex items-center gap-2 rounded-lg border border-amber-100 bg-white p-2">
                         <div class="min-w-0 flex-1">
