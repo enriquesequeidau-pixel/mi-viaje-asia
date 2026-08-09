@@ -1,0 +1,27 @@
+{
+  "name": "mi-viaje-asia",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/styles.css -o ./assets/styles.css --minify",
+    "build:js": "esbuild ./src/main.js --bundle --minify --format=iife --target=es2021 --outfile=./assets/app.js",
+    "build:icons": "node scripts/generate-icons.js",
+    "build": "npm run build:icons && npm run build:css && npm run build:js",
+    "check": "npm run build && npm test",
+    "test": "node --test tests/*.test.js",
+    "test:e2e": "playwright test",
+    "dev": "python3 -m http.server 4173"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.112.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@tailwindcss/cli": "4.3.3",
+    "esbuild": "0.28.2",
+    "sharp": "0.35.3",
+    "supabase": "2.113.0",
+    "tailwindcss": "4.3.3"
+  }
+}

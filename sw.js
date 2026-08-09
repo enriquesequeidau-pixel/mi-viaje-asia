@@ -1,82 +1,69 @@
-const CACHE_NAME = 'asia-2026-offline-v21';
-
+const CACHE_VERSION = 'asia-2026-v34';
 const APP_SHELL = [
   './',
   './index.html',
+  './config.js',
   './manifest.webmanifest',
+  './assets/styles.css',
+  './assets/app.js',
+  './assets/icon-192.png',
+  './assets/icon-512.png',
+  './assets/icon-maskable-512.png',
   './app-icon-v2.png'
 ];
 
-// Estas dependencias son las que dan estilo e iconos a la app. Se guardan al
-// instalarla para que la interfaz siga funcionando sin señal.
-const REMOTE_ASSETS = [
-  'https://cdn.tailwindcss.com',
-  'https://unpkg.com/lucide@latest',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    await cache.addAll(APP_SHELL);
-
-    await Promise.allSettled(REMOTE_ASSETS.map(async (url) => {
-      const response = await fetch(new Request(url, { mode: 'no-cors' }));
-      if (response) await cache.put(url, response);
-    }));
-
-    await self.skipWaiting();
-  })());
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE_VERSION).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil((async () => {
-    const names = await caches.keys();
-    await Promise.all(names
-      .filter((name) => name === 'asia-trip-v2' || (name.startsWith('asia-2026-offline-') && name !== CACHE_NAME))
-      .map((name) => caches.delete(name)));
+    const cacheNames = await caches.keys();
+    await Promise.all(cacheNames.filter(name => name.startsWith('asia-2026-') && name !== CACHE_VERSION).map(name => caches.delete(name)));
     await self.clients.claim();
   })());
 });
 
-self.addEventListener('fetch', (event) => {
+function isStaticAsset(request) {
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return false;
+  return url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || url.pathname.endsWith('.png') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.webmanifest');
+}
+
+self.addEventListener('fetch', event => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
-  // Para el documento principal se busca primero una versión nueva. Si no hay
-  // red, se abre la copia que quedó guardada en el teléfono.
+  const url = new URL(request.url);
+  if (url.hostname.endsWith('.supabase.co')) return;
+
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       try {
         const response = await fetch(request);
         if (response.ok) {
-          const cache = await caches.open(CACHE_NAME);
+          const cache = await caches.open(CACHE_VERSION);
           await cache.put('./index.html', response.clone());
         }
-        return response;
+        return response.ok ? response : (await caches.match('./index.html')) || response;
       } catch {
-        return (await caches.match('./index.html')) || (await caches.match('./'));
+        return (await caches.match('./index.html')) || new Response('Sin conexión', { status: 503 });
       }
     })());
     return;
   }
 
-  // Recursos visuales y scripts: primero la copia local, luego la red. Así la
-  // app abre rápido y puede usar Tailwind/Lucide cuando no exista conexión.
+  if (!isStaticAsset(request)) return;
   event.respondWith((async () => {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-
     try {
       const response = await fetch(request);
-      if (response && (response.ok || response.type === 'opaque')) {
-        const cache = await caches.open(CACHE_NAME);
+      if (response.ok) {
+        const cache = await caches.open(CACHE_VERSION);
         await cache.put(request, response.clone());
       }
       return response;
     } catch {
-      return new Response('', { status: 503, statusText: 'Sin conexión' });
+      return (await caches.match(request)) || new Response('', { status: 503 });
     }
   })());
 });
