@@ -1736,11 +1736,19 @@
         }
 
         function sortAllEditableData() {
+            const timestamp = value => {
+                const parsed = new Date(value).getTime();
+                return Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER;
+            };
             itineraryData.forEach(day => day.activities.sort((a, b) => String(a.time).localeCompare(String(b.time))));
-            itineraryData.sort((a, b) => parseTripDate(a.date) - parseTripDate(b.date));
-            initialStaysData.sort((a, b) => String(toDateTimeInput(a.checkIn)).localeCompare(String(toDateTimeInput(b.checkIn))));
-            flightsData.sort((a, b) => `${flightDateToISO(a)}T${a.time || '00:00'}`.localeCompare(`${flightDateToISO(b)}T${b.time || '00:00'}`));
-            extraExpenses.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+            itineraryData.sort((a, b) => parseTripDate(a.date).getTime() - parseTripDate(b.date).getTime());
+            initialStaysData.sort((a, b) => timestamp(toDateTimeInput(a.checkIn)) - timestamp(toDateTimeInput(b.checkIn)));
+            flightsData.sort((a, b) => timestamp(`${flightDateToISO(a)}T${a.time || '00:00'}`) - timestamp(`${flightDateToISO(b)}T${b.time || '00:00'}`));
+            extraExpenses.sort((a, b) => timestamp(`${a.date}T00:00`) - timestamp(`${b.date}T00:00`));
+        }
+
+        function editorActions(colorClass) {
+            return `<div class="grid grid-cols-2 gap-2 pt-2"><button type="button" onclick="closeEntityEditor()" class="rounded-lg border border-gray-300 bg-white py-3 text-sm font-bold text-gray-600">Cancelar</button><button class="rounded-lg ${colorClass} py-3 text-sm font-bold text-white">Guardar cambios</button></div><p class="text-[11px] text-gray-500">Los campos marcados por el navegador deben completarse antes de guardar.</p>`;
         }
 
         function findActivityWithDate(id) {
@@ -1775,7 +1783,7 @@
                     ${editorField('location', 'Lugar', item.location || '', 'text', 'required')}
                     <div class="grid grid-cols-2 gap-2">${editorField('cost', 'Estimado (CLP)', parseCost(item.cost), 'number', 'min="0"')}${editorSelect('type', 'Tipo de evento', item.type || (kind === 'transport' ? 'Train' : 'Camera'), EVENT_TYPES, 'required')}</div>
                     ${kind === 'transport' ? `<div class="grid grid-cols-2 gap-2">${editorSelect('transportMode', 'Medio', item.transportMode || 'Tren', TRANSPORT_MODES, 'required')}${editorField('transportFrom', 'Tomar en', item.transportFrom || '', 'text', 'required')}</div>${editorField('transportTo', 'Llegar a', item.transportTo || '', 'text', 'required')}` : ''}
-                    <button class="w-full rounded-lg bg-slate-900 py-3 text-sm font-bold text-white">Guardar</button>`;
+                    ${editorActions('bg-slate-900')}`;
             } else if (kind === 'stay') {
                 form.innerHTML = `
                     <div class="grid grid-cols-2 gap-2">${editorSelect('country', 'País', item.country || '🇯🇵 Japón', STAY_COUNTRIES, 'required')}${editorSelect('city', 'Ciudad', item.city || 'TOKYO', EDITOR_CITIES, 'required')}</div>
@@ -1783,7 +1791,7 @@
                     ${editorField('checkOut', 'Salida', toDateTimeInput(item.checkOut), 'datetime-local', 'required')}
                     <div class="grid grid-cols-2 gap-2">${editorField('nights', 'Noches', item.nights || 0, 'number', 'min="0"')}${editorField('estPerPerson', 'Estimado por persona', item.estPerPerson || 0, 'number', 'min="0"')}</div>
                     ${editorField('defaultLocation', 'Dirección o referencia', item.defaultLocation || '', 'text')}
-                    <button class="w-full rounded-lg bg-indigo-800 py-3 text-sm font-bold text-white">Guardar</button>`;
+                    ${editorActions('bg-indigo-800')}`;
             } else if (kind === 'flight') {
                 form.innerHTML = `
                     <div class="grid grid-cols-2 gap-2">${editorField('dateValue', 'Fecha', flightDateToISO(item) || getTodayInputValue(), 'date', 'required')}${editorField('time', 'Hora', item.time || '', 'time', 'required')}</div>
@@ -1791,12 +1799,12 @@
                     <div class="grid grid-cols-2 gap-2">${editorField('to', 'Destino', item.to || '', 'text', 'required')}${editorField('toCode', 'Código destino', item.toCode || '', 'text', 'required')}</div>
                     <div class="grid grid-cols-2 gap-2">${editorField('airline', 'Aerolínea', item.airline || '', 'text', 'required')}${editorField('flight', 'Nº de vuelo', item.flight || '', 'text', 'required')}</div>
                     ${editorField('cost', 'Costo (CLP)', flightDetails[id]?.cost || 0, 'number', 'min="0"')}
-                    <button class="w-full rounded-lg bg-violet-800 py-3 text-sm font-bold text-white">Guardar</button>`;
+                    ${editorActions('bg-violet-800')}`;
             } else {
                 form.innerHTML = `${editorField('description', 'Descripción', item.description || '', 'text', 'required')}
                     <div class="grid grid-cols-2 gap-2">${editorField('amount', 'Monto (CLP)', item.amount || '', 'number', 'required min="1"')}${editorSelect('category', 'Categoría', item.category || 'Otro', EXPENSE_CATEGORIES, 'required')}</div>
                     ${editorField('date', 'Fecha', item.date || getTodayInputValue(), 'date', 'required')}
-                    <button class="w-full rounded-lg bg-amber-700 py-3 text-sm font-bold text-white">Guardar</button>`;
+                    ${editorActions('bg-amber-700')}`;
             }
             document.getElementById('entity-editor-modal').classList.remove('hidden');
             lucide.createIcons();
@@ -1817,6 +1825,7 @@
 
         function saveEntityEditor(event) {
             event.preventDefault();
+            if (!event.target.reportValidity()) return;
             const values = Object.fromEntries(new FormData(event.target).entries());
             const { kind, id } = editingEntity;
             const entityId = id || `${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -2948,8 +2957,16 @@
             });
 
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js').catch(() => {
+                navigator.serviceWorker.register('./sw.js').then(registration => {
+                    registration.update();
+                }).catch(() => {
                     // La app sigue siendo usable online si el navegador bloquea el service worker.
+                });
+
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (sessionStorage.getItem('asia-sw-reloaded') === 'v17') return;
+                    sessionStorage.setItem('asia-sw-reloaded', 'v17');
+                    window.location.reload();
                 });
             }
         }
