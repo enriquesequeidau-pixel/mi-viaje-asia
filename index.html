@@ -713,6 +713,7 @@
         // --- NUBE COMPARTIDA (SUPABASE) ---
         const SUPABASE_URL = 'https://gzjeylzwetjxqpgauszp.supabase.co';
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_APY3SyO8KtjuGY2dg-AmXg_prJcRuBb';
+        const PUBLIC_APP_URL = 'https://enriquesequeidau-pixel.github.io/mi-viaje-asia/';
         const cloudClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
             auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         }) : null;
@@ -1163,7 +1164,11 @@
                 setAccountMessage('Ingresa un correo y una contraseña de al menos 8 caracteres.', 'error');
                 return;
             }
-            const { data, error } = await cloudClient.auth.signUp({ email, password });
+            const { data, error } = await cloudClient.auth.signUp({
+                email,
+                password,
+                options: { emailRedirectTo: PUBLIC_APP_URL }
+            });
             if (error) {
                 setAccountMessage(error.message, 'error');
             } else if (!data.session) {
@@ -2455,8 +2460,12 @@
 
         async function getSharedMediaUrl(path) {
             const { data, error } = await cloudClient.storage.from('trip-media').createSignedUrl(path, 3600);
-            if (error) throw error;
-            return data.signedUrl;
+            if (!error && data?.signedUrl) return data.signedUrl;
+            // Respaldo para navegadores que rechazan la URL firmada pero sí permiten
+            // la descarga autenticada mediante la sesión actual.
+            const { data: blob, error: downloadError } = await cloudClient.storage.from('trip-media').download(path);
+            if (downloadError) throw downloadError;
+            return URL.createObjectURL(blob);
         }
 
         async function deleteSharedMedia(mediaId, storagePath) {
@@ -2716,17 +2725,27 @@
             existingPhotos = [];
             newPhotos = [];
             photoIdsToDelete = new Set();
-            if (!db) {
-                renderPhotoThumbnails();
-                return;
+            // IndexedDB puede tardar en abrir (especialmente en iPhone). Las fotos
+            // compartidas deben poder cargarse desde Supabase aunque la copia local
+            // todavía no esté disponible.
+            let localPhotos = [];
+            if (db) {
+                try {
+                    localPhotos = (await getStoreData('photos')).filter(photo => photo.activityId === activityId);
+                } catch (localPhotoError) {
+                    console.warn('No se pudieron leer las fotos locales', localPhotoError);
+                }
             }
-            const localPhotos = (await getStoreData('photos')).filter(photo => photo.activityId === activityId);
             existingPhotos = localPhotos.map(photo => ({ ...photo }));
+            let photoListIsAuthoritative = !cloudReady;
+            let actualPhotoCount = localPhotos.length;
             if (cloudReady) {
                 const { data: cloudPhotos, error } = await cloudClient.from('trip_media')
                     .select('*').eq('trip_id', cloudTripId).eq('kind', 'photo').eq('activity_id', activityId).order('created_at');
                 if (!error) {
+                    photoListIsAuthoritative = true;
                     const localByCloudId = new Map(localPhotos.filter(p => p.cloudMediaId).map(p => [p.cloudMediaId, p]));
+                    actualPhotoCount = cloudPhotos.length + localPhotos.filter(photo => !photo.cloudMediaId).length;
                     const sharedPhotos = await Promise.all(cloudPhotos.map(async media => {
                         const local = localByCloudId.get(media.id);
                         let sharedUrl = null;
@@ -2745,6 +2764,19 @@
                         };
                     }));
                     existingPhotos = [...sharedPhotos.filter(photo => photo.image), ...localPhotos.filter(p => !p.cloudMediaId)];
+                } else {
+                    console.warn('No se pudieron consultar las fotos compartidas', error);
+                }
+            }
+            // El indicador de la tarjeta se reconcilia con los archivos reales; de
+            // este modo nunca queda mostrando "1 foto" después de haberla borrado.
+            if (photoListIsAuthoritative) {
+                if (!userDetails[activityId]) userDetails[activityId] = {};
+                if (Number(userDetails[activityId].photosCount || 0) !== actualPhotoCount) {
+                    userDetails[activityId].photosCount = actualPhotoCount;
+                    localStorage.setItem('asiaTripDetails2026', JSON.stringify(userDetails));
+                    markDataChanged();
+                    renderApp();
                 }
             }
             if (currentActivityId === activityId) renderPhotoThumbnails();
