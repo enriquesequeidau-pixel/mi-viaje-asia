@@ -156,6 +156,7 @@
                     <option value="MATSUMOTO">Matsumoto</option>
                     <option value="KAWAGUCHIKO">Kawaguchiko</option>
                     <option value="YOKOHAMA">Yokohama</option>
+                    <option value="LOS_ANGELES">Los Ángeles</option>
                 </select>
                 <select id="type-filter" onchange="renderApp()" class="sm:col-span-3 bg-white border border-gray-300 rounded-lg px-2 py-2 outline-none font-medium text-gray-700 min-h-10">
                     <option value="ALL">Todos Tipos</option>
@@ -1660,7 +1661,8 @@
         const EDITOR_CITIES = [
             ['SHANGHAI', 'Shanghái'], ['HANGZHOU', 'Hangzhou'], ['SUZHOU', 'Suzhou'],
             ['TOKYO', 'Tokio'], ['KANAZAWA', 'Kanazawa'], ['TAKAYAMA', 'Takayama'],
-            ['MATSUMOTO', 'Matsumoto'], ['KAWAGUCHIKO', 'Kawaguchiko'], ['YOKOHAMA', 'Yokohama']
+            ['MATSUMOTO', 'Matsumoto'], ['KAWAGUCHIKO', 'Kawaguchiko'], ['YOKOHAMA', 'Yokohama'],
+            ['LOS_ANGELES', 'Los Ángeles']
         ];
         const EVENT_TYPES = [
             ['Camera', 'Visita / Foto'], ['Utensils', 'Comida'], ['ShoppingBag', 'Compras'],
@@ -1668,7 +1670,11 @@
         ];
         const EXPENSE_CATEGORIES = ['Comida y bebida', 'Compras', 'Transporte', 'Salud', 'Otro'];
         const TRANSPORT_MODES = ['Tren', 'Bus interurbano', 'Metro', 'Ferry', 'Taxi / transfer', 'Otro'];
-        const STAY_COUNTRIES = [['🇨🇳 China', '🇨🇳 China'], ['🇯🇵 Japón', '🇯🇵 Japón']];
+        const STAY_COUNTRIES = [
+            ['🇨🇳 China', '🇨🇳 China'],
+            ['🇯🇵 Japón', '🇯🇵 Japón'],
+            ['🇺🇸 Estados Unidos', '🇺🇸 Estados Unidos']
+        ];
 
         function editorField(name, label, value = '', type = 'text', extra = '') {
             return `<label class="block text-xs font-bold text-gray-600">${label}<input name="${name}" type="${type}" value="${escapeInputValue(value)}" ${extra} class="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm font-medium text-gray-900 outline-none focus:ring-2 focus:ring-slate-500"></label>`;
