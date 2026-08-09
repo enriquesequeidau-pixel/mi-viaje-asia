@@ -37,6 +37,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
     
     <style>
         body { background-color: #f5f3f0; -webkit-tap-highlight-color: transparent; } 
@@ -60,6 +61,10 @@
                     Asia 2026
                 </h1>
                 <div class="flex items-center gap-2">
+                    <button id="sync-account-btn" type="button" onclick="openAccountModal()" class="rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[11px] font-bold text-sky-800 shadow-sm flex items-center gap-1">
+                        <i data-lucide="cloud" class="w-3.5 h-3.5"></i>
+                        <span id="sync-account-text">Conectar</span>
+                    </button>
                     <span id="progress-text" class="text-[11px] md:text-xs font-bold bg-asia-bamboo text-green-900 py-1 px-2.5 rounded-full border border-green-200">0 / 0</span>
                     <button id="controls-toggle" type="button" onclick="toggleControls()" aria-expanded="false" class="rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-gray-700 shadow-sm flex items-center gap-1">
                         <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-asia-red"></i>
@@ -107,6 +112,12 @@
                 </button>
                 <button onclick="openBudgetModal()" class="bg-asia-indigo text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="calculator" class="w-3.5 h-3.5 text-asia-gold"></i> Presupuesto
+                </button>
+                <button onclick="openExtraExpensesModal()" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
+                    <i data-lucide="receipt-text" class="w-3.5 h-3.5 text-amber-200"></i> Otros gastos
+                </button>
+                <button onclick="openEntityEditor('activity')" class="bg-rose-700 hover:bg-rose-800 text-white px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
+                    <i data-lucide="calendar-plus" class="w-3.5 h-3.5 text-rose-200"></i> Agregar evento
                 </button>
                 <button onclick="openPhrasesModal()" class="bg-asia-gold/20 text-yellow-900 border border-asia-gold/40 px-3 py-2 rounded-lg flex items-center gap-1 shrink-0 font-medium shadow-sm min-h-10">
                     <i data-lucide="languages" class="w-3.5 h-3.5"></i> Frases
@@ -187,7 +198,72 @@
         </div>
     </nav>
 
+    <!-- CUENTA Y VIAJE COMPARTIDO -->
+    <div id="account-modal" onclick="if (event.target === this) closeAccountModal()" class="fixed inset-0 bg-black/70 z-[70] hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-t-2xl md:rounded-2xl max-w-md w-full max-h-[94vh] overflow-y-auto card-shadow">
+            <div class="bg-gradient-to-r from-sky-900 to-indigo-900 text-white p-4 flex items-start justify-between">
+                <div>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-sky-200 font-bold">Asia 2026</p>
+                    <h2 class="font-serif font-bold text-xl flex items-center gap-2"><i data-lucide="users" class="w-5 h-5"></i> Viaje compartido</h2>
+                </div>
+                <button id="account-close-btn" type="button" onclick="closeAccountModal()" aria-label="Cerrar" class="p-1 text-sky-200 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <div id="auth-panel" class="p-4 space-y-4">
+                <p class="text-sm text-gray-600">Inicia sesión con tu propia cuenta. Tu pareja debe crear la suya en su teléfono.</p>
+                <form onsubmit="event.preventDefault(); signInSharedTrip()" class="space-y-3">
+                    <label class="block text-xs font-bold text-gray-600">Correo
+                        <input id="auth-email" type="email" autocomplete="email" required class="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500">
+                    </label>
+                    <label class="block text-xs font-bold text-gray-600">Contraseña
+                        <input id="auth-password" type="password" autocomplete="current-password" required minlength="8" class="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500">
+                    </label>
+                    <button id="auth-signin-btn" type="submit" class="w-full rounded-lg bg-sky-800 px-4 py-2.5 text-sm font-bold text-white">Iniciar sesión</button>
+                    <button id="auth-signup-btn" type="button" onclick="signUpSharedTrip()" class="w-full rounded-lg border border-sky-300 bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-900">Crear mi cuenta</button>
+                </form>
+            </div>
+
+            <div id="join-trip-panel" class="hidden p-4 space-y-4">
+                <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
+                    Tu cuenta ya está conectada. Escribe el código privado del viaje para acceder a los mismos datos.
+                </div>
+                <form onsubmit="event.preventDefault(); joinSharedTrip()" class="space-y-3">
+                    <label class="block text-xs font-bold text-gray-600">Código del viaje
+                        <input id="trip-join-code" type="text" required autocomplete="off" autocapitalize="characters" placeholder="ASIA-XXXX-XXXX" class="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-center font-mono text-base font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-amber-500">
+                    </label>
+                    <button type="submit" class="w-full rounded-lg bg-amber-700 px-4 py-2.5 text-sm font-bold text-white">Unirme al viaje</button>
+                </form>
+                <button type="button" onclick="signOutSharedTrip()" class="w-full py-2 text-xs font-bold text-gray-500">Cerrar sesión</button>
+            </div>
+
+            <div id="connected-trip-panel" class="hidden p-4 space-y-4">
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                    <p class="text-xs font-bold uppercase tracking-wider text-emerald-800">Conectado a Asia 2026</p>
+                    <p id="connected-user-email" class="mt-1 text-sm font-semibold text-emerald-950"></p>
+                    <p id="cloud-sync-detail" class="mt-2 text-xs text-emerald-700">Los cambios se sincronizan entre ambos teléfonos.</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+                    Gastos, actividades, hoteles, transportes, vuelos, notas, fotos y documentos se comparten. Las imágenes también conservan una copia local para cuando no tengas conexión.
+                </div>
+                <button type="button" onclick="forceCloudRefresh()" class="w-full rounded-lg border border-sky-300 bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-900">Actualizar ahora</button>
+                <button type="button" onclick="signOutSharedTrip()" class="w-full py-2 text-xs font-bold text-red-600">Cerrar sesión</button>
+            </div>
+
+            <p id="account-message" class="hidden mx-4 mb-4 rounded-lg p-3 text-xs" role="status"></p>
+        </div>
+    </div>
+
     <!-- MODAL DETALLES Y NOTAS ACTIVIDAD -->
+    <div id="entity-editor-modal" class="fixed inset-0 bg-black/60 z-[65] hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-t-2xl md:rounded-2xl max-w-lg w-full max-h-[94vh] overflow-y-auto card-shadow">
+            <div class="sticky top-0 z-10 bg-slate-900 text-white p-4 flex justify-between items-center">
+                <h2 id="entity-editor-title" class="font-serif font-bold text-lg">Editar</h2>
+                <button type="button" onclick="closeEntityEditor()" aria-label="Cerrar"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <form id="entity-editor-form" onsubmit="saveEntityEditor(event)" class="p-4 space-y-3"></form>
+        </div>
+    </div>
+
     <div id="detail-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
         <div class="bg-asia-paper rounded-t-2xl md:rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto card-shadow border border-asia-gold/30 flex flex-col">
             <div class="bg-asia-indigo text-asia-paper p-3.5 md:p-4 flex justify-between items-start sticky top-0 z-10">
@@ -481,6 +557,13 @@
                     </div>
                 </div>
 
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-100">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-amber-900 uppercase tracking-wider">🥤 Otros gastos</span>
+                        <strong id="budget-extra-total" class="text-amber-900">$0</strong>
+                    </div>
+                </div>
+
                 <div class="pt-2 border-t space-y-2">
                     <div class="p-3 bg-red-50 rounded-xl border border-red-100 flex justify-between items-center">
                         <div>
@@ -500,6 +583,55 @@
             </div>
 
             <button onclick="closeBudgetModal()" class="w-full py-2 bg-asia-indigo text-white text-xs font-bold rounded-lg">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL OTROS GASTOS -->
+    <div id="extra-expenses-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
+        <div class="bg-asia-paper rounded-t-2xl md:rounded-2xl max-w-lg w-full max-h-[94vh] overflow-y-auto card-shadow border border-amber-200">
+            <div class="sticky top-0 z-10 bg-gradient-to-r from-amber-800 to-orange-700 text-white p-4 flex items-center justify-between shadow">
+                <div>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-amber-200 font-bold">Registro diario</p>
+                    <h2 class="font-serif font-bold text-xl flex items-center gap-2"><i data-lucide="receipt-text" class="w-5 h-5"></i> Otros gastos</h2>
+                </div>
+                <button onclick="closeExtraExpensesModal()" class="p-1 text-amber-100 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <div class="p-4 space-y-4">
+                <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-amber-800">Total registrado</p>
+                        <p class="text-xs text-amber-700">Suma de todos tus otros gastos</p>
+                    </div>
+                    <strong id="extra-expenses-total" class="text-xl text-amber-950">$0</strong>
+                </div>
+
+                <form id="extra-expense-form" onsubmit="addExtraExpense(event)" class="rounded-xl border border-gray-200 bg-white p-3 space-y-3">
+                    <h3 class="text-sm font-bold text-gray-800">Agregar un gasto</h3>
+                    <label class="block text-[10px] font-bold uppercase text-gray-500">Descripción
+                        <input id="extra-expense-description" type="text" required maxlength="80" placeholder="Ej: Bebida al mediodía" class="mt-1 w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm font-medium normal-case text-gray-900 outline-none focus:ring-2 focus:ring-amber-500">
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="text-[10px] font-bold uppercase text-gray-500">Monto (CLP)
+                            <input id="extra-expense-amount" type="number" required min="1" step="1" inputmode="numeric" placeholder="Ej: 2000" class="mt-1 w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm font-bold normal-case text-gray-900 outline-none focus:ring-2 focus:ring-amber-500">
+                        </label>
+                        <label class="text-[10px] font-bold uppercase text-gray-500">Categoría
+                            <select id="extra-expense-category" class="mt-1 w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm font-medium normal-case text-gray-900 outline-none focus:ring-2 focus:ring-amber-500">
+                                <option>Comida y bebida</option><option>Compras</option><option>Transporte</option><option>Salud</option><option>Otro</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="block text-[10px] font-bold uppercase text-gray-500">Fecha
+                        <input id="extra-expense-date" type="date" required class="mt-1 w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm font-medium normal-case text-gray-900 outline-none focus:ring-2 focus:ring-amber-500">
+                    </label>
+                    <button type="submit" class="w-full rounded-lg bg-amber-700 px-3 py-2.5 text-xs font-bold text-white hover:bg-amber-800">Agregar gasto</button>
+                </form>
+
+                <div>
+                    <h3 class="mb-2 text-sm font-bold text-gray-800">Mis gastos ingresados</h3>
+                    <div id="extra-expenses-list" class="space-y-2"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -577,6 +709,20 @@
     </button>
 
     <script>
+        // --- NUBE COMPARTIDA (SUPABASE) ---
+        const SUPABASE_URL = 'https://gzjeylzwetjxqpgauszp.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_APY3SyO8KtjuGY2dg-AmXg_prJcRuBb';
+        const cloudClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        }) : null;
+        let cloudSession = null;
+        let cloudTripId = null;
+        let cloudChannel = null;
+        let cloudReady = false;
+        let applyingCloudState = false;
+        let cloudSaveTimer = null;
+        let cloudLastRevision = 0;
+
         // --- BASE DE DATOS LOCAL (IndexedDB) ---
         let db;
         const dbRequest = indexedDB.open("AsiaTripDB", 2);
@@ -594,6 +740,7 @@
             db = e.target.result;
             renderVaultDocs();
             updateStorageStatus();
+            if (cloudReady) syncLocalMediaToCloud();
         };
 
         // --- RELOJ DUAL EN TIEMPO REAL ---
@@ -615,7 +762,7 @@
         setInterval(updateClocks, 1000);
         updateClocks();
 
-        const flightsData = [
+        let flightsData = JSON.parse(localStorage.getItem('asiaFlightsData2026')) || [
             { id: 'flight-1', date: 'Viernes 21 de agosto de 2026', shortDate: '21 AGO', from: 'Santiago', fromCode: 'SCL', to: 'Los Ángeles', toCode: 'LAX', airline: 'LATAM Airlines', flight: 'LA602', time: '23:25' },
             { id: 'flight-2', date: 'Domingo 23 de agosto de 2026', shortDate: '23 AGO', from: 'Los Ángeles', fromCode: 'LAX', to: 'Shanghái', toCode: 'PVG', airline: 'Delta Air Lines', flight: 'DL39', time: '11:45' },
             { id: 'flight-3', date: 'Lunes 31 de agosto de 2026', shortDate: '31 AGO', from: 'Shanghái', fromCode: 'PVG', to: 'Tokio-Haneda', toCode: 'HND', airline: 'All Nippon Airways', flight: 'NH968', time: '01:50' },
@@ -625,7 +772,7 @@
         ];
 
         // --- DATOS PRECARGADOS DE ESTADÍAS Y HOTELES ---
-        const initialStaysData = [
+        let initialStaysData = JSON.parse(localStorage.getItem('asiaStaysData2026')) || [
             // CHINA
             { id: "stay-1", country: "🇨🇳 China", city: "SHANGHAI", checkIn: "24/08/2026 17:40", checkOut: "28/08/2026 08:00", nights: 4, estTotal: 250000, estPerPerson: 125000, defaultLocation: "PEOPLE'S SQUARE" },
             { id: "stay-2", country: "🇨🇳 China", city: "HANGZHOU", checkIn: "28/08/2026 11:00", checkOut: "30/08/2026 07:00", nights: 2, estTotal: 150000, estPerPerson: 75000, defaultLocation: "Longxiangqiao Metro Station" },
@@ -640,7 +787,7 @@
         ];
 
         // --- DATOS COMPLETOS DE ITINERARIO ---
-        const itineraryData = [
+        let itineraryData = JSON.parse(localStorage.getItem('asiaItineraryData2026')) || [
             { date: "21/08/2026", activities: [
                 { id: "flight-it-1", time: "23:25", city: "SANTIAGO", title: "Vuelo LA602 a Los Ángeles", location: "Aeropuerto Arturo Merino Benítez (SCL)", cost: "$0", type: "Plane", flightId: "flight-1" }
             ]},
@@ -829,6 +976,7 @@
         let staysUser = JSON.parse(localStorage.getItem('asiaStaysUser2026')) || {};
         let transportCosts = JSON.parse(localStorage.getItem('asiaTransportCosts2026')) || {};
         let flightDetails = JSON.parse(localStorage.getItem('asiaFlightDetails2026')) || {};
+        let extraExpenses = JSON.parse(localStorage.getItem('asiaExtraExpenses2026')) || [];
         let currentActivityId = null;
         // Las fotos existentes y las nuevas se mantienen separadas hasta pulsar
         // "Guardar". Así cerrar el modal no modifica la galería por accidente.
@@ -847,6 +995,7 @@
                 Object.keys(staysUser).length > 0 ||
                 Object.keys(transportCosts).length > 0 ||
                 Object.keys(flightDetails).length > 0 ||
+                extraExpenses.length > 0 ||
                 Boolean(localStorage.getItem('asiaRates'));
         }
 
@@ -908,6 +1057,261 @@
             };
             saveBackupState();
             updateBackupReminder();
+            scheduleCloudSave();
+        }
+
+        function getSharedStateSnapshot() {
+            return {
+                version: 1,
+                checked: checkedItems,
+                details: userDetails,
+                stays: staysUser,
+                transportCosts,
+                flightDetails,
+                extraExpenses,
+                itineraryData,
+                initialStaysData,
+                flightsData,
+                rates: JSON.parse(localStorage.getItem('asiaRates')) || null
+            };
+        }
+
+        function applySharedState(data) {
+            if (!data || typeof data !== 'object') return;
+            applyingCloudState = true;
+            checkedItems = data.checked && typeof data.checked === 'object' ? data.checked : {};
+            userDetails = data.details && typeof data.details === 'object' ? data.details : {};
+            staysUser = data.stays && typeof data.stays === 'object' ? data.stays : {};
+            transportCosts = data.transportCosts && typeof data.transportCosts === 'object' ? data.transportCosts : {};
+            flightDetails = data.flightDetails && typeof data.flightDetails === 'object' ? data.flightDetails : {};
+            extraExpenses = Array.isArray(data.extraExpenses) ? data.extraExpenses : [];
+            if (Array.isArray(data.itineraryData)) itineraryData = data.itineraryData;
+            if (Array.isArray(data.initialStaysData)) initialStaysData = data.initialStaysData;
+            if (Array.isArray(data.flightsData)) flightsData = data.flightsData;
+            localStorage.setItem('asiaTripChecked2026', JSON.stringify(checkedItems));
+            localStorage.setItem('asiaTripDetails2026', JSON.stringify(userDetails));
+            localStorage.setItem('asiaStaysUser2026', JSON.stringify(staysUser));
+            localStorage.setItem('asiaTransportCosts2026', JSON.stringify(transportCosts));
+            localStorage.setItem('asiaFlightDetails2026', JSON.stringify(flightDetails));
+            localStorage.setItem('asiaExtraExpenses2026', JSON.stringify(extraExpenses));
+            localStorage.setItem('asiaItineraryData2026', JSON.stringify(itineraryData));
+            localStorage.setItem('asiaStaysData2026', JSON.stringify(initialStaysData));
+            localStorage.setItem('asiaFlightsData2026', JSON.stringify(flightsData));
+            if (data.rates) localStorage.setItem('asiaRates', JSON.stringify(data.rates));
+            renderApp();
+            applyingCloudState = false;
+        }
+
+        function setAccountMessage(message, kind = 'info') {
+            const el = document.getElementById('account-message');
+            if (!message) {
+                el.classList.add('hidden');
+                return;
+            }
+            el.textContent = message;
+            el.className = `mx-4 mb-4 rounded-lg p-3 text-xs ${kind === 'error' ? 'bg-red-50 text-red-800 border border-red-200' : kind === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-sky-50 text-sky-800 border border-sky-200'}`;
+        }
+
+        function showAccountPanel(panelId) {
+            ['auth-panel', 'join-trip-panel', 'connected-trip-panel'].forEach(id => {
+                document.getElementById(id).classList.toggle('hidden', id !== panelId);
+            });
+        }
+
+        function openAccountModal() {
+            document.getElementById('account-modal').classList.remove('hidden');
+            if (!cloudSession) showAccountPanel('auth-panel');
+            else if (!cloudTripId) showAccountPanel('join-trip-panel');
+            else showAccountPanel('connected-trip-panel');
+            lucide.createIcons();
+        }
+
+        function closeAccountModal() {
+            document.getElementById('account-modal').classList.add('hidden');
+            setAccountMessage('');
+        }
+
+        function updateCloudIndicator(status, label) {
+            const button = document.getElementById('sync-account-btn');
+            const text = document.getElementById('sync-account-text');
+            text.textContent = label;
+            button.classList.remove('bg-sky-50', 'border-sky-200', 'text-sky-800', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-800', 'bg-amber-50', 'border-amber-200', 'text-amber-800');
+            const classes = status === 'ok'
+                ? ['bg-emerald-50', 'border-emerald-200', 'text-emerald-800']
+                : status === 'pending'
+                    ? ['bg-amber-50', 'border-amber-200', 'text-amber-800']
+                    : ['bg-sky-50', 'border-sky-200', 'text-sky-800'];
+            button.classList.add(...classes);
+        }
+
+        async function signInSharedTrip() {
+            if (!cloudClient) return setAccountMessage('La conexión está temporalmente fuera de servicio. Puedes seguir usando la app localmente.', 'error');
+            setAccountMessage('Conectando…');
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
+            const { error } = await cloudClient.auth.signInWithPassword({ email, password });
+            if (error) setAccountMessage(error.message, 'error');
+        }
+
+        async function signUpSharedTrip() {
+            if (!cloudClient) return setAccountMessage('La conexión está temporalmente fuera de servicio. Puedes seguir usando la app localmente.', 'error');
+            setAccountMessage('Creando tu cuenta…');
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
+            if (!email || password.length < 8) {
+                setAccountMessage('Ingresa un correo y una contraseña de al menos 8 caracteres.', 'error');
+                return;
+            }
+            const { data, error } = await cloudClient.auth.signUp({ email, password });
+            if (error) {
+                setAccountMessage(error.message, 'error');
+            } else if (!data.session) {
+                setAccountMessage('Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión.', 'success');
+            } else {
+                setAccountMessage('Cuenta creada correctamente.', 'success');
+            }
+        }
+
+        async function signOutSharedTrip() {
+            if (!cloudClient) return;
+            if (cloudChannel) await cloudClient.removeChannel(cloudChannel);
+            cloudChannel = null;
+            cloudReady = false;
+            cloudTripId = null;
+            await cloudClient.auth.signOut();
+            showAccountPanel('auth-panel');
+            updateCloudIndicator('idle', 'Conectar');
+            openAccountModal();
+        }
+
+        async function joinSharedTrip() {
+            if (!cloudClient) return setAccountMessage('La conexión está temporalmente fuera de servicio.', 'error');
+            const code = document.getElementById('trip-join-code').value.trim().toUpperCase();
+            setAccountMessage('Uniéndote al viaje…');
+            const { data: joinedTripId, error } = await cloudClient.rpc('trip_join', { p_code: code });
+            if (error) {
+                setAccountMessage(error.message, 'error');
+                return;
+            }
+            cloudTripId = joinedTripId;
+            setAccountMessage('Ya formas parte del viaje compartido.', 'success');
+            await loadSharedTrip();
+        }
+
+        function scheduleCloudSave() {
+            if (applyingCloudState || !cloudReady || !cloudTripId || !cloudSession) return;
+            updateCloudIndicator('pending', 'Guardando…');
+            clearTimeout(cloudSaveTimer);
+            cloudSaveTimer = setTimeout(saveSharedStateToCloud, 500);
+        }
+
+        async function saveSharedStateToCloud() {
+            if (!cloudReady || !cloudTripId || !cloudSession) return;
+            const revision = Date.now();
+            const { error } = await cloudClient
+                .from('trip_state')
+                .update({
+                    data: getSharedStateSnapshot(),
+                    revision,
+                    updated_at: new Date().toISOString(),
+                    updated_by: cloudSession.user.id
+                })
+                .eq('trip_id', cloudTripId);
+            if (error) {
+                updateCloudIndicator('pending', 'Sin sincronizar');
+                const detail = document.getElementById('cloud-sync-detail');
+                if (detail) detail.textContent = `No se pudo guardar: ${error.message}`;
+                return;
+            }
+            cloudLastRevision = Math.max(cloudLastRevision, revision);
+            updateCloudIndicator('ok', 'Sincronizado');
+        }
+
+        function subscribeToSharedTrip() {
+            if (cloudChannel) cloudClient.removeChannel(cloudChannel);
+            cloudChannel = cloudClient
+                .channel(`asia-trip-${cloudTripId}`)
+                .on('postgres_changes', {
+                    event: 'UPDATE', schema: 'public', table: 'trip_state', filter: `trip_id=eq.${cloudTripId}`
+                }, payload => {
+                    const incoming = payload.new;
+                    const revision = Number(incoming.revision) || 0;
+                    if (revision <= cloudLastRevision) return;
+                    cloudLastRevision = revision;
+                    applySharedState(incoming.data);
+                    updateCloudIndicator('ok', 'Actualizado');
+                })
+                .on('postgres_changes', {
+                    event: '*', schema: 'public', table: 'trip_media', filter: `trip_id=eq.${cloudTripId}`
+                }, () => {
+                    if (!document.getElementById('vault-modal').classList.contains('hidden')) renderVaultDocs();
+                    if (currentActivityId && !document.getElementById('detail-modal').classList.contains('hidden')) loadPhotosFromDB(currentActivityId);
+                })
+                .subscribe();
+        }
+
+        async function loadSharedTrip() {
+            updateCloudIndicator('pending', 'Cargando…');
+            const { data, error } = await cloudClient
+                .from('trip_state')
+                .select('trip_id,data,revision,updated_at')
+                .eq('trip_id', cloudTripId || 'a5102026-0821-4000-8000-000000000001')
+                .limit(1)
+                .maybeSingle();
+            if (error) {
+                setAccountMessage(`No se pudo abrir el viaje: ${error.message}`, 'error');
+                openAccountModal();
+                return;
+            }
+            if (!data) {
+                cloudTripId = null;
+                cloudReady = false;
+                showAccountPanel('join-trip-panel');
+                openAccountModal();
+                updateCloudIndicator('idle', 'Unirse');
+                return;
+            }
+
+            cloudTripId = data.trip_id;
+            cloudLastRevision = Number(data.revision) || 0;
+            const remoteIsEmpty = !data.data || Object.keys(data.data).length === 0;
+            cloudReady = true;
+            if (remoteIsEmpty && hasSavedTripData()) {
+                await saveSharedStateToCloud();
+            } else if (!remoteIsEmpty) {
+                applySharedState(data.data);
+            }
+            subscribeToSharedTrip();
+            syncLocalMediaToCloud();
+            document.getElementById('connected-user-email').textContent = cloudSession.user.email || 'Cuenta conectada';
+            document.getElementById('cloud-sync-detail').textContent = 'Los cambios se sincronizan entre ambos teléfonos.';
+            showAccountPanel('connected-trip-panel');
+            document.getElementById('account-modal').classList.add('hidden');
+            updateCloudIndicator('ok', 'Sincronizado');
+        }
+
+        async function forceCloudRefresh() {
+            setAccountMessage('Actualizando desde la nube…');
+            await loadSharedTrip();
+            setAccountMessage('Datos actualizados.', 'success');
+        }
+
+        async function initializeCloudSync() {
+            if (!cloudClient) {
+                updateCloudIndicator('pending', 'Solo local');
+                return;
+            }
+            const { data } = await cloudClient.auth.getSession();
+            cloudSession = data.session;
+            cloudClient.auth.onAuthStateChange((_event, session) => {
+                cloudSession = session;
+                if (session) setTimeout(loadSharedTrip, 0);
+            });
+            if (cloudSession) await loadSharedTrip();
+            else {
+                updateCloudIndicator('idle', 'Conectar');
+                openAccountModal();
+            }
         }
 
         function markBackupCreated(exportedAt = new Date().toISOString()) {
@@ -1184,7 +1588,11 @@
                             <div class="flex-1 space-y-1">
                                 <div class="flex justify-between items-start gap-1">
                                     <h3 class="font-serif font-bold text-sm ${isChecked ? '' : 'text-asia-ink'}">${activity.title}</h3>
-                                    <span class="text-[10px] font-bold text-asia-indigo bg-[#e8eaf6] px-1.5 py-0.5 rounded shrink-0">${activity.time}</span>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <span class="text-[10px] font-bold text-asia-indigo bg-[#e8eaf6] px-1.5 py-0.5 rounded">${activity.time}</span>
+                                        <button type="button" aria-label="Editar" onclick="event.stopPropagation(); openEntityEditor('${activity.transportBudget ? 'transport' : 'activity'}', '${activity.id}')" class="p-1 text-sky-700 hover:bg-sky-50 rounded"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                                        <button type="button" aria-label="Eliminar" onclick="event.stopPropagation(); deleteEntity('${activity.transportBudget ? 'transport' : 'activity'}', '${activity.id}')" class="p-1 text-red-600 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                    </div>
                                 </div>
                                 
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600">
@@ -1247,6 +1655,182 @@
             return null;
         }
 
+        // --- ALTAS, EDICIÓN Y ELIMINACIÓN ---
+        let editingEntity = null;
+        const EDITOR_CITIES = [
+            ['SHANGHAI', 'Shanghái'], ['HANGZHOU', 'Hangzhou'], ['SUZHOU', 'Suzhou'],
+            ['TOKYO', 'Tokio'], ['KANAZAWA', 'Kanazawa'], ['TAKAYAMA', 'Takayama'],
+            ['MATSUMOTO', 'Matsumoto'], ['KAWAGUCHIKO', 'Kawaguchiko'], ['YOKOHAMA', 'Yokohama']
+        ];
+        const EVENT_TYPES = [
+            ['Camera', 'Visita / Foto'], ['Utensils', 'Comida'], ['ShoppingBag', 'Compras'],
+            ['Train', 'Transporte'], ['Hotel', 'Hotel'], ['Plane', 'Vuelo']
+        ];
+        const EXPENSE_CATEGORIES = ['Comida y bebida', 'Compras', 'Transporte', 'Salud', 'Otro'];
+        const TRANSPORT_MODES = ['Tren', 'Bus interurbano', 'Metro', 'Ferry', 'Taxi / transfer', 'Otro'];
+        const STAY_COUNTRIES = [['🇨🇳 China', '🇨🇳 China'], ['🇯🇵 Japón', '🇯🇵 Japón']];
+
+        function editorField(name, label, value = '', type = 'text', extra = '') {
+            return `<label class="block text-xs font-bold text-gray-600">${label}<input name="${name}" type="${type}" value="${escapeInputValue(value)}" ${extra} class="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm font-medium text-gray-900 outline-none focus:ring-2 focus:ring-slate-500"></label>`;
+        }
+
+        function editorSelect(name, label, value, options, extra = '') {
+            const normalized = options.map(option => Array.isArray(option) ? option : [option, option]);
+            if (value && !normalized.some(([optionValue]) => optionValue === value)) {
+                normalized.unshift([value, `${value} (valor actual)`]);
+            }
+            return `<label class="block text-xs font-bold text-gray-600">${label}<select name="${name}" ${extra} class="mt-1 w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm font-medium text-gray-900 outline-none focus:ring-2 focus:ring-slate-500">${normalized.map(([optionValue, optionLabel]) => `<option value="${escapeInputValue(optionValue)}" ${optionValue === value ? 'selected' : ''}>${escapeInputValue(optionLabel)}</option>`).join('')}</select></label>`;
+        }
+
+        function toInputDate(date) {
+            if (!date) return '';
+            const parts = date.split('/');
+            return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : date;
+        }
+
+        function fromInputDate(date) {
+            if (!date) return '';
+            const [year, month, day] = date.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function findActivityWithDate(id) {
+            for (const day of itineraryData) {
+                const activity = day.activities.find(item => item.id === id);
+                if (activity) return { activity, date: day.date };
+            }
+            return null;
+        }
+
+        function openEntityEditor(kind, id = null) {
+            editingEntity = { kind, id };
+            const form = document.getElementById('entity-editor-form');
+            let item = {};
+            let date = '';
+            if (kind === 'activity' || kind === 'transport') {
+                const found = id ? findActivityWithDate(id) : null;
+                item = found?.activity || {};
+                date = found?.date || fromInputDate(getTodayInputValue());
+                if (item.transportBudget) kind = editingEntity.kind = 'transport';
+            } else if (kind === 'stay') item = initialStaysData.find(row => row.id === id) || {};
+            else if (kind === 'flight') item = flightsData.find(row => row.id === id) || {};
+            else if (kind === 'expense') item = extraExpenses.find(row => row.id === id) || {};
+
+            const titles = { activity: 'evento', transport: 'transporte', stay: 'estadía', flight: 'vuelo', expense: 'otro gasto' };
+            document.getElementById('entity-editor-title').textContent = `${id ? 'Editar' : 'Agregar'} ${titles[kind]}`;
+            if (kind === 'activity' || kind === 'transport') {
+                form.innerHTML = `
+                    ${editorField('date', 'Fecha', toInputDate(date), 'date', 'required')}
+                    <div class="grid grid-cols-2 gap-2">${editorField('time', 'Hora', item.time || '09:00', 'time', 'required')}${editorSelect('city', 'Ciudad', item.city || 'TOKYO', EDITOR_CITIES, 'required')}</div>
+                    ${editorField('title', 'Título', item.title || '', 'text', 'required maxlength="100"')}
+                    ${editorField('location', 'Lugar', item.location || '', 'text', 'required')}
+                    <div class="grid grid-cols-2 gap-2">${editorField('cost', 'Estimado (CLP)', parseCost(item.cost), 'number', 'min="0"')}${editorSelect('type', 'Tipo de evento', item.type || (kind === 'transport' ? 'Train' : 'Camera'), EVENT_TYPES, 'required')}</div>
+                    ${kind === 'transport' ? `<div class="grid grid-cols-2 gap-2">${editorSelect('transportMode', 'Medio', item.transportMode || 'Tren', TRANSPORT_MODES, 'required')}${editorField('transportFrom', 'Tomar en', item.transportFrom || '', 'text', 'required')}</div>${editorField('transportTo', 'Llegar a', item.transportTo || '', 'text', 'required')}` : ''}
+                    <button class="w-full rounded-lg bg-slate-900 py-3 text-sm font-bold text-white">Guardar</button>`;
+            } else if (kind === 'stay') {
+                form.innerHTML = `
+                    <div class="grid grid-cols-2 gap-2">${editorSelect('country', 'País', item.country || '🇯🇵 Japón', STAY_COUNTRIES, 'required')}${editorSelect('city', 'Ciudad', item.city || 'TOKYO', EDITOR_CITIES, 'required')}</div>
+                    ${editorField('checkIn', 'Entrada', item.checkIn || '', 'text', 'required placeholder="24/08/2026 15:00"')}
+                    ${editorField('checkOut', 'Salida', item.checkOut || '', 'text', 'required placeholder="25/08/2026 11:00"')}
+                    <div class="grid grid-cols-2 gap-2">${editorField('nights', 'Noches', item.nights || 0, 'number', 'min="0"')}${editorField('estPerPerson', 'Estimado por persona', item.estPerPerson || 0, 'number', 'min="0"')}</div>
+                    ${editorField('defaultLocation', 'Dirección o referencia', item.defaultLocation || '', 'text')}
+                    <button class="w-full rounded-lg bg-indigo-800 py-3 text-sm font-bold text-white">Guardar</button>`;
+            } else if (kind === 'flight') {
+                form.innerHTML = `
+                    ${editorField('date', 'Fecha descriptiva', item.date || '', 'text', 'required')}
+                    <div class="grid grid-cols-2 gap-2">${editorField('shortDate', 'Fecha corta', item.shortDate || '', 'text', 'required')}${editorField('time', 'Hora', item.time || '', 'time', 'required')}</div>
+                    <div class="grid grid-cols-2 gap-2">${editorField('from', 'Origen', item.from || '', 'text', 'required')}${editorField('fromCode', 'Código origen', item.fromCode || '', 'text', 'required')}</div>
+                    <div class="grid grid-cols-2 gap-2">${editorField('to', 'Destino', item.to || '', 'text', 'required')}${editorField('toCode', 'Código destino', item.toCode || '', 'text', 'required')}</div>
+                    <div class="grid grid-cols-2 gap-2">${editorField('airline', 'Aerolínea', item.airline || '', 'text', 'required')}${editorField('flight', 'Nº de vuelo', item.flight || '', 'text', 'required')}</div>
+                    ${editorField('cost', 'Costo (CLP)', flightDetails[id]?.cost || 0, 'number', 'min="0"')}
+                    <button class="w-full rounded-lg bg-violet-800 py-3 text-sm font-bold text-white">Guardar</button>`;
+            } else {
+                form.innerHTML = `${editorField('description', 'Descripción', item.description || '', 'text', 'required')}
+                    <div class="grid grid-cols-2 gap-2">${editorField('amount', 'Monto (CLP)', item.amount || '', 'number', 'required min="1"')}${editorSelect('category', 'Categoría', item.category || 'Otro', EXPENSE_CATEGORIES, 'required')}</div>
+                    ${editorField('date', 'Fecha', item.date || getTodayInputValue(), 'date', 'required')}
+                    <button class="w-full rounded-lg bg-amber-700 py-3 text-sm font-bold text-white">Guardar</button>`;
+            }
+            document.getElementById('entity-editor-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeEntityEditor() {
+            document.getElementById('entity-editor-modal').classList.add('hidden');
+            editingEntity = null;
+        }
+
+        function persistEditableData() {
+            localStorage.setItem('asiaItineraryData2026', JSON.stringify(itineraryData));
+            localStorage.setItem('asiaStaysData2026', JSON.stringify(initialStaysData));
+            localStorage.setItem('asiaFlightsData2026', JSON.stringify(flightsData));
+            localStorage.setItem('asiaExtraExpenses2026', JSON.stringify(extraExpenses));
+            markDataChanged();
+        }
+
+        function saveEntityEditor(event) {
+            event.preventDefault();
+            const values = Object.fromEntries(new FormData(event.target).entries());
+            const { kind, id } = editingEntity;
+            const entityId = id || `${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+            if (kind === 'activity' || kind === 'transport') {
+                if (id) itineraryData.forEach(day => day.activities = day.activities.filter(item => item.id !== id));
+                const date = fromInputDate(values.date);
+                let day = itineraryData.find(row => row.date === date);
+                if (!day) { day = { date, activities: [] }; itineraryData.push(day); }
+                day.activities.push({ id: entityId, time: values.time, city: values.city.toUpperCase(), title: values.title, location: values.location, cost: `$${Number(values.cost || 0).toLocaleString('es-CL')}`, type: values.type, ...(kind === 'transport' ? { transportBudget: true, transportMode: values.transportMode, transportFrom: values.transportFrom, transportTo: values.transportTo } : {}) });
+                day.activities.sort((a, b) => a.time.localeCompare(b.time));
+                itineraryData.sort((a, b) => parseTripDate(a.date) - parseTripDate(b.date));
+            } else if (kind === 'stay') {
+                const stay = { id: entityId, country: values.country, city: values.city.toUpperCase(), checkIn: values.checkIn, checkOut: values.checkOut, nights: Number(values.nights), estPerPerson: Number(values.estPerPerson), estTotal: Number(values.estPerPerson) * 2, defaultLocation: values.defaultLocation };
+                const index = initialStaysData.findIndex(row => row.id === id);
+                index >= 0 ? initialStaysData.splice(index, 1, stay) : initialStaysData.push(stay);
+            } else if (kind === 'flight') {
+                const flight = { id: entityId, date: values.date, shortDate: values.shortDate.toUpperCase(), time: values.time, from: values.from, fromCode: values.fromCode.toUpperCase(), to: values.to, toCode: values.toCode.toUpperCase(), airline: values.airline, flight: values.flight.toUpperCase() };
+                const index = flightsData.findIndex(row => row.id === id);
+                index >= 0 ? flightsData.splice(index, 1, flight) : flightsData.push(flight);
+                flightDetails[entityId] = { ...(flightDetails[entityId] || {}), cost: values.cost };
+                localStorage.setItem('asiaFlightDetails2026', JSON.stringify(flightDetails));
+            } else {
+                const expense = { id: entityId, description: values.description, amount: Number(values.amount), category: values.category, date: values.date };
+                const index = extraExpenses.findIndex(row => row.id === id);
+                index >= 0 ? extraExpenses.splice(index, 1, expense) : extraExpenses.push(expense);
+            }
+            persistEditableData();
+            closeEntityEditor();
+            renderApp();
+            if (kind === 'stay') renderStays();
+            if (kind === 'transport') openTransportModal();
+            if (kind === 'flight') renderFlights();
+            if (kind === 'expense') renderExtraExpenses();
+        }
+
+        function deleteEntity(kind, id) {
+            if (!confirm('¿Eliminar este elemento para ambos miembros del viaje?')) return;
+            if (kind === 'activity' || kind === 'transport') {
+                itineraryData.forEach(day => day.activities = day.activities.filter(item => item.id !== id));
+                itineraryData = itineraryData.filter(day => day.activities.length);
+                delete userDetails[id]; delete checkedItems[id]; delete transportCosts[id];
+            } else if (kind === 'stay') { initialStaysData = initialStaysData.filter(row => row.id !== id); delete staysUser[id]; }
+            else if (kind === 'flight') {
+                flightsData = flightsData.filter(row => row.id !== id);
+                itineraryData.forEach(day => day.activities = day.activities.filter(item => item.flightId !== id));
+                itineraryData = itineraryData.filter(day => day.activities.length);
+                delete flightDetails[id];
+            }
+            else extraExpenses = extraExpenses.filter(row => row.id !== id);
+            localStorage.setItem('asiaTripDetails2026', JSON.stringify(userDetails));
+            localStorage.setItem('asiaTripChecked2026', JSON.stringify(checkedItems));
+            localStorage.setItem('asiaTransportCosts2026', JSON.stringify(transportCosts));
+            localStorage.setItem('asiaStaysUser2026', JSON.stringify(staysUser));
+            localStorage.setItem('asiaFlightDetails2026', JSON.stringify(flightDetails));
+            persistEditableData();
+            renderApp();
+            if (kind === 'stay') renderStays();
+            if (kind === 'transport') openTransportModal();
+            if (kind === 'flight') renderFlights();
+            if (kind === 'expense') renderExtraExpenses();
+        }
+
         // --- MÓDULO DE ESTADÍAS ---
         function openStaysModal() {
             renderStays();
@@ -1271,7 +1855,7 @@
                 return true;
             });
 
-            container.innerHTML = legs.map(leg => {
+            container.innerHTML = `<button type="button" onclick="openEntityEditor('transport')" class="w-full rounded-xl bg-sky-700 px-3 py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Agregar transporte</button>` + legs.map(leg => {
                 const costs = transportCosts[leg.id] || {};
                 const estimated = parseCost(leg.cost);
                 return `
@@ -1282,6 +1866,10 @@
                             <h3 class="font-bold text-sm text-slate-800 truncate">${leg.title}</h3>
                         </div>
                         <span class="text-[10px] font-bold text-sky-800 shrink-0">${leg.date} · ${leg.time}</span>
+                    </div>
+                    <div class="flex justify-end gap-1 px-3 pt-2">
+                        <button type="button" onclick="openEntityEditor('transport','${leg.id}')" class="rounded-md bg-sky-100 px-2 py-1 text-[10px] font-bold text-sky-800">Editar</button>
+                        <button type="button" onclick="deleteEntity('transport','${leg.id}')" class="rounded-md bg-red-50 px-2 py-1 text-[10px] font-bold text-red-700">Eliminar</button>
                     </div>
                     <div class="p-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-xs">
                         <div>
@@ -1324,7 +1912,7 @@
 
         function renderStays() {
             const container = document.getElementById('stays-list-container');
-            container.innerHTML = '';
+            container.innerHTML = `<button type="button" onclick="openEntityEditor('stay')" class="w-full rounded-xl bg-indigo-700 px-3 py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Agregar estadía</button>`;
 
             let totalEstSum = 0;
             let totalRealSum = 0;
@@ -1360,6 +1948,10 @@
                             <span class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${stay.nights} noche(s)</span>
                             <p class="text-[10px] text-gray-500 mt-0.5">${stay.checkIn.split(' ')[0]} ➔ ${stay.checkOut.split(' ')[0]}</p>
                         </div>
+                    </div>
+                    <div class="flex justify-end gap-1">
+                        <button type="button" onclick="openEntityEditor('stay','${stay.id}')" class="rounded-md bg-indigo-100 px-2 py-1 text-[10px] font-bold text-indigo-800">Editar estadía</button>
+                        <button type="button" onclick="deleteEntity('stay','${stay.id}')" class="rounded-md bg-red-50 px-2 py-1 text-[10px] font-bold text-red-700">Eliminar</button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border">
@@ -1449,7 +2041,7 @@
         function renderFlights() {
             const container = document.getElementById('flights-list');
             let ready = 0;
-            container.innerHTML = flightsData.map((flight) => {
+            container.innerHTML = `<button type="button" onclick="openEntityEditor('flight')" class="w-full rounded-xl bg-violet-800 px-3 py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Agregar vuelo</button>` + flightsData.map((flight) => {
                 const saved = flightDetails[flight.id] || {};
                 if (saved.confirmed && saved.bookingRef?.trim()) ready++;
                 return `
@@ -1469,6 +2061,10 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 border-t bg-slate-50 p-3">
+                            <div class="col-span-2 flex justify-end gap-1">
+                                <button type="button" onclick="openEntityEditor('flight','${flight.id}')" class="rounded-md bg-violet-100 px-2 py-1 text-[10px] font-bold text-violet-800">Editar vuelo</button>
+                                <button type="button" onclick="deleteEntity('flight','${flight.id}')" class="rounded-md bg-red-50 px-2 py-1 text-[10px] font-bold text-red-700">Eliminar</button>
+                            </div>
                             <label class="text-[10px] font-bold uppercase text-gray-500">Costo tramo (CLP)
                                 <input type="number" min="0" inputmode="numeric" value="${escapeInputValue(saved.cost)}" onchange="updateFlight('${flight.id}', 'cost', this.value)" placeholder="Ej: 450000" class="mt-1 w-full rounded-lg border border-gray-300 bg-white p-2 text-xs font-bold text-gray-900 outline-none focus:ring-2 focus:ring-violet-500">
                             </label>
@@ -1505,6 +2101,82 @@
         }
 
         // --- PRESUPUESTO GLOBAL & FRASES ---
+        function getExtraExpensesTotal() {
+            return extraExpenses.reduce((sum, expense) => sum + (parseInt(expense.amount, 10) || 0), 0);
+        }
+
+        function getTodayInputValue() {
+            const now = new Date();
+            const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+            return localDate.toISOString().slice(0, 10);
+        }
+
+        function renderExtraExpenses() {
+            const list = document.getElementById('extra-expenses-list');
+            const total = getExtraExpensesTotal();
+            document.getElementById('extra-expenses-total').innerText = `$${total.toLocaleString('es-CL')}`;
+            list.innerHTML = extraExpenses.length ? extraExpenses
+                .slice()
+                .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+                .map(expense => `
+                    <div class="flex items-center gap-2 rounded-lg border border-amber-100 bg-white p-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-xs font-bold text-gray-800">${escapeInputValue(expense.description)}</p>
+                            <p class="text-[10px] text-gray-500">${escapeInputValue(expense.category)} · ${escapeInputValue(expense.date)}</p>
+                        </div>
+                        <strong class="shrink-0 text-xs text-amber-900">$${(parseInt(expense.amount, 10) || 0).toLocaleString('es-CL')}</strong>
+                        <button type="button" onclick="openEntityEditor('expense','${escapeInputValue(expense.id)}')" aria-label="Editar ${escapeInputValue(expense.description)}" class="rounded-md p-1.5 text-sky-700 hover:bg-sky-50"><i data-lucide="pencil" class="h-4 w-4"></i></button>
+                        <button type="button" onclick="deleteEntity('expense','${escapeInputValue(expense.id)}')" aria-label="Eliminar ${escapeInputValue(expense.description)}" class="rounded-md p-1.5 text-red-600 hover:bg-red-50">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                        </button>
+                    </div>`).join('')
+                : '<p class="py-1 text-center text-[11px] text-gray-500">Aún no has agregado gastos adicionales.</p>';
+        }
+
+        function addExtraExpense(event) {
+            event.preventDefault();
+            const description = document.getElementById('extra-expense-description').value.trim();
+            const amount = parseInt(document.getElementById('extra-expense-amount').value, 10);
+            const category = document.getElementById('extra-expense-category').value;
+            const date = document.getElementById('extra-expense-date').value;
+            if (!description || !date || !Number.isFinite(amount) || amount <= 0) return;
+
+            extraExpenses.push({
+                id: `expense-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                description,
+                amount,
+                category,
+                date
+            });
+            localStorage.setItem('asiaExtraExpenses2026', JSON.stringify(extraExpenses));
+            markDataChanged();
+            event.target.reset();
+            document.getElementById('extra-expense-date').value = getTodayInputValue();
+            renderExtraExpenses();
+            lucide.createIcons();
+            document.getElementById('extra-expense-description').focus();
+        }
+
+        function deleteExtraExpense(id) {
+            extraExpenses = extraExpenses.filter(expense => expense.id !== id);
+            localStorage.setItem('asiaExtraExpenses2026', JSON.stringify(extraExpenses));
+            markDataChanged();
+            renderExtraExpenses();
+            lucide.createIcons();
+        }
+
+        function openExtraExpensesModal() {
+            renderExtraExpenses();
+            const dateInput = document.getElementById('extra-expense-date');
+            if (!dateInput.value) dateInput.value = getTodayInputValue();
+            document.getElementById('extra-expenses-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeExtraExpensesModal() {
+            document.getElementById('extra-expenses-modal').classList.add('hidden');
+        }
+
         function openBudgetModal() {
             let actEst = 0;
             let actReal = 0;
@@ -1549,15 +2221,18 @@
             document.getElementById('budget-transport-real').innerText = `$${transportReal.toLocaleString('es-CL')}`;
             const flightTotal = getFlightsTotal();
             document.getElementById('budget-flight-total').innerText = `$${flightTotal.toLocaleString('es-CL')}`;
+            const extraTotal = getExtraExpensesTotal();
+            document.getElementById('budget-extra-total').innerText = `$${extraTotal.toLocaleString('es-CL')}`;
 
             const totalEst = actEst + stayEst + transportEst + flightTotal;
-            const totalReal = actReal + stayReal + transportReal + flightTotal;
+            const totalReal = actReal + stayReal + transportReal + flightTotal + extraTotal;
 
             document.getElementById('budget-total-est').innerText = `$${totalEst.toLocaleString('es-CL')}`;
             document.getElementById('budget-total-real').innerText = `$${totalReal.toLocaleString('es-CL')}`;
 
             document.getElementById('budget-modal').classList.remove('hidden');
             setMobileNavActive('nav-budget');
+            lucide.createIcons();
         }
 
         function closeBudgetModal() {
@@ -1648,6 +2323,101 @@
             }
         }
 
+        // --- ARCHIVOS COMPARTIDOS (STORAGE) ---
+        function fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function dataUrlToBlob(dataUrl) {
+            return await (await fetch(dataUrl)).blob();
+        }
+
+        function mediaExtension(mimeType) {
+            const extensions = { 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/heic': 'heic', 'image/heif': 'heif' };
+            return extensions[mimeType] || 'jpg';
+        }
+
+        async function uploadSharedMedia(kind, image, { activityId = null, title = null } = {}) {
+            if (!cloudReady || !cloudTripId || !cloudSession) return null;
+            const blob = await dataUrlToBlob(image);
+            if (blob.size > 10 * 1024 * 1024) throw new Error('La imagen supera el máximo de 10 MB.');
+            const fileId = crypto.randomUUID();
+            const path = `${cloudTripId}/${kind}/${fileId}.${mediaExtension(blob.type)}`;
+            const { error: uploadError } = await cloudClient.storage.from('trip-media').upload(path, blob, {
+                contentType: blob.type || 'image/jpeg',
+                upsert: false
+            });
+            if (uploadError) throw uploadError;
+
+            const { data, error: metadataError } = await cloudClient.from('trip_media').insert({
+                trip_id: cloudTripId,
+                kind,
+                activity_id: activityId,
+                title,
+                storage_path: path,
+                mime_type: blob.type || 'image/jpeg',
+                created_by: cloudSession.user.id
+            }).select().single();
+            if (metadataError) {
+                await cloudClient.storage.from('trip-media').remove([path]);
+                throw metadataError;
+            }
+            return data;
+        }
+
+        async function getSharedMediaUrl(path) {
+            const { data, error } = await cloudClient.storage.from('trip-media').createSignedUrl(path, 3600);
+            if (error) throw error;
+            return data.signedUrl;
+        }
+
+        async function deleteSharedMedia(mediaId, storagePath) {
+            if (!cloudReady) return;
+            const { error: storageError } = await cloudClient.storage.from('trip-media').remove([storagePath]);
+            if (storageError) throw storageError;
+            const { error: metadataError } = await cloudClient.from('trip_media').delete().eq('id', mediaId);
+            if (metadataError) throw metadataError;
+        }
+
+        function putLocalRecord(storeName, record) {
+            return new Promise((resolve, reject) => {
+                const request = db.transaction(storeName, 'readwrite').objectStore(storeName).put(record);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function addLocalRecord(storeName, record) {
+            return new Promise((resolve, reject) => {
+                const request = db.transaction(storeName, 'readwrite').objectStore(storeName).add(record);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function syncLocalMediaToCloud() {
+            if (!cloudReady || !db) return;
+            try {
+                const [photos, docs] = await Promise.all([getStoreData('photos'), getStoreData('docs')]);
+                for (const photo of photos.filter(item => !item.cloudMediaId)) {
+                    const media = await uploadSharedMedia('photo', photo.image, { activityId: photo.activityId });
+                    if (media) await putLocalRecord('photos', { ...photo, cloudMediaId: media.id, cloudPath: media.storage_path });
+                }
+                for (const doc of docs.filter(item => !item.cloudMediaId)) {
+                    const media = await uploadSharedMedia('document', doc.image, { title: doc.title });
+                    if (media) await putLocalRecord('docs', { ...doc, cloudMediaId: media.id, cloudPath: media.storage_path });
+                }
+                updateStorageStatus();
+            } catch (error) {
+                console.warn('Quedaron imágenes pendientes de sincronizar:', error.message);
+            }
+        }
+
         // --- BÓVEDA QR & DOCS ---
         function openVaultModal() {
             document.getElementById('vault-modal').classList.remove('hidden');
@@ -1659,7 +2429,7 @@
             document.getElementById('vault-modal').classList.add('hidden');
         }
 
-        function uploadDocument() {
+        async function uploadDocument() {
             const titleInput = document.getElementById('doc-title');
             const fileInput = document.getElementById('doc-file');
             const title = titleInput.value.trim();
@@ -1675,67 +2445,81 @@
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const tx = db.transaction("docs", "readwrite");
-                const store = tx.objectStore("docs");
-                store.add({ title: title, image: e.target.result, date: new Date().toLocaleDateString() });
-
-                tx.oncomplete = () => {
-                    titleInput.value = '';
-                    fileInput.value = '';
-                    renderVaultDocs();
-                    updateStorageStatus();
-                    markDataChanged();
-                };
-            };
-            reader.readAsDataURL(file);
+            try {
+                const image = await fileToDataUrl(file);
+                const localRecord = { title, image, date: new Date().toLocaleDateString() };
+                localRecord.id = await addLocalRecord('docs', localRecord);
+                if (cloudReady) {
+                    const media = await uploadSharedMedia('document', image, { title });
+                    if (media) await putLocalRecord('docs', { ...localRecord, cloudMediaId: media.id, cloudPath: media.storage_path });
+                }
+                titleInput.value = '';
+                fileInput.value = '';
+                await renderVaultDocs();
+                updateStorageStatus();
+                markDataChanged();
+            } catch (error) {
+                alert(`No se pudo guardar el documento: ${error.message}`);
+            }
         }
 
-        function renderVaultDocs() {
+        async function renderVaultDocs() {
             const container = document.getElementById('vault-list-container');
             if (!container || !db) return;
-
-            const tx = db.transaction("docs", "readonly");
-            const store = tx.objectStore("docs");
-            const request = store.getAll();
-
-            request.onsuccess = () => {
-                const docs = request.result;
-                if (docs.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4 bg-white rounded-xl border">No hay documentos guardados aún.</p>`;
-                    return;
+            container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Cargando documentos compartidos…</p>';
+            const localDocs = await getStoreData('docs');
+            let docs = localDocs.map(doc => ({ ...doc, imageUrl: doc.image }));
+            if (cloudReady) {
+                const { data: cloudDocs, error } = await cloudClient.from('trip_media').select('*').eq('trip_id', cloudTripId).eq('kind', 'document').order('created_at');
+                if (!error) {
+                    const localByCloudId = new Map(localDocs.filter(d => d.cloudMediaId).map(d => [d.cloudMediaId, d]));
+                    const sharedDocs = await Promise.all(cloudDocs.map(async media => {
+                        const local = localByCloudId.get(media.id);
+                        return { ...local, cloudMediaId: media.id, cloudPath: media.storage_path, title: media.title || 'Documento', imageUrl: local?.image || await getSharedMediaUrl(media.storage_path) };
+                    }));
+                    docs = [...sharedDocs, ...localDocs.filter(d => !d.cloudMediaId).map(d => ({ ...d, imageUrl: d.image }))];
                 }
-
-                container.innerHTML = '';
-                docs.forEach(doc => {
-                    const card = document.createElement('div');
-                    card.className = "bg-white p-2.5 rounded-xl border border-gray-200 flex items-center justify-between gap-2 shadow-sm";
-                    card.innerHTML = `
-                        <div class="flex items-center gap-2 cursor-pointer flex-1 overflow-hidden" onclick="viewImage('${doc.title}', '${doc.image}')">
-                            <img src="${doc.image}" class="w-10 h-10 object-cover rounded-lg border">
-                            <div class="truncate">
-                                <h4 class="text-xs font-bold text-gray-800 truncate">${doc.title}</h4>
-                                <span class="text-[10px] text-gray-400">Toca para ampliar QR</span>
-                            </div>
-                        </div>
-                        <button onclick="deleteDoc(${doc.id})" class="p-1.5 text-gray-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    `;
-                    container.appendChild(card);
-                });
-                lucide.createIcons();
-            };
+            }
+            if (!docs.length) {
+                container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4 bg-white rounded-xl border">No hay documentos guardados aún.</p>';
+                return;
+            }
+            container.innerHTML = '';
+            docs.forEach(doc => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-2.5 rounded-xl border border-gray-200 flex items-center justify-between gap-2 shadow-sm';
+                const content = document.createElement('button');
+                content.type = 'button';
+                content.className = 'flex items-center gap-2 flex-1 overflow-hidden text-left';
+                content.innerHTML = `<img class="w-10 h-10 object-cover rounded-lg border"><div class="truncate"><h4 class="doc-title text-xs font-bold text-gray-800 truncate"></h4><span class="text-[10px] text-gray-400">Toca para ampliar QR</span></div>`;
+                content.querySelector('img').src = doc.imageUrl;
+                content.querySelector('.doc-title').textContent = doc.title;
+                content.onclick = () => viewImage(doc.title, doc.imageUrl);
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'p-1.5 text-gray-400 hover:text-red-600';
+                remove.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4"></i>';
+                remove.onclick = () => deleteDoc(doc);
+                card.append(content, remove);
+                container.appendChild(card);
+            });
+            lucide.createIcons();
         }
 
-        function deleteDoc(id) {
-            if (confirm("¿Borrar este documento de tu bóveda local?")) {
-                const tx = db.transaction("docs", "readwrite");
-                tx.objectStore("docs").delete(id);
-                tx.oncomplete = () => {
-                    renderVaultDocs();
-                    updateStorageStatus();
-                    markDataChanged();
-                };
+        async function deleteDoc(doc) {
+            if (!confirm('¿Borrar este documento para ambos miembros del viaje?')) return;
+            try {
+                if (doc.cloudMediaId) await deleteSharedMedia(doc.cloudMediaId, doc.cloudPath);
+                if (doc.id) await new Promise((resolve, reject) => {
+                    const request = db.transaction('docs', 'readwrite').objectStore('docs').delete(doc.id);
+                    request.onsuccess = resolve;
+                    request.onerror = () => reject(request.error);
+                });
+                await renderVaultDocs();
+                updateStorageStatus();
+                markDataChanged();
+            } catch (error) {
+                alert(`No se pudo borrar: ${error.message}`);
             }
         }
 
@@ -1771,7 +2555,7 @@
             grid.appendChild(uploadBtn);
 
             const visiblePhotos = [
-                ...existingPhotos.filter(photo => !photoIdsToDelete.has(photo.id)),
+                ...existingPhotos.filter(photo => !photoIdsToDelete.has(photoDeleteKey(photo))),
                 ...newPhotos
             ];
 
@@ -1788,8 +2572,8 @@
                 deleteButton.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5"></i>';
                 deleteButton.onclick = (event) => {
                     event.stopPropagation();
-                    if (photo.id) {
-                        photoIdsToDelete.add(photo.id);
+                    if (photo.id || photo.cloudMediaId) {
+                        photoIdsToDelete.add(photoDeleteKey(photo));
                     } else {
                         const newPhotoIndex = newPhotos.indexOf(photo);
                         if (newPhotoIndex !== -1) newPhotos.splice(newPhotoIndex, 1);
@@ -1802,7 +2586,11 @@
             lucide.createIcons();
         }
 
-        function saveModalData() {
+        function photoDeleteKey(photo) {
+            return photo.cloudMediaId ? `cloud:${photo.cloudMediaId}` : `local:${photo.id}`;
+        }
+
+        async function saveModalData() {
             const realCost = document.getElementById('modal-real-cost').value;
             const notes = document.getElementById('modal-notes').value;
 
@@ -1810,13 +2598,27 @@
             userDetails[currentActivityId].realCost = realCost;
             userDetails[currentActivityId].notes = notes;
 
-            const visiblePhotoCount = existingPhotos.filter(photo => !photoIdsToDelete.has(photo.id)).length + newPhotos.length;
-            if (db && (photoIdsToDelete.size > 0 || newPhotos.length > 0)) {
-                const tx = db.transaction("photos", "readwrite");
-                const store = tx.objectStore("photos");
-                photoIdsToDelete.forEach(id => store.delete(id));
-                newPhotos.forEach(photo => store.add({ activityId: currentActivityId, image: photo.image }));
-                tx.oncomplete = () => updateStorageStatus();
+            const visiblePhotoCount = existingPhotos.filter(photo => !photoIdsToDelete.has(photoDeleteKey(photo))).length + newPhotos.length;
+            try {
+                for (const photo of existingPhotos.filter(item => photoIdsToDelete.has(photoDeleteKey(item)))) {
+                    if (photo.cloudMediaId) await deleteSharedMedia(photo.cloudMediaId, photo.cloudPath);
+                    if (photo.id) await new Promise((resolve, reject) => {
+                        const request = db.transaction('photos', 'readwrite').objectStore('photos').delete(photo.id);
+                        request.onsuccess = resolve;
+                        request.onerror = () => reject(request.error);
+                    });
+                }
+                for (const photo of newPhotos) {
+                    const localRecord = { activityId: currentActivityId, image: photo.image };
+                    localRecord.id = await addLocalRecord('photos', localRecord);
+                    if (cloudReady) {
+                        const media = await uploadSharedMedia('photo', photo.image, { activityId: currentActivityId });
+                        if (media) await putLocalRecord('photos', { ...localRecord, cloudMediaId: media.id, cloudPath: media.storage_path });
+                    }
+                }
+                updateStorageStatus();
+            } catch (error) {
+                alert(`Algunas fotos no pudieron sincronizarse: ${error.message}`);
             }
             userDetails[currentActivityId].photosCount = visiblePhotoCount;
 
@@ -1826,7 +2628,7 @@
             renderApp();
         }
 
-        function loadPhotosFromDB(activityId) {
+        async function loadPhotosFromDB(activityId) {
             existingPhotos = [];
             newPhotos = [];
             photoIdsToDelete = new Set();
@@ -1834,21 +2636,26 @@
                 renderPhotoThumbnails();
                 return;
             }
-            const tx = db.transaction("photos", "readonly");
-            const store = tx.objectStore("photos");
-            const request = store.openCursor();
-
-            request.onsuccess = (e) => {
-                const cursor = e.target.result;
-                if (cursor) {
-                    if (cursor.value.activityId === activityId) {
-                        existingPhotos.push({ id: cursor.value.id, image: cursor.value.image });
-                    }
-                    cursor.continue();
-                } else {
-                    renderPhotoThumbnails();
+            const localPhotos = (await getStoreData('photos')).filter(photo => photo.activityId === activityId);
+            existingPhotos = localPhotos.map(photo => ({ ...photo }));
+            if (cloudReady) {
+                const { data: cloudPhotos, error } = await cloudClient.from('trip_media')
+                    .select('*').eq('trip_id', cloudTripId).eq('kind', 'photo').eq('activity_id', activityId).order('created_at');
+                if (!error) {
+                    const localByCloudId = new Map(localPhotos.filter(p => p.cloudMediaId).map(p => [p.cloudMediaId, p]));
+                    const sharedPhotos = await Promise.all(cloudPhotos.map(async media => {
+                        const local = localByCloudId.get(media.id);
+                        return {
+                            ...local,
+                            cloudMediaId: media.id,
+                            cloudPath: media.storage_path,
+                            image: local?.image || await getSharedMediaUrl(media.storage_path)
+                        };
+                    }));
+                    existingPhotos = [...sharedPhotos, ...localPhotos.filter(p => !p.cloudMediaId)];
                 }
-            };
+            }
+            if (currentActivityId === activityId) renderPhotoThumbnails();
         }
 
         // --- RESPALDO (EXPORT / IMPORT) ---
@@ -1904,7 +2711,7 @@
                         <div>
                             <p class="font-bold text-sky-900">Espacio local</p>
                             <p class="mt-0.5">${mediaLabel}${browserLabel}</p>
-                            <p class="mt-1 text-slate-500">Las imágenes quedan solo en este dispositivo; expórtalas junto con tu respaldo.</p>
+                            <p class="mt-1 text-slate-500">Las imágenes tienen copia local y, al iniciar sesión, también se comparten en la nube.</p>
                         </div>
                     </div>
                 `;
@@ -1941,13 +2748,17 @@
             }
             const exportedAt = new Date().toISOString();
             const exportObject = {
-                version: 4,
+                version: 6,
                 exportedAt,
                 checked: checkedItems,
                 details: userDetails,
                 stays: staysUser,
                 transportCosts,
                 flightDetails,
+                extraExpenses,
+                itineraryData,
+                initialStaysData,
+                flightsData,
                 rates: JSON.parse(localStorage.getItem('asiaRates')),
                 photos,
                 docs
@@ -1983,6 +2794,10 @@
                     if (data.stays) localStorage.setItem('asiaStaysUser2026', JSON.stringify(data.stays));
                     if (data.transportCosts) localStorage.setItem('asiaTransportCosts2026', JSON.stringify(data.transportCosts));
                     if (data.flightDetails) localStorage.setItem('asiaFlightDetails2026', JSON.stringify(data.flightDetails));
+                    if (Array.isArray(data.extraExpenses)) localStorage.setItem('asiaExtraExpenses2026', JSON.stringify(data.extraExpenses));
+                    if (Array.isArray(data.itineraryData)) localStorage.setItem('asiaItineraryData2026', JSON.stringify(data.itineraryData));
+                    if (Array.isArray(data.initialStaysData)) localStorage.setItem('asiaStaysData2026', JSON.stringify(data.initialStaysData));
+                    if (Array.isArray(data.flightsData)) localStorage.setItem('asiaFlightsData2026', JSON.stringify(data.flightsData));
                     if (data.rates) localStorage.setItem('asiaRates', JSON.stringify(data.rates));
                     
                     checkedItems = data.checked || {};
@@ -1990,6 +2805,10 @@
                     staysUser = data.stays || {};
                     transportCosts = data.transportCosts || {};
                     flightDetails = data.flightDetails || {};
+                    extraExpenses = Array.isArray(data.extraExpenses) ? data.extraExpenses : [];
+                    if (Array.isArray(data.itineraryData)) itineraryData = data.itineraryData;
+                    if (Array.isArray(data.initialStaysData)) initialStaysData = data.initialStaysData;
+                    if (Array.isArray(data.flightsData)) flightsData = data.flightsData;
 
                     const importedAt = typeof data.exportedAt === 'string' && !Number.isNaN(new Date(data.exportedAt).getTime())
                         ? data.exportedAt
@@ -1997,6 +2816,7 @@
                     markBackupCreated(importedAt);
                     renderApp();
                     updateStorageStatus();
+                    scheduleCloudSave();
                     alert("¡Respaldo importado exitosamente!");
                 } catch(err) {
                     alert("Error al leer el archivo de respaldo.");
@@ -2011,11 +2831,17 @@
             if(confirm('¿Seguro que deseas borrar todas las marcas, notas, estadías, fotos y documentos locales?')) {
                 try {
                     await Promise.all([replaceStoreData('photos', []), replaceStoreData('docs', [])]);
-                    localStorage.clear();
+                    [
+                        'asiaTripChecked2026', 'asiaTripDetails2026', 'asiaStaysUser2026',
+                        'asiaTransportCosts2026', 'asiaFlightDetails2026', 'asiaExtraExpenses2026',
+                        'asiaRates', BACKUP_STATE_KEY
+                    ].forEach(key => localStorage.removeItem(key));
                     checkedItems = {};
                     userDetails = {};
                     staysUser = {};
                     transportCosts = {};
+                    flightDetails = {};
+                    extraExpenses = [];
                     backupState = { dirty: false, lastExportedAt: null, lastChangedAt: null };
                     updateBackupReminder();
                     updateStorageStatus();
@@ -2081,6 +2907,7 @@
             renderApp();
             updateBackupReminder();
             registerOfflineSupport();
+            initializeCloudSync();
         });
     </script>
 </body>
