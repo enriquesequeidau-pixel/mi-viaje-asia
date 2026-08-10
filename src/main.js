@@ -187,10 +187,16 @@ function renderStatus() {
     pending: [`${pending} pendiente${pending === 1 ? '' : 's'}`, 'is-pending'], synced: ['Sincronizado', 'is-online'],
     offline: ['Sin conexión', 'is-pending'], error: ['Error de sync', 'is-error'], confirmation: ['Confirma email', 'is-pending']
   }[currentCloud.status] || ['Solo local', ''];
+  if (currentCloud.status === 'synced' && currentCloud.photoPending) {
+    info[0] = `${currentCloud.photoPending} foto(s) pendiente(s)`;
+    info[1] = 'is-pending';
+  }
   dom.syncLabel.textContent = info[0]; dom.syncDot.className = `status-dot ${info[1]}`;
   const offline = !navigator.onLine;
-  dom.banner.hidden = !offline && currentCloud.status !== 'error';
-  dom.banner.textContent = offline ? 'Sin conexión. Puedes seguir editando; los cambios se enviarán al volver la red.' : currentCloud.error || '';
+  dom.banner.hidden = !offline && currentCloud.status !== 'error' && !currentCloud.photoPending;
+  dom.banner.textContent = offline
+    ? 'Sin conexión. Puedes seguir editando; los cambios se enviarán al volver la red.'
+    : currentCloud.error || currentCloud.photoError || '';
 }
 
 function renderAll() { renderToday(); renderSummary(); renderFilters(); renderItinerary(); renderStatus(); }

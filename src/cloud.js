@@ -15,10 +15,13 @@ let client = null;
 let channel = null;
 let state = {
   status: configured ? 'signed-out' : 'local', user: null, error: null,
-  pending: store.outbox().length, mediaVersion: 0, mediaActivityId: null, mediaDeletedId: null
+  pending: store.outbox().length, mediaVersion: 0, mediaActivityId: null, mediaDeletedId: null,
+  photoPending: 0, photoError: null
 };
 const listeners = new Set();
 let flushing = false;
+let photosSyncing = null;
+let cloudSyncing = null;
 
 function emit(patch = {}) {
   state = { ...state, ...patch, pending: store.outbox().length };
@@ -127,22 +130,36 @@ async function deleteRemotePhoto(photo) {
   if (storageError) throw storageError;
 }
 
-async function syncPendingPhotos() {
-  if (!state.user || !navigator.onLine) return 0;
+async function runPendingPhotoSync() {
+  if (!state.user || !navigator.onLine) return { uploaded: 0, failed: 0 };
   const tripId = await getTripId();
-  if (!tripId) return 0;
+  if (!tripId) return { uploaded: 0, failed: 0 };
   const { data: remoteMedia, error: remoteError } = await requireClient().from('trip_media')
     .select('id').eq('trip_id', tripId).eq('kind', 'photo');
   if (remoteError) throw remoteError;
   const remoteIds = new Set((remoteMedia || []).map(media => media.id));
   const localPhotos = await listActivityPhotos();
   let uploaded = 0;
+  let failed = 0;
   for (const photo of localPhotos.filter(item => !item.cloudMediaId || !remoteIds.has(item.cloudMediaId))) {
-    const media = await uploadActivityPhoto(photo.activityId, photo.image);
-    await saveActivityPhoto({ ...photo, cloudMediaId: media.id, cloudPath: media.storage_path });
-    uploaded += 1;
+    try {
+      if (!photo.activityId || typeof photo.image !== 'string' || !photo.image) throw new Error('La copia local está incompleta.');
+      const media = await uploadActivityPhoto(photo.activityId, photo.image);
+      await saveActivityPhoto({ ...photo, cloudMediaId: media.id, cloudPath: media.storage_path });
+      uploaded += 1;
+    } catch (error) {
+      failed += 1;
+      console.warn('Foto pendiente de sincronizar:', error.message);
+    }
   }
-  return uploaded;
+  return { uploaded, failed };
+}
+
+async function syncPendingPhotos() {
+  if (photosSyncing) return photosSyncing;
+  photosSyncing = runPendingPhotoSync();
+  try { return await photosSyncing; }
+  finally { photosSyncing = null; }
 }
 
 export const cloud = {
@@ -200,8 +217,14 @@ export const cloud = {
   uploadActivityPhoto,
   deleteActivityPhoto: deleteRemotePhoto,
   async syncPhotos() {
-    const uploaded = await syncPendingPhotos();
+    const { uploaded = 0, failed = 0 } = await syncPendingPhotos();
     if (uploaded) emit({ mediaVersion: state.mediaVersion + 1, mediaActivityId: null, mediaDeletedId: null });
+    emit({
+      photoPending: failed,
+      photoError: failed
+        ? `${failed} foto(s) local(es) no pudieron subirse. Abre la actividad, elimina la miniatura dañada y vuelve a seleccionar la foto.`
+        : null
+    });
   },
   async seed() {
     const snapshot = store.get();
@@ -243,12 +266,20 @@ export const cloud = {
   },
   async sync() {
     if (!state.user || !navigator.onLine) return;
-    emit({ status: 'syncing', error: null });
-    try { await this.pull(); await this.flush(); await this.syncPhotos(); emit({ status: 'synced' }); }
-    catch (error) { console.error(error); emit({ status: 'error', error: error.message }); throw error; }
+    if (cloudSyncing) return cloudSyncing;
+    cloudSyncing = (async () => {
+      emit({ status: 'syncing', error: null });
+      try { await this.pull(); await this.flush(); await this.syncPhotos(); emit({ status: 'synced' }); }
+      catch (error) { console.error(error); emit({ status: 'error', error: error.message }); throw error; }
+    })();
+    try { return await cloudSyncing; }
+    finally { cloudSyncing = null; }
   }
 };
 
 window.addEventListener('online', () => cloud.sync().catch(() => {}));
 window.addEventListener('offline', () => emit({ status: 'offline' }));
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && navigator.onLine && state.user) cloud.sync().catch(() => {});
+});
 window.addEventListener('asia:outbox', () => { emit({ status: state.user ? 'pending' : state.status }); if (state.user) cloud.flush().catch(() => {}); });

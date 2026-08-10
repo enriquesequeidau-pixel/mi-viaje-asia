@@ -48,14 +48,14 @@ test('corrupted local storage cannot prevent startup', async ({ page }) => {
   await expect(page.locator('.activity-row').first()).toBeVisible();
 });
 
-test('v35 visibly invalidates stale cloud revision once', async ({ page }) => {
+test('v36 visibly invalidates stale cloud revision once', async ({ page }) => {
   await page.evaluate(() => localStorage.setItem('asiaTripCloudMeta2026.v1', JSON.stringify({ tripId: 'test-trip', revision: 999, schemaVersion: 7 })));
   await page.reload();
   const meta = await page.evaluate(() => JSON.parse(localStorage.getItem('asiaTripCloudMeta2026.v1')));
   expect(meta.revision).toBe(0);
   expect(meta.schemaVersion).toBe(8);
   await page.getByRole('button', { name: 'Abrir herramientas' }).click();
-  await expect(page.getByLabel('Versión de la vista')).toHaveText('Vista v35');
+  await expect(page.getByLabel('Versión de la vista')).toHaveText('Vista v36');
 });
 
 test('filters do not alter global progress', async ({ page }) => {
