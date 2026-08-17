@@ -67,6 +67,13 @@ export function mapsDirectionsUrl(origin, destination) {
   return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(cleanText(origin, 300))}&destination=${encodeURIComponent(cleanText(destination, 300))}`;
 }
 
+export function amapSearchUrl(location, city = '') {
+  const keyword = encodeURIComponent(cleanText(location, 300));
+  const cityName = cleanText(city, 100);
+  const cityParam = cityName ? `&city=${encodeURIComponent(cityName)}` : '';
+  return `https://uri.amap.com/search?keyword=${keyword}${cityParam}&view=map&src=asia-2026&callnative=1`;
+}
+
 export function taxFreeBreakdown(grossYen, taxRate = 10) {
   const gross = Math.max(0, Number(grossYen) || 0);
   const rate = taxRate === 8 ? 8 : 10;

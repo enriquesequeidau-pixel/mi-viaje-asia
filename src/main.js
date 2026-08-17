@@ -6,7 +6,7 @@ import {
   listActivityPhotos, listDocuments, saveActivityPhoto, saveDocument, store
 } from './store.js';
 import { decryptJson, encryptJson } from './crypto.js';
-import { cleanText, dateLabel, downloadBlob, el, groupBy, mapsDirectionsUrl, mapsUrl, money, parseMoney, shortDate, taxFreeBreakdown, uid, validIsoDate, validTime } from './utils.js';
+import { amapSearchUrl, cleanText, dateLabel, downloadBlob, el, groupBy, mapsDirectionsUrl, mapsUrl, money, parseMoney, shortDate, taxFreeBreakdown, uid, validIsoDate, validTime } from './utils.js';
 import { validateBackup } from './validation.js';
 
 const $ = selector => document.querySelector(selector);
@@ -67,15 +67,28 @@ function optionalMoney(data, name) {
 
 function getActivity(id) { return store.get().activities.find(item => item.id === id); }
 
-function mapLink(label, query, className = 'secondary-button map-link', visibleText = label) {
+const MAINLAND_CHINA_CITIES = new Set(['SHANGHAI', 'HANGZHOU', 'SUZHOU']);
+
+function usesAmap(city = '', country = '') {
+  return cleanText(country, 60).toLocaleUpperCase('es') === 'CHINA' || MAINLAND_CHINA_CITIES.has(cleanText(city, 60).toLocaleUpperCase('es'));
+}
+
+function mapLink(label, query, options = {}) {
+  const { city = '', country = '', className = 'secondary-button map-link', compact = false } = options;
+  const useAmap = usesAmap(city, country);
+  const provider = useAmap ? 'Amap' : 'Google Maps';
+  const googleQuery = [query, city, country].filter(Boolean).join(', ');
   return el('a', {
-    class: className, href: mapsUrl(query), target: '_blank', rel: 'noopener noreferrer',
-    'aria-label': label, text: visibleText
+    class: className,
+    href: useAmap ? amapSearchUrl(query, city) : mapsUrl(googleQuery),
+    target: '_blank', rel: 'noopener noreferrer',
+    'aria-label': `${label} en ${provider}`,
+    text: compact ? '↗' : `${label} en ${provider} ↗`
   });
 }
 
 function stayMapQuery(stay, detail = {}) {
-  return [detail.address || detail.hotel || stay.defaultLocation, stay.city, stay.country].filter(Boolean).join(', ');
+  return detail.address || detail.hotel || stay.defaultLocation || stay.city;
 }
 
 function progressData() {
@@ -170,7 +183,7 @@ function renderItinerary() {
         el('time', { class: 'activity-time', datetime: `${item.date}T${item.time}`, text: item.time }),
         el('button', { class: 'check-button', type: 'button', 'aria-pressed': done, 'aria-label': done ? `Marcar ${item.title} como pendiente` : `Marcar ${item.title} como completada`, dataset: { check: item.id }, text: '✓' }),
         el('button', { class: 'activity-copy', type: 'button', dataset: { activity: item.id } }, el('h3', { text: item.title }), el('p', { text: `${iconFor(item.type)} ${item.location}${item.cost ? ` · ${money(item.cost)}` : ''}${photos ? ` · 📷 ${photos}` : ''}` })),
-        mapLink(`Abrir ${item.title} en Google Maps`, `${item.location}, ${item.city}`, 'detail-button map-shortcut', '↗')
+        mapLink(`Abrir ${item.title}`, item.location, { city: item.city, className: 'detail-button map-shortcut', compact: true })
       ));
     }
     fragment.append(el('section', { class: 'day-card' }, el('h2', {},
@@ -241,7 +254,7 @@ function openActivity(id, edit = false) {
       el('div', { class: 'metric' }, el('span', { text: 'Estimado' }), el('strong', { text: money(item.cost) }))
     ),
     el('h3', { text: 'Ubicación' }), el('p', { text: item.location }),
-    el('a', { href: mapsUrl(`${item.location}, ${item.city}`), target: '_blank', rel: 'noopener noreferrer', text: 'Abrir en Google Maps ↗' }),
+    mapLink('Abrir', item.location, { city: item.city }),
     photoSection,
     el('h3', { text: 'Notas y gasto real' }),
     el('form', { class: 'form-grid', onsubmit: event => {
@@ -430,7 +443,7 @@ function openStays() {
       el('p', { text: detail.hotel || stay.defaultLocation || 'Alojamiento por definir' }),
       el('p', { class: 'record-costs', text: `Estimado por persona: ${money(stay.estPerPerson)}` }),
       buttons(
-        mapLink('Abrir alojamiento en Google Maps ↗', stayMapQuery(stay, detail)),
+        mapLink('Abrir alojamiento', stayMapQuery(stay, detail), { city: stay.city, country: stay.country }),
         el('button', { class: 'secondary-button', type: 'button', onclick: () => openStay(stay.id), text: 'Reserva y gasto real' }),
         el('button', { class: 'text-button', type: 'button', onclick: () => stayForm(stay), text: 'Editar estimado' }),
         el('button', { class: 'text-button danger-text', type: 'button', onclick: () => confirmDeleteStay(stay.id), text: 'Eliminar' })
@@ -507,7 +520,7 @@ function openStay(id) {
   } }, field('Hotel o alojamiento', 'hotel', detail.hotel || '', { full: true }), field('Dirección', 'address', detail.address || '', { full: true }), field('Confirmación', 'confirmation', detail.confirmation || ''), field('Costo real por persona (CLP)', 'realCost', detail.realCost ?? '', { type: 'number', min: 0, help: 'Déjalo vacío hasta realizar el pago.' }), field('Notas', 'notes', detail.notes || '', { type: 'textarea', full: true }), buttons(el('button', { class: 'secondary-button', type: 'button', onclick: openStays, text: 'Volver' }), submitButton()));
   openDialog(stay.city, `${stay.country} · ${stay.nights} noches`, el('div', {},
     el('div', { class: 'notice', text: `Check-in ${stay.checkIn.replace('T',' ')} · Check-out ${stay.checkOut.replace('T',' ')} · Estimado por persona ${money(stay.estPerPerson)}.` }),
-    mapLink('Abrir alojamiento en Google Maps ↗', stayMapQuery(stay, detail)),
+    mapLink('Abrir alojamiento', stayMapQuery(stay, detail), { city: stay.city, country: stay.country }),
     el('h3', { text: 'Reserva y gasto real' }), form));
 }
 
@@ -609,7 +622,9 @@ function openTransport() {
       event.preventDefault(); const data = new FormData(event.currentTarget); const amount = optionalMoney(data, 'amount');
       store.setMap('transportCosts', item.id, amount); toast('Costo real actualizado.'); openTransport();
     } }, el('div', { class: 'row' }, el('div', {}, el('strong', { text: item.title }), el('p', { text: `${shortDate(item.date)} · ${item.transportMode || 'Traslado'} · ${item.transportFrom || item.from || item.location}${item.transportTo || item.to ? ` → ${item.transportTo || item.to}` : ''}` })), el('span', { text: money(item.cost) })), field('Costo real por persona (CLP)', 'amount', actualAmount ?? '', { type: 'number', min: 0, help: 'Déjalo vacío hasta realizar el pago.' }), buttons(
-      el('a', { class: 'secondary-button map-link', href: mapsDirectionsUrl(item.transportFrom || item.from || item.location, item.transportTo || item.to || item.location), target: '_blank', rel: 'noopener noreferrer', text: 'Ver ruta en Maps ↗' }),
+      usesAmap(item.city)
+        ? mapLink('Abrir destino', item.transportTo || item.to || item.location, { city: item.city })
+        : el('a', { class: 'secondary-button map-link', href: mapsDirectionsUrl(item.transportFrom || item.from || item.location, item.transportTo || item.to || item.location), target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Ver ruta en Google Maps', text: 'Ver ruta en Google Maps ↗' }),
       el('button', { class: 'text-button', type: 'button', onclick: () => transportForm(item), text: 'Editar estimado' }),
       el('button', { class: 'text-button danger-text', type: 'button', onclick: () => confirmDeleteTransport(item.id), text: 'Eliminar' }),
       submitButton('Guardar real')

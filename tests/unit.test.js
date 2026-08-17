@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { budgetTotals } from '../src/budget.js';
 import { DEFAULT_STATE } from '../src/data.js';
 import { decryptJson, encryptJson } from '../src/crypto.js';
-import { mapsDirectionsUrl, mapsUrl, parseMoney, taxFreeBreakdown } from '../src/utils.js';
+import { amapSearchUrl, mapsDirectionsUrl, mapsUrl, parseMoney, taxFreeBreakdown } from '../src/utils.js';
 import { normalizeActivity, normalizeState, validateBackup } from '../src/validation.js';
 
 test('parseMoney handles Chilean formatted strings', () => {
@@ -14,6 +14,7 @@ test('parseMoney handles Chilean formatted strings', () => {
 test('Google Maps links encode places and routes safely', () => {
   assert.match(mapsUrl('Hotel Shimbashi, Tokyo'), /maps\/search\/\?api=1&query=Hotel%20Shimbashi%2C%20Tokyo/);
   assert.match(mapsDirectionsUrl('Tokyo Station', 'Haneda Airport'), /maps\/dir\/\?api=1&origin=Tokyo%20Station&destination=Haneda%20Airport/);
+  assert.equal(amapSearchUrl('The Bund', 'SHANGHAI'), 'https://uri.amap.com/search?keyword=The%20Bund&city=SHANGHAI&view=map&src=asia-2026&callnative=1');
 });
 
 test('tax-free eligibility uses the tax-exclusive amount', () => {
