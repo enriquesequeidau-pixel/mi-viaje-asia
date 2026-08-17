@@ -73,10 +73,47 @@ function mediaExtension(mimeType) {
   })[mimeType] || 'jpg';
 }
 
+async function imageSourceToBlob(image) {
+  if (image instanceof Blob) return image;
+  if (typeof image !== 'string' || !image) throw new Error('La copia local de la foto está incompleta.');
+  const dataUrl = image.match(/^data:([^;,]+)(;base64)?,(.*)$/s);
+  if (dataUrl) {
+    const [, mimeType, base64, payload] = dataUrl;
+    const binary = base64 ? atob(payload) : decodeURIComponent(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    return new Blob([bytes], { type: mimeType });
+  }
+  const response = await fetch(image);
+  if (!response.ok) throw new Error('No se pudo recuperar la copia local de la foto.');
+  return response.blob();
+}
+
+async function shareableImageBlob(blob) {
+  if (!/^image\/(?:heic|heif)$/i.test(blob.type)) return blob;
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const image = new Image();
+    image.src = objectUrl;
+    await image.decode();
+    const longestSide = Math.max(image.naturalWidth, image.naturalHeight);
+    const scale = Math.min(1, 2560 / longestSide);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+    const jpeg = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .88));
+    if (!jpeg) throw new Error('No se pudo convertir la foto HEIC.');
+    return jpeg;
+  } catch {
+    throw new Error('No se pudo convertir la foto HEIC. En el iPhone usa Cámara > Formatos > Más compatible.');
+  } finally { URL.revokeObjectURL(objectUrl); }
+}
+
 async function uploadActivityPhoto(activityId, image) {
   const tripId = await getTripId();
   if (!state.user || !tripId) throw new Error('Inicia sesión y vincula un viaje para compartir fotos.');
-  const blob = await (await fetch(image)).blob();
+  const blob = await shareableImageBlob(await imageSourceToBlob(image));
   if (blob.size > 10 * 1024 * 1024) throw new Error('La foto supera el máximo de 10 MB.');
   if (!/^image\/(?:jpeg|png|webp|gif|heic|heif)$/i.test(blob.type)) throw new Error('Formato de foto no permitido.');
   const storagePath = `${tripId}/photo/${crypto.randomUUID()}.${mediaExtension(blob.type)}`;

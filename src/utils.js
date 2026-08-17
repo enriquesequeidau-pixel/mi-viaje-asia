@@ -63,6 +63,10 @@ export function mapsUrl(location) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanText(location, 300))}`;
 }
 
+export function mapsDirectionsUrl(origin, destination) {
+  return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(cleanText(origin, 300))}&destination=${encodeURIComponent(cleanText(destination, 300))}`;
+}
+
 export function taxFreeBreakdown(grossYen, taxRate = 10) {
   const gross = Math.max(0, Number(grossYen) || 0);
   const rate = taxRate === 8 ? 8 : 10;

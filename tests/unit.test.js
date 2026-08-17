@@ -3,12 +3,17 @@ import assert from 'node:assert/strict';
 import { budgetTotals } from '../src/budget.js';
 import { DEFAULT_STATE } from '../src/data.js';
 import { decryptJson, encryptJson } from '../src/crypto.js';
-import { parseMoney, taxFreeBreakdown } from '../src/utils.js';
+import { mapsDirectionsUrl, mapsUrl, parseMoney, taxFreeBreakdown } from '../src/utils.js';
 import { normalizeActivity, normalizeState, validateBackup } from '../src/validation.js';
 
 test('parseMoney handles Chilean formatted strings', () => {
   assert.equal(parseMoney('$25.000'), 25000);
   assert.equal(parseMoney('no disponible'), 0);
+});
+
+test('Google Maps links encode places and routes safely', () => {
+  assert.match(mapsUrl('Hotel Shimbashi, Tokyo'), /maps\/search\/\?api=1&query=Hotel%20Shimbashi%2C%20Tokyo/);
+  assert.match(mapsDirectionsUrl('Tokyo Station', 'Haneda Airport'), /maps\/dir\/\?api=1&origin=Tokyo%20Station&destination=Haneda%20Airport/);
 });
 
 test('tax-free eligibility uses the tax-exclusive amount', () => {

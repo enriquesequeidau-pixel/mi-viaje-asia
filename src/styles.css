@@ -114,6 +114,8 @@ a { color: inherit; }
 .activity-copy p { margin: .15rem 0 0; overflow: hidden; color: #64748b; font-size: .84rem; text-overflow: ellipsis; white-space: nowrap; }
 .detail-button { width: 44px; height: 44px; padding: 0; border: 0; border-radius: .7rem; color: #64748b; background: transparent; font-size: 1.2rem; }
 .detail-button:hover { background: #edf1f6; }
+.map-link { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; text-align: center; text-decoration: none; }
+.map-shortcut { display: grid; place-items: center; text-decoration: none; }
 .empty-state { padding: 2.5rem 1rem; border: 1px dashed #cbd3df; border-radius: 1rem; text-align: center; color: #64748b; background: #ffffff88; }
 
 .mobile-nav { position: fixed; z-index: 35; right: .7rem; bottom: max(.7rem, env(safe-area-inset-bottom)); left: .7rem; display: grid; grid-template-columns: repeat(4, 1fr); padding: .35rem; border: 1px solid #ffffff30; border-radius: 1.15rem; color: #dbe3f3; background: #172554f5; box-shadow: 0 15px 45px #08163655; backdrop-filter: blur(14px); }

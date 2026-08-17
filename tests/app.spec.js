@@ -22,9 +22,12 @@ test('renders the complete itinerary without horizontal overflow', async ({ page
 
 test('works at mobile size and opens the accessible activity dialog', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  const directMap = page.locator('.activity-row').first().getByRole('link', { name: /Google Maps/ });
+  await expect(directMap).toHaveAttribute('href', /google\.com\/maps\/search/);
+  await expect(directMap).toHaveAttribute('target', '_blank');
   await page.locator('.activity-copy').first().click();
   await expect(page.locator('#app-dialog')).toBeVisible();
-  await expect(page.getByRole('link', { name: /Google Maps/ })).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(page.locator('#app-dialog').getByRole('link', { name: 'Abrir en Google Maps ↗' })).toHaveAttribute('rel', 'noopener noreferrer');
   await page.screenshot({ path: 'test-results/mobile-dialog.png', fullPage: true });
   await page.keyboard.press('Escape');
   await expect(page.locator('#app-dialog')).not.toBeVisible();
@@ -48,14 +51,14 @@ test('corrupted local storage cannot prevent startup', async ({ page }) => {
   await expect(page.locator('.activity-row').first()).toBeVisible();
 });
 
-test('v36 visibly invalidates stale cloud revision once', async ({ page }) => {
+test('v38 visibly invalidates stale cloud revision once', async ({ page }) => {
   await page.evaluate(() => localStorage.setItem('asiaTripCloudMeta2026.v1', JSON.stringify({ tripId: 'test-trip', revision: 999, schemaVersion: 7 })));
   await page.reload();
   const meta = await page.evaluate(() => JSON.parse(localStorage.getItem('asiaTripCloudMeta2026.v1')));
   expect(meta.revision).toBe(0);
   expect(meta.schemaVersion).toBe(8);
   await page.getByRole('button', { name: 'Abrir herramientas' }).click();
-  await expect(page.getByLabel('Versión de la vista')).toHaveText('Vista v36');
+  await expect(page.getByLabel('Versión de la vista')).toHaveText('Vista v38');
 });
 
 test('filters do not alter global progress', async ({ page }) => {
@@ -114,7 +117,9 @@ test('keeps estimates separate and manages stays, transports and flights', async
   const dialog = page.locator('#app-dialog');
   await page.getByRole('button', { name: 'Abrir herramientas' }).click();
   await page.getByRole('button', { name: /Estadías/ }).click();
+  await expect(page.getByRole('link', { name: /Abrir alojamiento en Google Maps/ }).first()).toHaveAttribute('href', /google\.com\/maps\/search/);
   await page.getByRole('button', { name: 'Reserva y gasto real' }).first().click();
+  await expect(dialog.getByRole('link', { name: /Abrir alojamiento en Google Maps/ })).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(dialog.getByLabel('Costo real por persona (CLP)')).toHaveValue('');
   await page.getByRole('button', { name: 'Volver' }).click();
 
@@ -140,6 +145,7 @@ test('keeps estimates separate and manages stays, transports and flights', async
 
   await page.getByRole('button', { name: /Traslados/ }).click();
   await expect(page.locator('form.info-card')).toHaveCount(8);
+  await expect(page.getByRole('link', { name: /Ver ruta en Maps/ }).first()).toHaveAttribute('href', /google\.com\/maps\/dir/);
   await page.getByRole('button', { name: '+ Agregar traslado' }).click();
   await dialog.getByLabel('Título').fill('Tren de prueba');
   await dialog.getByLabel('Fecha', { exact: true }).fill('2026-09-12');

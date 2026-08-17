@@ -6,7 +6,7 @@ import {
   listActivityPhotos, listDocuments, saveActivityPhoto, saveDocument, store
 } from './store.js';
 import { decryptJson, encryptJson } from './crypto.js';
-import { cleanText, dateLabel, downloadBlob, el, groupBy, mapsUrl, money, parseMoney, shortDate, taxFreeBreakdown, uid, validIsoDate, validTime } from './utils.js';
+import { cleanText, dateLabel, downloadBlob, el, groupBy, mapsDirectionsUrl, mapsUrl, money, parseMoney, shortDate, taxFreeBreakdown, uid, validIsoDate, validTime } from './utils.js';
 import { validateBackup } from './validation.js';
 
 const $ = selector => document.querySelector(selector);
@@ -66,6 +66,17 @@ function optionalMoney(data, name) {
 }
 
 function getActivity(id) { return store.get().activities.find(item => item.id === id); }
+
+function mapLink(label, query, className = 'secondary-button map-link', visibleText = label) {
+  return el('a', {
+    class: className, href: mapsUrl(query), target: '_blank', rel: 'noopener noreferrer',
+    'aria-label': label, text: visibleText
+  });
+}
+
+function stayMapQuery(stay, detail = {}) {
+  return [detail.address || detail.hotel || stay.defaultLocation, stay.city, stay.country].filter(Boolean).join(', ');
+}
 
 function progressData() {
   const state = store.get();
@@ -159,7 +170,7 @@ function renderItinerary() {
         el('time', { class: 'activity-time', datetime: `${item.date}T${item.time}`, text: item.time }),
         el('button', { class: 'check-button', type: 'button', 'aria-pressed': done, 'aria-label': done ? `Marcar ${item.title} como pendiente` : `Marcar ${item.title} como completada`, dataset: { check: item.id }, text: '✓' }),
         el('button', { class: 'activity-copy', type: 'button', dataset: { activity: item.id } }, el('h3', { text: item.title }), el('p', { text: `${iconFor(item.type)} ${item.location}${item.cost ? ` · ${money(item.cost)}` : ''}${photos ? ` · 📷 ${photos}` : ''}` })),
-        el('button', { class: 'detail-button', type: 'button', 'aria-label': `Opciones de ${item.title}`, dataset: { activity: item.id }, text: '›' })
+        mapLink(`Abrir ${item.title} en Google Maps`, `${item.location}, ${item.city}`, 'detail-button map-shortcut', '↗')
       ));
     }
     fragment.append(el('section', { class: 'day-card' }, el('h2', {},
@@ -230,7 +241,7 @@ function openActivity(id, edit = false) {
       el('div', { class: 'metric' }, el('span', { text: 'Estimado' }), el('strong', { text: money(item.cost) }))
     ),
     el('h3', { text: 'Ubicación' }), el('p', { text: item.location }),
-    el('a', { href: mapsUrl(item.location), target: '_blank', rel: 'noopener noreferrer', text: 'Abrir en Google Maps ↗' }),
+    el('a', { href: mapsUrl(`${item.location}, ${item.city}`), target: '_blank', rel: 'noopener noreferrer', text: 'Abrir en Google Maps ↗' }),
     photoSection,
     el('h3', { text: 'Notas y gasto real' }),
     el('form', { class: 'form-grid', onsubmit: event => {
@@ -320,13 +331,14 @@ async function addActivityPhotos(activityId, fileList, grid, status) {
     if (file.size > 10 * 1024 * 1024) { toast(`${file.name}: supera 10 MB.`, true); continue; }
     if (!/^image\/(?:jpeg|png|webp|gif|heic|heif)$/i.test(file.type)) { toast(`${file.name}: formato no permitido.`, true); continue; }
     try {
-      let record = await saveActivityPhoto({ activityId, image: await fileAsDataUrl(file) });
+      const compatibleFile = await compatiblePhotoFile(file);
+      let record = await saveActivityPhoto({ activityId, image: await fileAsDataUrl(compatibleFile) });
       if (currentCloud.user && navigator.onLine) {
         try {
-          const media = await cloud.uploadActivityPhoto(activityId, record.image);
+          const media = await cloud.uploadActivityPhoto(activityId, compatibleFile);
           record = await saveActivityPhoto({ ...record, cloudMediaId: media.id, cloudPath: media.storage_path });
         } catch (error) {
-          toast(`“${file.name}” quedó guardada localmente y se sincronizará después.`, true);
+          toast(`No se pudo compartir “${file.name}”: ${error.message}. Quedó guardada localmente.`, true);
         }
       }
     } catch (error) { toast(`${file.name}: ${error.message}`, true); }
@@ -418,6 +430,7 @@ function openStays() {
       el('p', { text: detail.hotel || stay.defaultLocation || 'Alojamiento por definir' }),
       el('p', { class: 'record-costs', text: `Estimado por persona: ${money(stay.estPerPerson)}` }),
       buttons(
+        mapLink('Abrir alojamiento en Google Maps ↗', stayMapQuery(stay, detail)),
         el('button', { class: 'secondary-button', type: 'button', onclick: () => openStay(stay.id), text: 'Reserva y gasto real' }),
         el('button', { class: 'text-button', type: 'button', onclick: () => stayForm(stay), text: 'Editar estimado' }),
         el('button', { class: 'text-button danger-text', type: 'button', onclick: () => confirmDeleteStay(stay.id), text: 'Eliminar' })
@@ -492,7 +505,10 @@ function openStay(id) {
     store.setMap('stayDetails', id, next);
     toast('Estadía actualizada.'); openStays();
   } }, field('Hotel o alojamiento', 'hotel', detail.hotel || '', { full: true }), field('Dirección', 'address', detail.address || '', { full: true }), field('Confirmación', 'confirmation', detail.confirmation || ''), field('Costo real por persona (CLP)', 'realCost', detail.realCost ?? '', { type: 'number', min: 0, help: 'Déjalo vacío hasta realizar el pago.' }), field('Notas', 'notes', detail.notes || '', { type: 'textarea', full: true }), buttons(el('button', { class: 'secondary-button', type: 'button', onclick: openStays, text: 'Volver' }), submitButton()));
-  openDialog(stay.city, `${stay.country} · ${stay.nights} noches`, el('div', {}, el('div', { class: 'notice', text: `Check-in ${stay.checkIn.replace('T',' ')} · Check-out ${stay.checkOut.replace('T',' ')} · Estimado por persona ${money(stay.estPerPerson)}.` }), el('h3', { text: 'Reserva y gasto real' }), form));
+  openDialog(stay.city, `${stay.country} · ${stay.nights} noches`, el('div', {},
+    el('div', { class: 'notice', text: `Check-in ${stay.checkIn.replace('T',' ')} · Check-out ${stay.checkOut.replace('T',' ')} · Estimado por persona ${money(stay.estPerPerson)}.` }),
+    mapLink('Abrir alojamiento en Google Maps ↗', stayMapQuery(stay, detail)),
+    el('h3', { text: 'Reserva y gasto real' }), form));
 }
 
 function openFlights() {
@@ -593,6 +609,7 @@ function openTransport() {
       event.preventDefault(); const data = new FormData(event.currentTarget); const amount = optionalMoney(data, 'amount');
       store.setMap('transportCosts', item.id, amount); toast('Costo real actualizado.'); openTransport();
     } }, el('div', { class: 'row' }, el('div', {}, el('strong', { text: item.title }), el('p', { text: `${shortDate(item.date)} · ${item.transportMode || 'Traslado'} · ${item.transportFrom || item.from || item.location}${item.transportTo || item.to ? ` → ${item.transportTo || item.to}` : ''}` })), el('span', { text: money(item.cost) })), field('Costo real por persona (CLP)', 'amount', actualAmount ?? '', { type: 'number', min: 0, help: 'Déjalo vacío hasta realizar el pago.' }), buttons(
+      el('a', { class: 'secondary-button map-link', href: mapsDirectionsUrl(item.transportFrom || item.from || item.location, item.transportTo || item.to || item.location), target: '_blank', rel: 'noopener noreferrer', text: 'Ver ruta en Maps ↗' }),
       el('button', { class: 'text-button', type: 'button', onclick: () => transportForm(item), text: 'Editar estimado' }),
       el('button', { class: 'text-button danger-text', type: 'button', onclick: () => confirmDeleteTransport(item.id), text: 'Eliminar' }),
       submitButton('Guardar real')
@@ -679,6 +696,27 @@ function fileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file);
   });
+}
+
+async function compatiblePhotoFile(file) {
+  if (!/^image\/(?:heic|heif)$/i.test(file.type)) return file;
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.src = objectUrl;
+    await image.decode();
+    const longestSide = Math.max(image.naturalWidth, image.naturalHeight);
+    const scale = Math.min(1, 2560 / longestSide);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .88));
+    if (!blob) throw new Error('No se pudo convertir la foto HEIC.');
+    return new File([blob], file.name.replace(/\.(?:heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
+  } catch {
+    throw new Error('No se pudo convertir la foto HEIC. En el iPhone selecciona una versión JPEG o usa Cámara > Formatos > Más compatible.');
+  } finally { URL.revokeObjectURL(objectUrl); }
 }
 
 async function openDocuments() {
